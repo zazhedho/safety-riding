@@ -6,6 +6,10 @@ import (
 	"gorm.io/gorm"
 )
 
+func (School) TableName() string {
+	return "schools"
+}
+
 type School struct {
 	ID           string  `json:"id" gorm:"column:id;primaryKey"`
 	Name         string  `json:"name" gorm:"column:name"`

@@ -68,14 +68,14 @@ func (r *Routes) UserRoutes() {
 		{
 			userPriv.POST("/logout", h.Logout)
 			userPriv.GET("", h.GetUserByAuth)
-			userPriv.GET("/:id", mdw.RoleMiddleware(utils.RoleAdmin, utils.RoleCashier), h.GetUserById)
+			userPriv.GET("/:id", mdw.RoleMiddleware(utils.RoleAdmin, utils.RoleStaff), h.GetUserById)
 			userPriv.PUT("", h.Update)
 			userPriv.PUT("/change/password", h.ChangePassword)
 			userPriv.DELETE("", h.Delete)
 		}
 	}
 
-	r.App.GET("/api/users", mdw.AuthMiddleware(), mdw.RoleMiddleware(utils.RoleAdmin, utils.RoleCashier), h.GetAllUsers)
+	r.App.GET("/api/users", mdw.AuthMiddleware(), mdw.RoleMiddleware(utils.RoleAdmin, utils.RoleStaff), h.GetAllUsers)
 }
 
 func (r *Routes) SchoolRoutes() {
@@ -84,9 +84,13 @@ func (r *Routes) SchoolRoutes() {
 	h := schoolHandler.NewSchoolHandler(svc)
 	mdw := middlewares.NewMiddleware(authRepo.NewBlacklistRepo(r.DB))
 
+	r.App.GET("/api/schools", mdw.AuthMiddleware(), h.FetchSchool)
 	school := r.App.Group("/api/school").Use(mdw.AuthMiddleware())
 	{
 		school.POST("", h.AddSchool)
+		school.GET("/:id", h.GetSchoolById)
+		school.PUT("/:id", h.UpdateSchool)
+		school.DELETE("/:id", h.DeleteSchool)
 	}
 }
 

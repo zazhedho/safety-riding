@@ -4,6 +4,7 @@ import (
 	"safety-riding/internal/domain/school"
 	"safety-riding/internal/dto"
 	interfaceschool "safety-riding/internal/interfaces/school"
+	"safety-riding/pkg/filter"
 	"safety-riding/utils"
 	"time"
 )
@@ -46,4 +47,95 @@ func (s *SchoolService) AddSchool(username string, req dto.AddSchool) (domainsch
 	}
 
 	return data, nil
+}
+
+func (s *SchoolService) GetSchoolById(id string) (domainschool.School, error) {
+	return s.SchoolRepo.GetByID(id)
+}
+
+func (s *SchoolService) UpdateSchool(id, username string, req dto.UpdateSchool) (domainschool.School, error) {
+	// Get existing school
+	school, err := s.SchoolRepo.GetByID(id)
+	if err != nil {
+		return domainschool.School{}, err
+	}
+
+	// Update fields if provided
+	if req.Name != "" {
+		school.Name = req.Name
+	}
+	if req.NPSN != "" {
+		school.NPSN = req.NPSN
+	}
+	if req.Address != "" {
+		school.Address = req.Address
+	}
+	if req.Phone != "" {
+		school.Phone = req.Phone
+	}
+	if req.Email != "" {
+		school.Email = req.Email
+	}
+	if req.DistrictId != "" {
+		school.DistrictId = req.DistrictId
+	}
+	if req.CityId != "" {
+		school.CityId = req.CityId
+	}
+	if req.ProvinceId != "" {
+		school.ProvinceId = req.ProvinceId
+	}
+	if req.PostalCode != "" {
+		school.PostalCode = req.PostalCode
+	}
+	if req.Latitude != 0 {
+		school.Latitude = req.Latitude
+	}
+	if req.Longitude != 0 {
+		school.Longitude = req.Longitude
+	}
+	if req.StudentCount != 0 {
+		school.StudentCount = req.StudentCount
+	}
+	if req.TeacherCount != 0 {
+		school.TeacherCount = req.TeacherCount
+	}
+	if req.VisitCount != 0 {
+		school.VisitCount = req.VisitCount
+	}
+	school.IsEducated = req.IsEducated
+	if req.LastVisitAt != nil {
+		school.LastVisitAt = req.LastVisitAt
+	}
+
+	school.UpdatedAt = time.Now()
+	school.UpdatedBy = username
+
+	if err := s.SchoolRepo.Update(school); err != nil {
+		return domainschool.School{}, err
+	}
+
+	return school, nil
+}
+
+func (s *SchoolService) FetchSchool(params filter.BaseParams) ([]domainschool.School, int64, error) {
+	return s.SchoolRepo.Fetch(params)
+}
+
+func (s *SchoolService) DeleteSchool(id, username string) error {
+	// Check if school exists
+	school, err := s.SchoolRepo.GetByID(id)
+	if err != nil {
+		return err
+	}
+
+	// Update deleted fields
+	school.DeletedBy = username
+
+	// Soft delete
+	if err := s.SchoolRepo.Delete(id); err != nil {
+		return err
+	}
+
+	return nil
 }

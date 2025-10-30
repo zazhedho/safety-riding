@@ -38,7 +38,7 @@ func (s *ServiceUser) RegisterUser(req dto.UserRegister) (domainuser.Users, erro
 		Phone:     req.Phone,
 		Email:     req.Email,
 		Password:  string(hashedPwd),
-		Role:      utils.RoleCustomer,
+		Role:      utils.RoleViewer,
 		CreatedAt: time.Now(),
 	}
 

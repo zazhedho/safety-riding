@@ -12,11 +12,10 @@ const (
 )
 
 const (
-	RoleAdmin    = "admin"
-	RoleMember   = "member"
-	RoleCustomer = "customer"
-	RoleMechanic = "mechanic"
-	RoleCashier  = "cashier"
+	RoleAdmin  = "admin"
+	RoleMember = "member"
+	RoleStaff  = "staff"
+	RoleViewer = "viewer"
 )
 
 const (
