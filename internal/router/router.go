@@ -8,11 +8,17 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"gorm.io/gorm"
 
+	cityHandler "safety-riding/internal/handlers/http/city"
+	districtHandler "safety-riding/internal/handlers/http/district"
+	provinceHandler "safety-riding/internal/handlers/http/province"
 	schoolHandler "safety-riding/internal/handlers/http/school"
 	userHandler "safety-riding/internal/handlers/http/user"
 	authRepo "safety-riding/internal/repositories/auth"
 	schoolRepo "safety-riding/internal/repositories/school"
 	userRepo "safety-riding/internal/repositories/user"
+	kabupatenSvc "safety-riding/internal/services/city"
+	kecamatanSvc "safety-riding/internal/services/district"
+	provinsiSvc "safety-riding/internal/services/province"
 	schoolSvc "safety-riding/internal/services/school"
 	userSvc "safety-riding/internal/services/user"
 	"safety-riding/middlewares"
@@ -81,5 +87,35 @@ func (r *Routes) SchoolRoutes() {
 	school := r.App.Group("/api/school").Use(mdw.AuthMiddleware())
 	{
 		school.POST("", h.AddSchool)
+	}
+}
+
+func (r *Routes) ProvinceRoutes() {
+	svc := provinsiSvc.NewProvinceService()
+	h := provinceHandler.NewProvinceHandler(svc)
+
+	province := r.App.Group("/api/province")
+	{
+		province.GET("", h.GetProvince)
+	}
+}
+
+func (r *Routes) CityRoutes() {
+	svc := kabupatenSvc.NewCityService()
+	h := cityHandler.NewKabupatenHandler(svc)
+
+	city := r.App.Group("/api/city")
+	{
+		city.GET("", h.GetCity)
+	}
+}
+
+func (r *Routes) DistrictRoutes() {
+	svc := kecamatanSvc.NewKecamatanService()
+	h := districtHandler.NewDistrictHandler(svc)
+
+	district := r.App.Group("/api/district")
+	{
+		district.GET("", h.GetDistrict)
 	}
 }
