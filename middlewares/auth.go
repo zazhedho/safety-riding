@@ -4,12 +4,12 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"safety-riding/internal/interfaces/auth"
+	"safety-riding/pkg/logger"
+	"safety-riding/pkg/messages"
+	"safety-riding/pkg/response"
+	"safety-riding/utils"
 	"slices"
-	"workshop-management/internal/domain/auth"
-	"workshop-management/pkg/logger"
-	"workshop-management/pkg/messages"
-	"workshop-management/pkg/response"
-	"workshop-management/utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -18,11 +18,11 @@ import (
 
 // Middleware struct to hold dependencies
 type Middleware struct {
-	BlacklistRepo auth.RepoAuth
+	BlacklistRepo interfaceauth.RepoAuthInterface
 }
 
 // NewMiddleware creates a new middleware with its dependencies
-func NewMiddleware(blacklistRepo auth.RepoAuth) *Middleware {
+func NewMiddleware(blacklistRepo interfaceauth.RepoAuthInterface) *Middleware {
 	return &Middleware{
 		BlacklistRepo: blacklistRepo,
 	}

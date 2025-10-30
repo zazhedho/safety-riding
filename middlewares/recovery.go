@@ -3,10 +3,10 @@ package middlewares
 import (
 	"fmt"
 	"net/http"
-	"workshop-management/pkg/logger"
-	"workshop-management/pkg/messages"
-	"workshop-management/pkg/response"
-	"workshop-management/utils"
+	"safety-riding/pkg/logger"
+	"safety-riding/pkg/messages"
+	"safety-riding/pkg/response"
+	"safety-riding/utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"

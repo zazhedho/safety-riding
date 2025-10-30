@@ -4,9 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"safety-riding/internal/domain/user"
 	"strings"
 	"time"
-	"workshop-management/internal/domain/user"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
@@ -19,7 +19,7 @@ type AppClaims struct {
 	*jwt.RegisteredClaims
 }
 
-func GenerateJwt(user *user.Users, logId string) (string, error) {
+func GenerateJwt(user *domainuser.Users, logId string) (string, error) {
 	claims := AppClaims{
 		UserId:   user.Id,
 		Username: user.Name,

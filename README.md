@@ -34,8 +34,8 @@ A web application to manage workshop operations, including bookings, work orders
 
 1.  Clone the repository:
     ```sh
-    git clone https://github.com/your-username/workshop-management.git
-    cd workshop-management
+    git clone https://github.com/zazhedho/safety-riding.git
+    cd safety-riding
     ```
 2.  Install Go dependencies:
     ```sh
@@ -72,11 +72,11 @@ You can also run the application using Docker:
 
 1.  Build the Docker image:
     ```sh
-    docker build -t workshop-management .
+    docker build -t safety-riding .
     ```
 2.  Run the Docker container:
     ```sh
-    docker run -p 8080:8080 workshop-management
+    docker run -p 8080:8080 safety-riding
     ```
 
 ## API Endpoints

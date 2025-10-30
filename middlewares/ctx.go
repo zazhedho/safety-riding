@@ -1,7 +1,7 @@
 package middlewares
 
 import (
-	"workshop-management/utils"
+	"safety-riding/utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"

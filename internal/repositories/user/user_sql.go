@@ -1,9 +1,10 @@
-package repository
+package repositoryuser
 
 import (
 	"fmt"
-	"workshop-management/internal/domain/user"
-	"workshop-management/pkg/filter"
+	"safety-riding/internal/domain/user"
+	"safety-riding/internal/interfaces/user"
+	"safety-riding/pkg/filter"
 
 	"gorm.io/gorm"
 )
@@ -12,31 +13,31 @@ type repo struct {
 	DB *gorm.DB
 }
 
-func NewUserRepo(db *gorm.DB) user.RepoUser {
+func NewUserRepo(db *gorm.DB) interfaceuser.RepoUserInterface {
 	return &repo{DB: db}
 }
 
-func (r *repo) Store(m user.Users) error {
+func (r *repo) Store(m domainuser.Users) error {
 	return r.DB.Create(&m).Error
 }
 
-func (r *repo) GetByEmail(email string) (ret user.Users, err error) {
+func (r *repo) GetByEmail(email string) (ret domainuser.Users, err error) {
 	if err = r.DB.Where("email = ?", email).First(&ret).Error; err != nil {
-		return user.Users{}, err
+		return domainuser.Users{}, err
 	}
 
 	return ret, nil
 }
 
-func (r *repo) GetByID(id string) (ret user.Users, err error) {
+func (r *repo) GetByID(id string) (ret domainuser.Users, err error) {
 	if err = r.DB.Where("id = ?", id).First(&ret).Error; err != nil {
-		return user.Users{}, err
+		return domainuser.Users{}, err
 	}
 	return ret, nil
 }
 
-func (r *repo) GetAll(params filter.BaseParams) (ret []user.Users, totalData int64, err error) {
-	query := r.DB.Model(&user.Users{}).Debug()
+func (r *repo) GetAll(params filter.BaseParams) (ret []domainuser.Users, totalData int64, err error) {
+	query := r.DB.Model(&domainuser.Users{}).Debug()
 
 	if params.Search != "" {
 		searchPattern := "%" + params.Search + "%"
@@ -89,10 +90,10 @@ func (r *repo) GetAll(params filter.BaseParams) (ret []user.Users, totalData int
 	return ret, totalData, nil
 }
 
-func (r *repo) Update(m user.Users) error {
+func (r *repo) Update(m domainuser.Users) error {
 	return r.DB.Save(&m).Error
 }
 
 func (r *repo) Delete(id string) error {
-	return r.DB.Where("id = ?", id).Delete(&user.Users{}).Error
+	return r.DB.Where("id = ?", id).Delete(&domainuser.Users{}).Error
 }

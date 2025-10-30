@@ -1,7 +1,8 @@
-package repository
+package repositoryauth
 
 import (
-	"workshop-management/internal/domain/auth"
+	"safety-riding/internal/domain/auth"
+	"safety-riding/internal/interfaces/auth"
 
 	"gorm.io/gorm"
 )
@@ -10,18 +11,18 @@ type blacklistRepo struct {
 	DB *gorm.DB
 }
 
-func NewBlacklistRepo(db *gorm.DB) auth.RepoAuth {
+func NewBlacklistRepo(db *gorm.DB) interfaceauth.RepoAuthInterface {
 	return &blacklistRepo{
 		DB: db,
 	}
 }
 
-func (r *blacklistRepo) Store(blacklist auth.Blacklist) error {
+func (r *blacklistRepo) Store(blacklist domainauth.Blacklist) error {
 	return r.DB.Create(&blacklist).Error
 }
 
-func (r *blacklistRepo) GetByToken(token string) (auth.Blacklist, error) {
-	var blacklist auth.Blacklist
+func (r *blacklistRepo) GetByToken(token string) (domainauth.Blacklist, error) {
+	var blacklist domainauth.Blacklist
 	err := r.DB.Where("token = ?", token).First(&blacklist).Error
 	return blacklist, err
 }

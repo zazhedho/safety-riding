@@ -2,35 +2,37 @@ package user
 
 import (
 	"errors"
+	"safety-riding/internal/domain/auth"
+	"safety-riding/internal/domain/user"
+	"safety-riding/internal/dto"
+	"safety-riding/internal/interfaces/auth"
+	"safety-riding/internal/interfaces/user"
+	"safety-riding/pkg/filter"
+	"safety-riding/utils"
 	"time"
-	"workshop-management/internal/domain/auth"
-	"workshop-management/internal/domain/user"
-	"workshop-management/internal/dto"
-	"workshop-management/pkg/filter"
-	"workshop-management/utils"
 
 	"golang.org/x/crypto/bcrypt"
 )
 
 type ServiceUser struct {
-	UserRepo      user.RepoUser
-	BlacklistRepo auth.RepoAuth
+	UserRepo      interfaceuser.RepoUserInterface
+	BlacklistRepo interfaceauth.RepoAuthInterface
 }
 
-func NewUserService(userRepo user.RepoUser, blacklistRepo auth.RepoAuth) *ServiceUser {
+func NewUserService(userRepo interfaceuser.RepoUserInterface, blacklistRepo interfaceauth.RepoAuthInterface) *ServiceUser {
 	return &ServiceUser{
 		UserRepo:      userRepo,
 		BlacklistRepo: blacklistRepo,
 	}
 }
 
-func (s *ServiceUser) RegisterUser(req dto.UserRegister) (user.Users, error) {
+func (s *ServiceUser) RegisterUser(req dto.UserRegister) (domainuser.Users, error) {
 	hashedPwd, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
-		return user.Users{}, err
+		return domainuser.Users{}, err
 	}
 
-	data := user.Users{
+	data := domainuser.Users{
 		Id:        utils.CreateUUID(),
 		Name:      req.Name,
 		Phone:     req.Phone,
@@ -41,7 +43,7 @@ func (s *ServiceUser) RegisterUser(req dto.UserRegister) (user.Users, error) {
 	}
 
 	if err = s.UserRepo.Store(data); err != nil {
-		return user.Users{}, err
+		return domainuser.Users{}, err
 	}
 
 	return data, nil
@@ -66,7 +68,7 @@ func (s *ServiceUser) LoginUser(req dto.Login, logId string) (string, error) {
 }
 
 func (s *ServiceUser) LogoutUser(token string) error {
-	blacklist := auth.Blacklist{
+	blacklist := domainauth.Blacklist{
 		ID:        utils.CreateUUID(),
 		Token:     token,
 		CreatedAt: time.Now(),
@@ -80,22 +82,22 @@ func (s *ServiceUser) LogoutUser(token string) error {
 	return nil
 }
 
-func (s *ServiceUser) GetUserById(id string) (user.Users, error) {
+func (s *ServiceUser) GetUserById(id string) (domainuser.Users, error) {
 	return s.UserRepo.GetByID(id)
 }
 
-func (s *ServiceUser) GetUserByAuth(id string) (user.Users, error) {
+func (s *ServiceUser) GetUserByAuth(id string) (domainuser.Users, error) {
 	return s.UserRepo.GetByID(id)
 }
 
-func (s *ServiceUser) GetAllUsers(params filter.BaseParams) ([]user.Users, int64, error) {
+func (s *ServiceUser) GetAllUsers(params filter.BaseParams) ([]domainuser.Users, int64, error) {
 	return s.UserRepo.GetAll(params)
 }
 
-func (s *ServiceUser) Update(id string, req dto.UserUpdate) (user.Users, error) {
+func (s *ServiceUser) Update(id string, req dto.UserUpdate) (domainuser.Users, error) {
 	data, err := s.UserRepo.GetByID(id)
 	if err != nil {
-		return user.Users{}, err
+		return domainuser.Users{}, err
 	}
 
 	if req.Name != "" {
@@ -111,35 +113,35 @@ func (s *ServiceUser) Update(id string, req dto.UserUpdate) (user.Users, error) 
 	}
 
 	if err = s.UserRepo.Update(data); err != nil {
-		return user.Users{}, err
+		return domainuser.Users{}, err
 	}
 
 	return data, nil
 }
 
-func (s *ServiceUser) ChangePassword(id string, req dto.ChangePassword) (user.Users, error) {
+func (s *ServiceUser) ChangePassword(id string, req dto.ChangePassword) (domainuser.Users, error) {
 	if req.CurrentPassword == req.NewPassword {
-		return user.Users{}, errors.New("new password must be different from current password")
+		return domainuser.Users{}, errors.New("new password must be different from current password")
 	}
 
 	data, err := s.UserRepo.GetByID(id)
 	if err != nil {
-		return user.Users{}, err
+		return domainuser.Users{}, err
 	}
 
 	if err = bcrypt.CompareHashAndPassword([]byte(data.Password), []byte(req.CurrentPassword)); err != nil {
-		return user.Users{}, err
+		return domainuser.Users{}, err
 	}
 
 	hashedPwd, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
 	if err != nil {
-		return user.Users{}, err
+		return domainuser.Users{}, err
 	}
 
 	data.Password = string(hashedPwd)
 
 	if err = s.UserRepo.Update(data); err != nil {
-		return user.Users{}, err
+		return domainuser.Users{}, err
 	}
 
 	return data, nil

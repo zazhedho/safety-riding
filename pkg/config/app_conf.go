@@ -6,10 +6,10 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"safety-riding/pkg/logger"
+	"safety-riding/utils"
 	"strings"
 	"time"
-	"workshop-management/pkg/logger"
-	"workshop-management/utils"
 
 	"github.com/google/uuid"
 	"github.com/redis/go-redis/v9"

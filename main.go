@@ -7,14 +7,14 @@ import (
 	"log"
 	"net"
 	"os"
+	_ "safety-riding/docs"
+	"safety-riding/infrastructure/database"
+	"safety-riding/internal/router"
+	"safety-riding/pkg/config"
+	"safety-riding/pkg/logger"
+	"safety-riding/utils"
 	"strings"
 	"time"
-	_ "workshop-management/docs"
-	"workshop-management/infrastructure/database"
-	"workshop-management/internal/router"
-	"workshop-management/pkg/config"
-	"workshop-management/pkg/logger"
-	"workshop-management/utils"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres" // driver for postgres
@@ -28,9 +28,9 @@ func FailOnError(err error, msg string) {
 	}
 }
 
-// @title Workshop Management API
+// @title Safety Riding API
 // @version 1.0
-// @description This is a sample server for a workshop management service.
+// @description This is a sample server for a safety riding service.
 // @termsOfService http://swagger.io/terms/
 
 // @contact.name API Support
@@ -96,10 +96,7 @@ func main() {
 	defer sqlDb.Close()
 
 	routes.UserRoutes()
-	routes.VehicleRoutes()
-	routes.ServiceRoutes()
-	routes.BookingRoutes()
-	routes.WorkOrderRoutes()
+	routes.SchoolRoutes()
 
 	err = routes.App.Run(fmt.Sprintf(":%s", port))
 	FailOnError(err, "Failed run service")

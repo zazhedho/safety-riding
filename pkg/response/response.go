@@ -3,7 +3,7 @@ package response
 import (
 	"math"
 	"net/http"
-	"workshop-management/pkg/messages"
+	"safety-riding/pkg/messages"
 
 	"github.com/google/uuid"
 )

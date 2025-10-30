@@ -3,9 +3,9 @@ package database
 import (
 	"database/sql"
 	"fmt"
+	"safety-riding/pkg/logger"
+	"safety-riding/utils"
 	"time"
-	"workshop-management/pkg/logger"
-	"workshop-management/utils"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
