@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "source": ".",
+    "runtime": "go1.22",
+    "engine": "gcfv2"
+  }
+}
