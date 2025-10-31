@@ -8,16 +8,25 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"gorm.io/gorm"
 
+	accidentHandler "safety-riding/internal/handlers/http/accident"
+	budgetHandler "safety-riding/internal/handlers/http/budget"
 	cityHandler "safety-riding/internal/handlers/http/city"
 	districtHandler "safety-riding/internal/handlers/http/district"
+	eventHandler "safety-riding/internal/handlers/http/event"
 	provinceHandler "safety-riding/internal/handlers/http/province"
 	schoolHandler "safety-riding/internal/handlers/http/school"
 	userHandler "safety-riding/internal/handlers/http/user"
+	accidentRepo "safety-riding/internal/repositories/accident"
 	authRepo "safety-riding/internal/repositories/auth"
+	budgetRepo "safety-riding/internal/repositories/budget"
+	eventRepo "safety-riding/internal/repositories/event"
 	schoolRepo "safety-riding/internal/repositories/school"
 	userRepo "safety-riding/internal/repositories/user"
+	accidentSvc "safety-riding/internal/services/accident"
+	budgetSvc "safety-riding/internal/services/budget"
 	kabupatenSvc "safety-riding/internal/services/city"
 	kecamatanSvc "safety-riding/internal/services/district"
+	eventSvc "safety-riding/internal/services/event"
 	provinsiSvc "safety-riding/internal/services/province"
 	schoolSvc "safety-riding/internal/services/school"
 	userSvc "safety-riding/internal/services/user"
@@ -87,10 +96,10 @@ func (r *Routes) SchoolRoutes() {
 	r.App.GET("/api/schools", mdw.AuthMiddleware(), h.FetchSchool)
 	school := r.App.Group("/api/school").Use(mdw.AuthMiddleware())
 	{
-		school.POST("", h.AddSchool)
+		school.POST("", mdw.RoleMiddleware(utils.RoleAdmin, utils.RoleStaff), h.AddSchool)
 		school.GET("/:id", h.GetSchoolById)
-		school.PUT("/:id", h.UpdateSchool)
-		school.DELETE("/:id", h.DeleteSchool)
+		school.PUT("/:id", mdw.RoleMiddleware(utils.RoleAdmin, utils.RoleStaff), h.UpdateSchool)
+		school.DELETE("/:id", mdw.RoleMiddleware(utils.RoleAdmin, utils.RoleStaff), h.DeleteSchool)
 	}
 }
 
@@ -121,5 +130,67 @@ func (r *Routes) DistrictRoutes() {
 	district := r.App.Group("/api/district")
 	{
 		district.GET("", h.GetDistrict)
+	}
+}
+
+func (r *Routes) AccidentRoutes() {
+	repo := accidentRepo.NewAccidentRepo(r.DB)
+	svc := accidentSvc.NewAccidentService(repo)
+	h := accidentHandler.NewAccidentHandler(svc)
+	mdw := middlewares.NewMiddleware(authRepo.NewBlacklistRepo(r.DB))
+
+	r.App.GET("/api/accidents", mdw.AuthMiddleware(), h.FetchAccident)
+	accident := r.App.Group("/api/accident").Use(mdw.AuthMiddleware())
+	{
+		accident.POST("", mdw.RoleMiddleware(utils.RoleAdmin, utils.RoleStaff), h.AddAccident)
+		accident.GET("/:id", h.GetAccidentById)
+		accident.PUT("/:id", mdw.RoleMiddleware(utils.RoleAdmin, utils.RoleStaff), h.UpdateAccident)
+		accident.DELETE("/:id", mdw.RoleMiddleware(utils.RoleAdmin, utils.RoleStaff), h.DeleteAccident)
+	}
+}
+
+func (r *Routes) EventRoutes() {
+	repo := eventRepo.NewEventRepo(r.DB)
+	svc := eventSvc.NewEventService(repo)
+	h := eventHandler.NewEventHandler(svc)
+	mdw := middlewares.NewMiddleware(authRepo.NewBlacklistRepo(r.DB))
+
+	r.App.GET("/api/events", mdw.AuthMiddleware(), h.FetchEvent)
+	event := r.App.Group("/api/event").Use(mdw.AuthMiddleware())
+	{
+		event.POST("", mdw.RoleMiddleware(utils.RoleAdmin, utils.RoleStaff), h.AddEvent)
+		event.GET("/:id", h.GetEventById)
+		event.PUT("/:id", mdw.RoleMiddleware(utils.RoleAdmin, utils.RoleStaff), h.UpdateEvent)
+		event.DELETE("/:id", mdw.RoleMiddleware(utils.RoleAdmin, utils.RoleStaff), h.DeleteEvent)
+
+		// Photo endpoints
+		event.POST("/:id/photos", mdw.RoleMiddleware(utils.RoleAdmin, utils.RoleStaff), h.AddEventPhotos)
+		event.DELETE("/photo/:photoId", mdw.RoleMiddleware(utils.RoleAdmin, utils.RoleStaff), h.DeleteEventPhoto)
+	}
+}
+
+func (r *Routes) BudgetRoutes() {
+	repo := budgetRepo.NewBudgetRepo(r.DB)
+	svc := budgetSvc.NewBudgetService(repo)
+	h := budgetHandler.NewBudgetHandler(svc)
+	mdw := middlewares.NewMiddleware(authRepo.NewBlacklistRepo(r.DB))
+
+	// Summary endpoints (read-only for all authenticated users)
+	r.App.GET("/api/budget/summary/event/:eventId", mdw.AuthMiddleware(), h.GetEventSummary)
+	r.App.GET("/api/budget/summary/monthly", mdw.AuthMiddleware(), h.GetMonthlySummary)
+	r.App.GET("/api/budget/summary/yearly", mdw.AuthMiddleware(), h.GetYearlySummary)
+
+	// List endpoints
+	r.App.GET("/api/budgets", mdw.AuthMiddleware(), h.FetchBudget)
+	r.App.GET("/api/budgets/event/:eventId", mdw.AuthMiddleware(), h.GetBudgetsByEvent)
+	r.App.GET("/api/budgets/month-year", mdw.AuthMiddleware(), h.GetBudgetsByMonthYear)
+
+	// CRUD endpoints (admin/staff only)
+	budget := r.App.Group("/api/budget").Use(mdw.AuthMiddleware())
+	{
+		budget.POST("", mdw.RoleMiddleware(utils.RoleAdmin, utils.RoleStaff), h.AddBudget)
+		budget.GET("/:id", h.GetBudgetById)
+		budget.PUT("/:id", mdw.RoleMiddleware(utils.RoleAdmin, utils.RoleStaff), h.UpdateBudget)
+		budget.DELETE("/:id", mdw.RoleMiddleware(utils.RoleAdmin, utils.RoleStaff), h.DeleteBudget)
 	}
 }

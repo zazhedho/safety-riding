@@ -41,7 +41,7 @@ func (r *repo) Fetch(params filter.BaseParams) (ret []domainschool.School, total
 	}
 
 	if params.Search != "" {
-		query = query.Where("LOWER(notes) LIKE LOWER(?)", "%"+params.Search+"%")
+		query = query.Where("LOWER(name) LIKE LOWER(?)", "%"+params.Search+"%")
 	}
 
 	// apply filters

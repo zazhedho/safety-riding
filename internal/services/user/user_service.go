@@ -32,10 +32,11 @@ func (s *ServiceUser) RegisterUser(req dto.UserRegister) (domainuser.Users, erro
 		return domainuser.Users{}, err
 	}
 
+	phone := utils.NormalizePhoneTo62(req.Phone)
 	data := domainuser.Users{
 		Id:        utils.CreateUUID(),
 		Name:      req.Name,
-		Phone:     req.Phone,
+		Phone:     phone,
 		Email:     req.Email,
 		Password:  string(hashedPwd),
 		Role:      utils.RoleViewer,
@@ -105,7 +106,8 @@ func (s *ServiceUser) Update(id string, req dto.UserUpdate) (domainuser.Users, e
 	}
 
 	if req.Phone != "" {
-		data.Phone = req.Phone
+		phone := utils.NormalizePhoneTo62(req.Phone)
+		data.Phone = phone
 	}
 
 	if req.Email != "" {

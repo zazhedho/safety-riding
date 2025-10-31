@@ -8,9 +8,9 @@ CREATE TABLE IF NOT EXISTS schools (
     phone           VARCHAR(20),
     email           VARCHAR(100),
 
-    district_id     UUID,
-    city_id         UUID,
-    province_id     UUID,
+    district_id     VARCHAR(20),
+    city_id         VARCHAR(20),
+    province_id     VARCHAR(20),
     postal_code     VARCHAR(10),
 
     latitude        DOUBLE PRECISION,
@@ -22,12 +22,12 @@ CREATE TABLE IF NOT EXISTS schools (
     visit_count     INTEGER     NOT NULL DEFAULT 0,
     is_educated     BOOLEAN     NOT NULL DEFAULT FALSE,
 
-    last_visit_at   TIMESTAMPTZ,
-    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    last_visit_at   TIMESTAMP,
+    created_at      TIMESTAMP NOT NULL DEFAULT NOW(),
     created_by      TEXT,
-    updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at      TIMESTAMP NOT NULL DEFAULT NOW(),
     updated_by      TEXT,
-    deleted_at      TIMESTAMPTZ,
+    deleted_at      TIMESTAMP,
     deleted_by      TEXT
 );
 

@@ -100,6 +100,9 @@ func main() {
 	routes.ProvinceRoutes()
 	routes.CityRoutes()
 	routes.DistrictRoutes()
+	routes.AccidentRoutes()
+	routes.EventRoutes()
+	routes.BudgetRoutes()
 
 	err = routes.App.Run(fmt.Sprintf(":%s", port))
 	FailOnError(err, "Failed run service")

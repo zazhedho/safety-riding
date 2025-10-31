@@ -20,12 +20,13 @@ func NewSchoolService(schoolRepo interfaceschool.RepoSchoolInterface) *SchoolSer
 }
 
 func (s *SchoolService) AddSchool(username string, req dto.AddSchool) (domainschool.School, error) {
+	phone := utils.NormalizePhoneTo62(req.Phone)
 	data := domainschool.School{
 		ID:           utils.CreateUUID(),
 		Name:         req.Name,
 		NPSN:         req.NPSN,
 		Address:      req.Address,
-		Phone:        req.Phone,
+		Phone:        phone,
 		Email:        req.Email,
 		DistrictId:   req.DistrictId,
 		CityId:       req.CityId,
@@ -71,7 +72,8 @@ func (s *SchoolService) UpdateSchool(id, username string, req dto.UpdateSchool) 
 		school.Address = req.Address
 	}
 	if req.Phone != "" {
-		school.Phone = req.Phone
+		phone := utils.NormalizePhoneTo62(req.Phone)
+		school.Phone = phone
 	}
 	if req.Email != "" {
 		school.Email = req.Email
