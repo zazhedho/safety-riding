@@ -134,7 +134,7 @@ const AccidentList = () => {
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2>Accident Records</h2>
         {canPerformActions && (
-          <Link to="/accidents/new" className="btn btn-danger">
+          <Link to="/accidents/new" className="btn btn-primary">
             <i className="bi bi-plus-circle me-2"></i>Add Accident Record
           </Link>
         )}
@@ -237,7 +237,7 @@ const AccidentList = () => {
         <div className="card-body">
           {loading ? (
             <div className="text-center py-5">
-              <div className="spinner-border text-danger" role="status">
+              <div className="spinner-border text-primary" role="status">
                 <span className="visually-hidden">Loading...</span>
               </div>
             </div>

@@ -200,10 +200,10 @@ function App() {
             element={
               <div className="min-vh-100 d-flex align-items-center justify-content-center">
                 <div className="text-center">
-                  <h1 className="text-danger">403</h1>
+                  <h1 style={{ color: '#6a9ae0', fontSize: '4rem' }}>403</h1>
                   <h3>Unauthorized Access</h3>
                   <p className="text-muted">You don't have permission to access this page.</p>
-                  <a href="/dashboard" className="btn btn-danger">Go to Dashboard</a>
+                  <a href="/dashboard" className="btn btn-primary">Go to Dashboard</a>
                 </div>
               </div>
             }
@@ -214,10 +214,10 @@ function App() {
             element={
               <div className="min-vh-100 d-flex align-items-center justify-content-center">
                 <div className="text-center">
-                  <h1 className="text-danger">404</h1>
+                  <h1 style={{ color: '#6a9ae0', fontSize: '4rem' }}>404</h1>
                   <h3>Page Not Found</h3>
                   <p className="text-muted">The page you're looking for doesn't exist.</p>
-                  <a href="/dashboard" className="btn btn-danger">Go to Dashboard</a>
+                  <a href="/dashboard" className="btn btn-primary">Go to Dashboard</a>
                 </div>
               </div>
             }

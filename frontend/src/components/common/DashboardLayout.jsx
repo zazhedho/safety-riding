@@ -1,6 +1,7 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useState, useEffect } from 'react';
+import ThemeSwitcher from './ThemeSwitcher';
 
 const DashboardLayout = ({ children }) => {
   const { user, logout } = useAuth();
@@ -101,10 +102,11 @@ const DashboardLayout = ({ children }) => {
         <div className="top-nav">
           <h5 className="mb-0">Welcome, {user?.name || 'User'} !</h5>
           <div className="top-nav-user d-flex align-items-center">
-            {user?.role && <span className="badge badge-red me-3">{user.role.toUpperCase()}</span>}
+            <ThemeSwitcher />
+            {user?.role && <span className="badge badge-primary me-3">{user.role.toUpperCase()}</span>}
             <div className="dropdown">
               <button
-                className="btn btn-outline-danger btn-sm dropdown-toggle"
+                className="btn btn-outline-primary btn-sm dropdown-toggle"
                 type="button"
                 id="userMenuButton"
                 data-bs-toggle="dropdown"

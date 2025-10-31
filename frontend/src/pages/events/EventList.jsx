@@ -82,7 +82,7 @@ const EventList = () => {
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2>Events Management</h2>
         {canPerformActions && (
-          <Link to="/events/new" className="btn btn-danger">
+          <Link to="/events/new" className="btn btn-primary">
             <i className="bi bi-plus-circle me-2"></i>Add Event
           </Link>
         )}
@@ -127,7 +127,7 @@ const EventList = () => {
         <div className="card-body">
           {loading ? (
             <div className="text-center py-5">
-              <div className="spinner-border text-danger" role="status">
+              <div className="spinner-border text-primary" role="status">
                 <span className="visually-hidden">Loading...</span>
               </div>
             </div>

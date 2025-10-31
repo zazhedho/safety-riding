@@ -46,11 +46,11 @@ const Register = () => {
 
   return (
     <div className="min-vh-100 d-flex align-items-center justify-content-center"
-         style={{ background: 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)' }}>
+         style={{ background: 'linear-gradient(135deg, #89b4f8 0%, #6a9ae0 100%)' }}>
       <div className="card shadow-lg" style={{ width: '400px', borderRadius: '15px' }}>
         <div className="card-body p-5">
           <div className="text-center mb-4">
-            <h2 className="text-danger fw-bold">Safety Riding</h2>
+            <h2 className="fw-bold" style={{ color: '#6a9ae0' }}>Safety Riding</h2>
             <p className="text-muted">Management System</p>
           </div>
 
@@ -113,7 +113,7 @@ const Register = () => {
 
             <button
               type="submit"
-              className="btn btn-danger w-100 py-2"
+              className="btn btn-primary w-100 py-2"
               disabled={loading}
             >
               {loading ? 'Registering...' : 'Register'}

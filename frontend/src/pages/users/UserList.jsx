@@ -83,7 +83,7 @@ const UserList = () => {
       <DashboardLayout>
         <div className="card">
           <div className="card-body text-center py-5">
-            <i className="bi bi-lock fs-1 text-danger mb-3"></i>
+            <i className="bi bi-lock fs-1 text-primary mb-3"></i>
             <h4>Access Denied</h4>
             <p className="text-muted">Only administrators can view this page.</p>
           </div>
@@ -96,7 +96,7 @@ const UserList = () => {
     <DashboardLayout>
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2>Users Management</h2>
-        <Link to="/users/new" className="btn btn-danger">
+        <Link to="/users/new" className="btn btn-primary">
           <i className="bi bi-plus-circle me-2"></i>Add User
         </Link>
       </div>
@@ -141,7 +141,7 @@ const UserList = () => {
         <div className="card-body">
           {loading ? (
             <div className="text-center py-5">
-              <div className="spinner-border text-danger" role="status">
+              <div className="spinner-border text-primary" role="status">
                 <span className="visually-hidden">Loading...</span>
               </div>
             </div>
@@ -164,7 +164,7 @@ const UserList = () => {
                       <tr key={user.id}>
                         <td>
                           <div className="d-flex align-items-center">
-                            <div className="avatar-circle bg-danger text-white me-3">
+                            <div className="avatar-circle bg-primary text-white me-3">
                               {user.name?.charAt(0).toUpperCase()}
                             </div>
                             <div>

@@ -116,22 +116,22 @@ const Dashboard = () => {
             <div className="card-body">
               <div className="row g-3">
                 <div className="col-md-3">
-                  <a href="/schools" className="btn btn-outline-danger w-100">
+                  <a href="/schools" className="btn btn-outline-primary w-100">
                     <i className="bi bi-building me-2"></i>Manage Schools
                   </a>
                 </div>
                 <div className="col-md-3">
-                  <a href="/events" className="btn btn-outline-danger w-100">
+                  <a href="/events" className="btn btn-outline-primary w-100">
                     <i className="bi bi-calendar-event me-2"></i>Manage Events
                   </a>
                 </div>
                 <div className="col-md-3">
-                  <a href="/accidents" className="btn btn-outline-danger w-100">
+                  <a href="/accidents" className="btn btn-outline-primary w-100">
                     <i className="bi bi-exclamation-triangle me-2"></i>View Accidents
                   </a>
                 </div>
                 <div className="col-md-3">
-                  <a href="/budgets" className="btn btn-outline-danger w-100">
+                  <a href="/budgets" className="btn btn-outline-primary w-100">
                     <i className="bi bi-cash-stack me-2"></i>Budget Reports
                   </a>
                 </div>
