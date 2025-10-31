@@ -174,7 +174,7 @@ const AccidentList = () => {
                 onChange={handleFilterChange}
                 disabled={!filters.province_id}
               >
-                <option value="">All Cities</option>
+                <option value="">All Cities/Regencies</option>
                 {cities.map(city => (
                   <option key={city.code} value={city.code}>{city.name}</option>
                 ))}
