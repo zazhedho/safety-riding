@@ -58,8 +58,6 @@ export const AuthProvider = ({ children }) => {
           errorMessage = error.response.data.message;
         } else if (Array.isArray(error.response.data.error) && error.response.data.error.length > 0) {
           errorMessage = error.response.data.error.map(err => err.message).join(', ');
-        } else if (typeof error.response.data.error === 'string') {
-          errorMessage = error.response.data.error;
         }
       }
       return { 
@@ -80,8 +78,6 @@ export const AuthProvider = ({ children }) => {
           errorMessage = error.response.data.message;
         } else if (Array.isArray(error.response.data.error) && error.response.data.error.length > 0) {
           errorMessage = error.response.data.error.map(err => err.message).join(', ');
-        } else if (typeof error.response.data.error === 'string') {
-          errorMessage = error.response.data.error;
         }
       }
       return { 
@@ -118,8 +114,6 @@ export const AuthProvider = ({ children }) => {
           errorMessage = error.response.data.message;
         } else if (Array.isArray(error.response.data.error) && error.response.data.error.length > 0) {
           errorMessage = error.response.data.error.map(err => err.message).join(', ');
-        } else if (typeof error.response.data.error === 'string') {
-          errorMessage = error.response.data.error;
         }
       }
       return { 
@@ -131,8 +125,13 @@ export const AuthProvider = ({ children }) => {
 
   const updatePassword = async (passwordData) => {
     try {
-      const response = await userService.updatePassword(passwordData);
-      return { success: true, data: response.data };
+      const formattedPasswordData = {
+        current_password: passwordData.currentPassword,
+        new_password: passwordData.newPassword,
+      };
+      await userService.updatePassword(formattedPasswordData);
+      await logout(); // Ensure logout completes before returning success
+      return { success: true };
     } catch (error) {
       let errorMessage = 'Password update failed';
       if (error.response && error.response.data) {
@@ -140,14 +139,30 @@ export const AuthProvider = ({ children }) => {
           errorMessage = error.response.data.message;
         } else if (Array.isArray(error.response.data.error) && error.response.data.error.length > 0) {
           errorMessage = error.response.data.error.map(err => err.message).join(', ');
-        } else if (typeof error.response.data.error === 'string') {
-          errorMessage = error.response.data.error;
         }
       }
       return {
         success: false,
         error: errorMessage
       };
+    }
+  };
+
+  const deleteUser = async () => {
+    try {
+      await api.delete('/user');
+      await logout();
+      return { success: true };
+    } catch (error) {
+      let errorMessage = 'Failed to delete account';
+      if (error.response && error.response.data) {
+        if (error.response.data.message) {
+          errorMessage = error.response.data.message;
+        } else if (Array.isArray(error.response.data.error) && error.response.data.error.length > 0) {
+          errorMessage = error.response.data.error.map(err => err.message).join(', ');
+        }
+      }
+      return { success: false, error: errorMessage };
     }
   };
 
@@ -163,6 +178,7 @@ export const AuthProvider = ({ children }) => {
     logout,
     updateProfile,
     updatePassword,
+    deleteUser,
     hasRole,
     loading,
     isAuthenticated: !!user

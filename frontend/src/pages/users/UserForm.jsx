@@ -3,28 +3,29 @@ import { useParams, useNavigate } from 'react-router-dom';
 import DashboardLayout from '../../components/common/DashboardLayout';
 import userService from '../../services/userService';
 import { toast } from 'react-toastify';
-import { useAuth } from '../../contexts/AuthContext'; // Import useAuth
+import { useAuth } from '../../contexts/AuthContext';
+import ConfirmationModal from '../../components/common/ConfirmationModal';
 
 const UserForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user, register } = useAuth(); // Get current user and register function from auth context
+  const { user, register } = useAuth();
 
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     phone: '',
-    role: id ? 'staff' : 'viewer', // Set default role based on whether it's an edit or create operation
+    role: id ? 'staff' : 'viewer',
     password: '',
     confirmPassword: ''
   });
   const [loading, setLoading] = useState(true);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
-    // Access control: Only admin can create users
     if (!id && user?.role !== 'admin') {
       toast.error('You are not authorized to create users.');
-      navigate('/dashboard'); // Redirect to dashboard or another appropriate page
+      navigate('/dashboard');
       return;
     }
 
@@ -33,7 +34,7 @@ const UserForm = () => {
     } else {
       setLoading(false);
     }
-  }, [id, user, navigate]); // Add user and navigate to dependency array
+  }, [id, user, navigate]);
 
   const fetchUser = async (userId) => {
     try {
@@ -60,21 +61,17 @@ const UserForm = () => {
     }
 
     const userData = { ...formData };
-    // Remove confirmPassword as it's not part of the DTO
     delete userData.confirmPassword;
 
-    // Remove password field if empty for update, but keep for creation
     if (id && !userData.password) {
       delete userData.password;
     }
 
     try {
       if (id) {
-        // Update existing user
-        await userService.update(id, userData); // This should map to PUT /api/user/:id
+        await userService.update(id, userData);
         toast.success('User updated successfully');
       } else {
-        // Create new user using the register function from AuthContext
         const result = await register(userData);
         if (result.success) {
           toast.success('User created successfully!');
@@ -88,34 +85,23 @@ const UserForm = () => {
     }
   };
 
-  const handleDelete = async () => {
-    const toastId = toast.warn(
-      ({ closeToast }) => (
-        <div>
-          <p>Are you sure you want to delete this user?</p>
-          <button className="btn btn-danger me-2" onClick={async () => {
-            try {
-              await userService.delete(id); // This should map to DELETE /api/user/:id
-              toast.dismiss(toastId); // Close the confirmation toast
-              toast.success('User deleted successfully');
-              navigate('/users');
-            } catch (error) {
-              toast.dismiss(toastId); // Close the confirmation toast
-              toast.error(error.response?.data?.message || 'Failed to delete user');
-            }
-          }}>
-            Yes, Delete
-          </button>
-          <button className="btn btn-secondary" onClick={() => closeToast()}>Cancel</button>
-        </div>
-      ),
-      {
-        autoClose: false,
-        closeOnClick: false,
-        draggable: false,
-        position: 'top-center'
-      }
-    );
+  const handleDelete = () => {
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteUser = async () => {
+    setShowDeleteModal(false);
+    try {
+      await userService.delete(id);
+      toast.success('User deleted successfully');
+      navigate('/users');
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to delete user');
+    }
+  };
+
+  const cancelDeleteUser = () => {
+    setShowDeleteModal(false);
   };
 
   if (loading) {
@@ -191,7 +177,7 @@ const UserForm = () => {
                 value={formData.password}
                 onChange={handleChange}
                 placeholder={id ? 'Leave blank to keep current password' : ''}
-                required={!id} // Password is required for new users
+                required={!id}
               />
             </div>
             <div className="mb-3">
@@ -202,7 +188,7 @@ const UserForm = () => {
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                required={!id} // Confirm password is required for new users
+                required={!id}
               />
             </div>
             <button type="submit" className="btn btn-primary">Save</button>
@@ -215,6 +201,15 @@ const UserForm = () => {
           </form>
         </div>
       </div>
+
+      <ConfirmationModal
+        show={showDeleteModal}
+        title="Confirm User Deletion"
+        message="Are you sure you want to delete this user? This action cannot be undone."
+        confirmText="Delete User"
+        onConfirm={confirmDeleteUser}
+        onCancel={cancelDeleteUser}
+      />
     </DashboardLayout>
   );
 };

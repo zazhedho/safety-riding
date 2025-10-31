@@ -2,11 +2,15 @@ import { useState, useEffect } from 'react';
 import DashboardLayout from '../../components/common/DashboardLayout';
 import { useAuth } from '../../contexts/AuthContext';
 import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
+import ConfirmationModal from '../../components/common/ConfirmationModal';
 
 const Profile = () => {
-  const { user, updateProfile, updatePassword } = useAuth();
+  const { user, updateProfile, updatePassword, deleteUser } = useAuth();
+  const navigate = useNavigate();
   const [profileData, setProfileData] = useState({ name: '', email: '', phone: '' });
   const [passwordData, setPasswordData] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -44,9 +48,29 @@ const Profile = () => {
     if (result.success) {
       toast.success('Password updated successfully');
       setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      navigate('/login'); // Redirect to login after password change and logout
     } else {
       toast.error(result.error || 'Failed to update password');
     }
+  };
+
+  const handleDeleteAccount = () => {
+    setShowDeleteModal(true);
+  };
+
+  const confirmDeleteAccount = async () => {
+    setShowDeleteModal(false);
+    const result = await deleteUser();
+    if (result.success) {
+      toast.success('Account deleted successfully');
+      navigate('/login'); // Redirect to login after account deletion and logout
+    } else {
+      toast.error(result.error || 'Failed to delete account');
+    }
+  };
+
+  const cancelDeleteAccount = () => {
+    setShowDeleteModal(false);
   };
 
   const getRoleBadge = (role) => {
@@ -173,8 +197,26 @@ const Profile = () => {
               </form>
             </div>
           </div>
+          <div className="card mt-4">
+            <div className="card-body">
+              <h5 className="card-title text-danger">Danger Zone</h5>
+              <p>Permanently delete your account and all of your content.</p>
+              <button onClick={handleDeleteAccount} className="btn btn-danger">
+                Delete Account
+              </button>
+            </div>
+          </div>
         </div>
       </div>
+
+      <ConfirmationModal
+        show={showDeleteModal}
+        title="Confirm Account Deletion"
+        message="Are you sure you want to delete your account? This action cannot be undone."
+        confirmText="Delete Account"
+        onConfirm={confirmDeleteAccount}
+        onCancel={cancelDeleteAccount}
+      />
     </DashboardLayout>
   );
 };
