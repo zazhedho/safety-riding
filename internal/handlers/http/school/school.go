@@ -127,7 +127,7 @@ func (h *SchoolHandler) FetchSchool(ctx *gin.Context) {
 	logPrefix := fmt.Sprintf("[%s][SchoolHandler][FetchSchool]", logId)
 
 	params, _ := filter.GetBaseParams(ctx, "updated_at", "desc", 10)
-	params.Filters = filter.WhitelistFilter(params.Filters, []string{"district_id", "city_id", "province_id"})
+	params.Filters = filter.WhitelistStringFilter(params.Filters, []string{"district_id", "city_id", "province_id"})
 
 	schools, totalData, err := h.Service.FetchSchool(params)
 	if err != nil {

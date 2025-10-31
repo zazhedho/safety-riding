@@ -6,6 +6,7 @@ import (
 	interfaceschool "safety-riding/internal/interfaces/school"
 	"safety-riding/pkg/filter"
 	"safety-riding/utils"
+	"strings"
 	"time"
 )
 
@@ -23,14 +24,17 @@ func (s *SchoolService) AddSchool(username string, req dto.AddSchool) (domainsch
 	phone := utils.NormalizePhoneTo62(req.Phone)
 	data := domainschool.School{
 		ID:           utils.CreateUUID(),
-		Name:         req.Name,
+		Name:         strings.ToUpper(req.Name),
 		NPSN:         req.NPSN,
 		Address:      req.Address,
 		Phone:        phone,
 		Email:        req.Email,
 		DistrictId:   req.DistrictId,
+		DistrictName: req.DistrictName,
 		CityId:       req.CityId,
+		CityName:     req.CityName,
 		ProvinceId:   req.ProvinceId,
+		ProvinceName: req.ProvinceName,
 		PostalCode:   req.PostalCode,
 		Latitude:     req.Latitude,
 		Longitude:    req.Longitude,
@@ -63,7 +67,7 @@ func (s *SchoolService) UpdateSchool(id, username string, req dto.UpdateSchool) 
 
 	// Update fields if provided
 	if req.Name != "" {
-		school.Name = req.Name
+		school.Name = strings.ToUpper(req.Name)
 	}
 	if req.NPSN != "" {
 		school.NPSN = req.NPSN
@@ -81,11 +85,20 @@ func (s *SchoolService) UpdateSchool(id, username string, req dto.UpdateSchool) 
 	if req.DistrictId != "" {
 		school.DistrictId = req.DistrictId
 	}
+	if req.DistrictName != "" {
+		school.DistrictName = req.DistrictName
+	}
 	if req.CityId != "" {
 		school.CityId = req.CityId
 	}
+	if req.CityName != "" {
+		school.CityName = req.CityName
+	}
 	if req.ProvinceId != "" {
 		school.ProvinceId = req.ProvinceId
+	}
+	if req.ProvinceName != "" {
+		school.ProvinceName = req.ProvinceName
 	}
 	if req.PostalCode != "" {
 		school.PostalCode = req.PostalCode

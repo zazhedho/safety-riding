@@ -4,13 +4,22 @@ import DashboardLayout from '../../components/common/DashboardLayout';
 import accidentService from '../../services/accidentService';
 import locationService from '../../services/locationService';
 import { toast } from 'react-toastify';
+import { useAuth } from '../../contexts/AuthContext';
 
 const AccidentList = () => {
+  const { user } = useAuth();
   const [accidents, setAccidents] = useState([]);
   const [provinces, setProvinces] = useState([]);
+  const [cities, setCities] = useState([]);
+  const [districts, setDistricts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
     province_id: '',
+    city_id: '',
+    district_id: '',
+    accident_type: '',
+    vehicle_type: '',
+    police_station: '',
     search: ''
   });
 
@@ -19,12 +28,47 @@ const AccidentList = () => {
     fetchAccidents();
   }, []);
 
+  useEffect(() => {
+    if (filters.province_id) {
+      fetchCities(filters.province_id);
+    } else {
+      setCities([]);
+      setDistricts([]);
+    }
+  }, [filters.province_id]);
+
+  useEffect(() => {
+    if (filters.city_id) {
+      fetchDistricts(filters.province_id, filters.city_id);
+    } else {
+      setDistricts([]);
+    }
+  }, [filters.city_id]);
+
   const fetchProvinces = async () => {
     try {
       const response = await locationService.getProvinces();
-      setProvinces(response.data || []);
+      setProvinces(response.data.data || []);
     } catch (error) {
       toast.error('Failed to load provinces');
+    }
+  };
+
+  const fetchCities = async (provinceCode) => {
+    try {
+      const response = await locationService.getCities(provinceCode);
+      setCities(response.data.data || []);
+    } catch (error) {
+      toast.error('Failed to load cities');
+    }
+  };
+
+  const fetchDistricts = async (provinceCode, cityCode) => {
+    try {
+      const response = await locationService.getDistricts(provinceCode, cityCode);
+      setDistricts(response.data.data || []);
+    } catch (error) {
+      toast.error('Failed to load districts');
     }
   };
 
@@ -32,7 +76,12 @@ const AccidentList = () => {
     setLoading(true);
     try {
       const params = {};
-      if (filters.province_id) params.province_id = filters.province_id;
+      if (filters.province_id) params['filters[province_id]'] = filters.province_id;
+      if (filters.city_id) params['filters[city_id]'] = filters.city_id;
+      if (filters.district_id) params['filters[district_id]'] = filters.district_id;
+      if (filters.accident_type) params['filters[accident_type]'] = filters.accident_type;
+      if (filters.vehicle_type) params['filters[vehicle_type]'] = filters.vehicle_type;
+      if (filters.police_station) params['filters[police_station]'] = filters.police_station;
       if (filters.search) params.search = filters.search;
 
       const response = await accidentService.getAll(params);
@@ -46,7 +95,12 @@ const AccidentList = () => {
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
-    setFilters(prev => ({ ...prev, [name]: value }));
+    setFilters(prev => ({ 
+      ...prev, 
+      [name]: value,      
+      ...(name === 'province_id' && { city_id: '', district_id: '' }),
+      ...(name === 'city_id' && { district_id: '' })
+    }));
   };
 
   const handleSearch = () => {
@@ -73,29 +127,33 @@ const AccidentList = () => {
     });
   };
 
+  const canPerformActions = user?.role === 'admin' || user?.role === 'staff';
+
   return (
     <DashboardLayout>
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2>Accident Records</h2>
-        <Link to="/accidents/new" className="btn btn-danger">
-          <i className="bi bi-plus-circle me-2"></i>Add Accident Record
-        </Link>
+        {canPerformActions && (
+          <Link to="/accidents/new" className="btn btn-danger">
+            <i className="bi bi-plus-circle me-2"></i>Add Accident Record
+          </Link>
+        )}
       </div>
 
       <div className="card mb-4">
         <div className="card-body">
           <div className="row g-3">
-            <div className="col-md-4">
+            <div className="col-md-3">
               <input
                 type="text"
                 className="form-control"
-                placeholder="Search by police report no..."
+                placeholder="Search by report no, location..."
                 name="search"
                 value={filters.search}
                 onChange={handleFilterChange}
               />
             </div>
-            <div className="col-md-4">
+            <div className="col-md-3">
               <select
                 className="form-select"
                 name="province_id"
@@ -108,8 +166,66 @@ const AccidentList = () => {
                 ))}
               </select>
             </div>
-            <div className="col-md-4">
-              <button className="btn btn-primary" onClick={handleSearch}>
+            <div className="col-md-3">
+              <select
+                className="form-select"
+                name="city_id"
+                value={filters.city_id}
+                onChange={handleFilterChange}
+                disabled={!filters.province_id}
+              >
+                <option value="">All Cities</option>
+                {cities.map(city => (
+                  <option key={city.code} value={city.code}>{city.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="col-md-3">
+              <select
+                className="form-select"
+                name="district_id"
+                value={filters.district_id}
+                onChange={handleFilterChange}
+                disabled={!filters.city_id}
+              >
+                <option value="">All Districts</option>
+                {districts.map(dist => (
+                  <option key={dist.code} value={dist.code}>{dist.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="col-md-3">
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Accident Type"
+                name="accident_type"
+                value={filters.accident_type}
+                onChange={handleFilterChange}
+              />
+            </div>
+            <div className="col-md-3">
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Vehicle Type"
+                name="vehicle_type"
+                value={filters.vehicle_type}
+                onChange={handleFilterChange}
+              />
+            </div>
+            <div className="col-md-3">
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Police Station"
+                name="police_station"
+                value={filters.police_station}
+                onChange={handleFilterChange}
+              />
+            </div>
+            <div className="col-md-3">
+              <button className="btn btn-primary w-100" onClick={handleSearch}>
                 <i className="bi bi-search me-2"></i>Search
               </button>
             </div>
@@ -135,7 +251,7 @@ const AccidentList = () => {
                     <th>Location</th>
                     <th>Casualties</th>
                     <th>Weather</th>
-                    <th>Actions</th>
+                    {canPerformActions && <th>Actions</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -159,28 +275,30 @@ const AccidentList = () => {
                         </span>
                       </td>
                       <td>{accident.weather_condition || '-'}</td>
-                      <td>
-                        <div className="btn-group">
-                          <Link
-                            to={`/accidents/${accident.id}`}
-                            className="btn btn-sm btn-outline-primary"
-                          >
-                            <i className="bi bi-eye"></i>
-                          </Link>
-                          <Link
-                            to={`/accidents/${accident.id}/edit`}
-                            className="btn btn-sm btn-outline-warning"
-                          >
-                            <i className="bi bi-pencil"></i>
-                          </Link>
-                          <button
-                            onClick={() => handleDelete(accident.id)}
-                            className="btn btn-sm btn-outline-danger"
-                          >
-                            <i className="bi bi-trash"></i>
-                          </button>
-                        </div>
-                      </td>
+                      {canPerformActions && (
+                        <td>
+                          <div className="btn-group">
+                            <Link
+                              to={`/accidents/${accident.id}`}
+                              className="btn btn-sm btn-outline-primary"
+                            >
+                              <i className="bi bi-eye"></i>
+                            </Link>
+                            <Link
+                              to={`/accidents/${accident.id}/edit`}
+                              className="btn btn-sm btn-outline-warning"
+                            >
+                              <i className="bi bi-pencil"></i>
+                            </Link>
+                            <button
+                              onClick={() => handleDelete(accident.id)}
+                              className="btn btn-sm btn-outline-danger"
+                              >
+                                <i className="bi bi-trash"></i>
+                            </button>
+                          </div>
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>

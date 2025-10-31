@@ -18,8 +18,11 @@ type School struct {
 	Phone        string  `json:"phone" gorm:"column:phone"`
 	Email        string  `json:"email" gorm:"column:email"`
 	DistrictId   string  `json:"district_id" gorm:"column:district_id"`
+	DistrictName string  `json:"district_name" gorm:"column:district_name"`
 	CityId       string  `json:"city_id" gorm:"column:city_id"`
+	CityName     string  `json:"city_name" gorm:"column:city_name"`
 	ProvinceId   string  `json:"province_id" gorm:"column:province_id"`
+	ProvinceName string  `json:"province_name" gorm:"column:province_name"`
 	PostalCode   string  `json:"postal_code" gorm:"column:postal_code"`
 	Latitude     float64 `json:"latitude" gorm:"column:latitude"`
 	Longitude    float64 `json:"longitude" gorm:"column:longitude"`

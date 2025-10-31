@@ -28,9 +28,9 @@ func FailOnError(err error, msg string) {
 	}
 }
 
-// @title Workshop Management API
+// @title Safety Riding API
 // @version 1.0
-// @description This is a sample server for a workshop management service.
+// @description This is a sample server for a safety riding service.
 // @termsOfService http://swagger.io/terms/
 
 // @contact.name API Support

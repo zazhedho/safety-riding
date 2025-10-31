@@ -26,7 +26,7 @@ func (h *DistrictHandler) GetDistrict(ctx *gin.Context) {
 	logId := utils.GenerateLogId(ctx)
 	logPrefix := fmt.Sprintf("[%s][DistrictHandler][GetDistrict]", logId)
 
-	year := ctx.DefaultQuery("thn", "2025")
+	year := ctx.DefaultQuery("thn", utils.GetEnv("PROVINCE_YEAR", "2025").(string))
 	lvl := ctx.DefaultQuery("lvl", "12")
 	pro := ctx.Query("pro")
 	kab := ctx.Query("kab")

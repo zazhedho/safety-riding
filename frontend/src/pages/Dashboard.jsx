@@ -29,10 +29,10 @@ const Dashboard = () => {
       ]);
 
       setStats({
-        schools: schoolsRes.data.total || 0,
-        events: eventsRes.data.total || 0,
-        accidents: accidentsRes.data.total || 0,
-        budgets: budgetsRes.data.total || 0
+        schools: schoolsRes.data.total_data || 0,
+        events: eventsRes.data.total_data || 0,
+        accidents: accidentsRes.data.total_data || 0,
+        budgets: budgetsRes.data.total_data || 0
       });
     } catch (error) {
       toast.error('Failed to load dashboard stats');

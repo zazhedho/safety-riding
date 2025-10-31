@@ -4,8 +4,10 @@ import DashboardLayout from '../../components/common/DashboardLayout';
 import budgetService from '../../services/budgetService';
 import eventService from '../../services/eventService';
 import { toast } from 'react-toastify';
+import { useAuth } from '../../contexts/AuthContext';
 
 const BudgetList = () => {
+  const { user } = useAuth();
   const [budgets, setBudgets] = useState([]);
   const [events, setEvents] = useState([]);
   const [summary, setSummary] = useState(null);
@@ -35,9 +37,9 @@ const BudgetList = () => {
     setLoading(true);
     try {
       const params = {};
-      if (filters.event_id) params.event_id = filters.event_id;
-      if (filters.month) params.month = filters.month;
-      if (filters.year) params.year = filters.year;
+      if (filters.event_id) params['filters[event_id]'] = filters.event_id;
+      if (filters.month) params['filters[month]'] = filters.month;
+      if (filters.year) params['filters[year]'] = filters.year;
 
       const response = await budgetService.getAll(params);
       setBudgets(response.data.data || []);
@@ -88,13 +90,17 @@ const BudgetList = () => {
     }).format(amount);
   };
 
+  const canPerformActions = user?.role === 'admin' || user?.role === 'staff';
+
   return (
     <DashboardLayout>
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2>Budget Management</h2>
-        <Link to="/budgets/new" className="btn btn-danger">
-          <i className="bi bi-plus-circle me-2"></i>Add Budget
-        </Link>
+        {canPerformActions && (
+          <Link to="/budgets/new" className="btn btn-danger">
+            <i className="bi bi-plus-circle me-2"></i>Add Budget
+          </Link>
+        )}
       </div>
 
       {summary && (
@@ -197,7 +203,7 @@ const BudgetList = () => {
                     <th>Actual Spent</th>
                     <th>Remaining</th>
                     <th>Status</th>
-                    <th>Actions</th>
+                    {canPerformActions && <th>Actions</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -230,28 +236,30 @@ const BudgetList = () => {
                             </div>
                           </div>
                         </td>
-                        <td>
-                          <div className="btn-group">
-                            <Link
-                              to={`/budgets/${budget.id}`}
-                              className="btn btn-sm btn-outline-primary"
-                            >
-                              <i className="bi bi-eye"></i>
-                            </Link>
-                            <Link
-                              to={`/budgets/${budget.id}/edit`}
-                              className="btn btn-sm btn-outline-warning"
-                            >
-                              <i className="bi bi-pencil"></i>
-                            </Link>
-                            <button
-                              onClick={() => handleDelete(budget.id)}
-                              className="btn btn-sm btn-outline-danger"
-                            >
-                              <i className="bi bi-trash"></i>
-                            </button>
-                          </div>
-                        </td>
+                        {canPerformActions && (
+                          <td>
+                            <div className="btn-group">
+                              <Link
+                                to={`/budgets/${budget.id}`}
+                                className="btn btn-sm btn-outline-primary"
+                              >
+                                <i className="bi bi-eye"></i>
+                              </Link>
+                              <Link
+                                to={`/budgets/${budget.id}/edit`}
+                                className="btn btn-sm btn-outline-warning"
+                              >
+                                <i className="bi bi-pencil"></i>
+                              </Link>
+                              <button
+                                onClick={() => handleDelete(budget.id)}
+                                className="btn btn-sm btn-outline-danger"
+                              >
+                                <i className="bi bi-trash"></i>
+                              </button>
+                            </div>
+                          </td>
+                        )}
                       </tr>
                     );
                   })}

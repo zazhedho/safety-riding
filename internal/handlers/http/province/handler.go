@@ -26,7 +26,7 @@ func (h *ProvinceHandler) GetProvince(ctx *gin.Context) {
 	logId := utils.GenerateLogId(ctx)
 	logPrefix := fmt.Sprintf("[%s][ProvinceHandler][GetProvince]", logId)
 
-	year := ctx.DefaultQuery("thn", "2025")
+	year := ctx.DefaultQuery("thn", utils.GetEnv("PROVINCE_YEAR", "2025").(string))
 	logger.WriteLog(logger.LogLevelDebug, fmt.Sprintf("%s; Query Year: %s;", logPrefix, year))
 
 	data, err := h.Service.GetProvince(year)

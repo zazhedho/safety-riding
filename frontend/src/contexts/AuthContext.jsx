@@ -1,100 +1,115 @@
-import React, { createContext, useContext, useState, useEffect } from 'react'
-import api from '../services/api'
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import api from '../services/api';
+import userService from '../services/userService';
 
-const AuthContext = createContext()
+const AuthContext = createContext();
 
 export const useAuth = () => {
-  const context = useContext(AuthContext)
+  const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider')
+    throw new Error('useAuth must be used within an AuthProvider');
   }
-  return context
-}
+  return context;
+};
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [token, setToken] = useState(localStorage.getItem('token'))
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [token, setToken] = useState(localStorage.getItem('token'));
 
   useEffect(() => {
     if (token) {
-      api.defaults.headers.common['Authorization'] = `Bearer ${token}`
-      fetchUser()
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      fetchUser();
     } else {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [token])
+  }, [token]);
 
   const fetchUser = async () => {
     try {
-      const response = await api.get('/user')
-      setUser(response.data.data)
+      const response = await api.get('/user');
+      setUser(response.data.data);
+      return response.data.data;
     } catch (error) {
-      console.error('Failed to fetch user:', error)
-      logout()
+      console.error('Failed to fetch user:', error);
+      logout();
+      return null;
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const login = async (email, password) => {
     try {
-      const response = await api.post('/user/login', { email, password })
-      const { token } = response.data.data
+      const response = await api.post('/user/login', { email, password });
+      const { token } = response.data.data;
       
-      localStorage.setItem('token', token)
-      setToken(token)
-      api.defaults.headers.common['Authorization'] = `Bearer ${token}`
+      localStorage.setItem('token', token);
+      setToken(token);
+      api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       
-      await fetchUser()
-      return { success: true }
+      const user = await fetchUser();
+      return { success: true, user };
     } catch (error) {
       return { 
         success: false, 
         error: error.response?.data?.error || 'Login failed' 
-      }
+      };
     }
-  }
+  };
 
   const register = async (userData) => {
     try {
-      const response = await api.post('/user/register', userData)
-      return { success: true, data: response.data }
+      const response = await api.post('/user/register', userData);
+      return { success: true, data: response.data };
     } catch (error) {
       return { 
         success: false, 
         error: error.response?.data?.error || 'Registration failed' 
-      }
+      };
     }
-  }
+  };
 
   const logout = async () => {
     try {
       if (token) {
-        await api.post('/user/logout')
+        await api.post('/user/logout');
       }
     } catch (error) {
-      console.error('Logout error:', error)
+      console.error('Logout error:', error);
     } finally {
-      localStorage.removeItem('token')
-      setToken(null)
-      setUser(null)
-      delete api.defaults.headers.common['Authorization']
+      localStorage.removeItem('token');
+      setToken(null);
+      setUser(null);
+      delete api.defaults.headers.common['Authorization'];
     }
-  }
+  };
 
   const updateProfile = async (userData) => {
     try {
-      const response = await api.put('/user', userData)
-      setUser(response.data.data)
-      return { success: true, data: response.data }
+      const response = await api.put('/user', userData);
+      setUser(response.data.data);
+      return { success: true, data: response.data };
     } catch (error) {
       return { 
         success: false, 
         error: error.response?.data?.error || 'Update failed' 
-      }
+      };
     }
-  }
+  };
+
+  const updatePassword = async (passwordData) => {
+    try {
+      const response = await userService.updatePassword(passwordData);
+      return { success: true, data: response.data };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.response?.data?.error || 'Password update failed'
+      };
+    }
+  };
 
   const hasRole = (roles) => {
     if (!user || !user.role) return false;
@@ -107,14 +122,15 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     updateProfile,
+    updatePassword,
     hasRole,
     loading,
     isAuthenticated: !!user
-  }
+  };
 
   return (
     <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
-  )
-}
+  );
+};

@@ -50,7 +50,21 @@ CREATE INDEX IF NOT EXISTS idx_accidents_province_city_district
     ON accidents (province_id, city_id, district_id);
 
 -- updated_at auto-touch trigger
+
+
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_trigger t
+    JOIN pg_class c ON c.oid = t.tgrelid
+    WHERE t.tgname = 'trg_accidents_set_updated_at'
+      AND c.relname = 'accidents'
+  ) THEN
 CREATE TRIGGER trg_accidents_set_updated_at
     BEFORE UPDATE ON accidents
     FOR EACH ROW
-EXECUTE FUNCTION set_updated_at();
+    EXECUTE FUNCTION set_updated_at();
+END IF;
+END
+$$;

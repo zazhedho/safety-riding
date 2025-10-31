@@ -3,10 +3,16 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { toast } from 'react-toastify';
 
-const Login = () => {
-  const [formData, setFormData] = useState({ email: '', password: '' });
+const Register = () => {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    password: '',
+    confirmPassword: ''
+  });
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { register } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -15,19 +21,24 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (formData.password !== formData.confirmPassword) {
+      toast.error('Passwords do not match');
+      return;
+    }
     setLoading(true);
 
-    const result = await login(formData.email, formData.password);
+    const result = await register({ 
+      name: formData.name, 
+      email: formData.email, 
+      phone: formData.phone,
+      password: formData.password 
+    });
 
     if (result.success) {
-      toast.success('Login successful!');
-      if (result.user?.role === 'admin' || result.user?.role === 'viewer') {
-        navigate('/dashboard');
-      } else {
-        navigate('/profile');
-      }
+      toast.success('Registration successful! Please login.');
+      navigate('/login');
     } else {
-      toast.error(result.error || 'Login failed');
+      toast.error(result.error || 'Registration failed');
     }
 
     setLoading(false);
@@ -45,6 +56,17 @@ const Login = () => {
 
           <form onSubmit={handleSubmit}>
             <div className="mb-3">
+              <label className="form-label">Name</label>
+              <input
+                type="text"
+                className="form-control"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div className="mb-3">
               <label className="form-label">Email</label>
               <input
                 type="email"
@@ -55,8 +77,18 @@ const Login = () => {
                 required
               />
             </div>
-
-            <div className="mb-4">
+            <div className="mb-3">
+              <label className="form-label">Phone</label>
+              <input
+                type="text"
+                className="form-control"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div className="mb-3">
               <label className="form-label">Password</label>
               <input
                 type="password"
@@ -67,19 +99,30 @@ const Login = () => {
                 required
               />
             </div>
+            <div className="mb-4">
+              <label className="form-label">Confirm Password</label>
+              <input
+                type="password"
+                className="form-control"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                required
+              />
+            </div>
 
             <button
               type="submit"
               className="btn btn-danger w-100 py-2"
               disabled={loading}
             >
-              {loading ? 'Logging in...' : 'Login'}
+              {loading ? 'Registering...' : 'Register'}
             </button>
           </form>
 
           <div className="text-center mt-4">
             <p className="text-muted">
-              Don't have an account? <Link to="/register">Register here</Link>
+              Already have an account? <Link to="/login">Login here</Link>
             </p>
           </div>
         </div>
@@ -88,4 +131,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Register;

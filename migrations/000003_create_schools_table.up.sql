@@ -9,8 +9,11 @@ CREATE TABLE IF NOT EXISTS schools (
     email           VARCHAR(100),
 
     district_id     VARCHAR(20),
+    district_name   VARCHAR(100),
     city_id         VARCHAR(20),
+    city_name       VARCHAR(100),
     province_id     VARCHAR(20),
+    province_name   VARCHAR(100),
     postal_code     VARCHAR(10),
 
     latitude        DOUBLE PRECISION,
@@ -54,7 +57,19 @@ RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_trigger t
+    JOIN pg_class c ON c.oid = t.tgrelid
+    WHERE t.tgname = 'trg_schools_set_updated_at'
+      AND c.relname = 'schools'
+  ) THEN
 CREATE TRIGGER trg_schools_set_updated_at
-BEFORE UPDATE ON schools
-FOR EACH ROW
-EXECUTE FUNCTION set_updated_at();
+    BEFORE UPDATE ON schools
+    FOR EACH ROW
+    EXECUTE FUNCTION set_updated_at();
+END IF;
+END
+$$;

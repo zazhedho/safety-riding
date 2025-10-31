@@ -1,6 +1,7 @@
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import { Icon } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { useEffect } from 'react';
 
 // Custom red marker icon
 const redIcon = new Icon({
@@ -12,25 +13,56 @@ const redIcon = new Icon({
   shadowSize: [41, 41]
 });
 
-const SchoolMap = ({ schools }) => {
+// Component to change map view
+const ChangeView = ({ center, zoom }) => {
+  const map = useMap();
+  useEffect(() => {
+    if (center) {
+      map.setView(center, zoom);
+    }
+  }, [center, zoom, map]);
+  return null;
+};
+
+const SchoolMap = ({ schools, selectedSchool }) => {
   const schoolsWithCoordinates = schools.filter(
     school => school.latitude && school.longitude
   );
 
   // Default center (Indonesia)
   const defaultCenter = [-2.5489, 118.0149];
+  const defaultZoom = 5;
 
-  // If we have schools, center on the first one
-  const center = schoolsWithCoordinates.length > 0
-    ? [parseFloat(schoolsWithCoordinates[0].latitude), parseFloat(schoolsWithCoordinates[0].longitude)]
-    : defaultCenter;
+  const getCenter = () => {
+    if (selectedSchool && selectedSchool.latitude && selectedSchool.longitude) {
+      return [parseFloat(selectedSchool.latitude), parseFloat(selectedSchool.longitude)];
+    }
+    if (schoolsWithCoordinates.length > 0) {
+      return [parseFloat(schoolsWithCoordinates[0].latitude), parseFloat(schoolsWithCoordinates[0].longitude)];
+    }
+    return defaultCenter;
+  };
+
+  const getZoom = () => {
+    if (selectedSchool) {
+      return 15; // Zoom in close when a school is selected
+    }
+    if (schoolsWithCoordinates.length > 0) {
+      return 10;
+    }
+    return defaultZoom;
+  };
+
+  const center = getCenter();
+  const zoom = getZoom();
 
   return (
     <MapContainer
       center={center}
-      zoom={schoolsWithCoordinates.length > 0 ? 10 : 5}
+      zoom={zoom}
       style={{ width: '100%', height: '600px' }}
     >
+      <ChangeView center={center} zoom={zoom} />
       <TileLayer
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -47,7 +79,7 @@ const SchoolMap = ({ schools }) => {
               <h6 className="mb-2" style={{ fontWeight: 'bold' }}>{school.name}</h6>
               <p className="mb-1 small"><strong>NPSN:</strong> {school.npsn}</p>
               <p className="mb-1 small"><strong>Address:</strong> {school.address}</p>
-              <p className="mb-0 small"><strong>Phone:</strong> {school.phone_number || '-'}</p>
+              <p className="mb-0 small"><strong>Phone:</strong> {school.phone || '-'}</p>
             </div>
           </Popup>
         </Marker>

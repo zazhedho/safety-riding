@@ -41,7 +41,19 @@ CREATE INDEX IF NOT EXISTS idx_event_budgets_event_date
     ON event_budgets (event_id, budget_date);
 
 -- updated_at auto-touch trigger
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_trigger t
+    JOIN pg_class c ON c.oid = t.tgrelid
+    WHERE t.tgname = 'trg_event_budgets_set_updated_at'
+      AND c.relname = 'event_budgets'
+  ) THEN
 CREATE TRIGGER trg_event_budgets_set_updated_at
     BEFORE UPDATE ON event_budgets
     FOR EACH ROW
-EXECUTE FUNCTION set_updated_at();
+    EXECUTE FUNCTION set_updated_at();
+END IF;
+END
+$$;

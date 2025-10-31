@@ -4,8 +4,10 @@ import DashboardLayout from '../../components/common/DashboardLayout';
 import eventService from '../../services/eventService';
 import schoolService from '../../services/schoolService';
 import { toast } from 'react-toastify';
+import { useAuth } from '../../contexts/AuthContext';
 
 const EventList = () => {
+  const { user } = useAuth();
   const [events, setEvents] = useState([]);
   const [schools, setSchools] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -32,7 +34,7 @@ const EventList = () => {
     setLoading(true);
     try {
       const params = {};
-      if (filters.school_id) params.school_id = filters.school_id;
+      if (filters.school_id) params['filters[school_id]'] = filters.school_id;
       if (filters.search) params.search = filters.search;
 
       const response = await eventService.getAll(params);
@@ -73,13 +75,17 @@ const EventList = () => {
     });
   };
 
+  const canPerformActions = user?.role === 'admin' || user?.role === 'staff';
+
   return (
     <DashboardLayout>
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2>Events Management</h2>
-        <Link to="/events/new" className="btn btn-danger">
-          <i className="bi bi-plus-circle me-2"></i>Add Event
-        </Link>
+        {canPerformActions && (
+          <Link to="/events/new" className="btn btn-danger">
+            <i className="bi bi-plus-circle me-2"></i>Add Event
+          </Link>
+        )}
       </div>
 
       <div className="card mb-4">
@@ -136,7 +142,7 @@ const EventList = () => {
                     <th>Participants</th>
                     <th>Instructor</th>
                     <th>Status</th>
-                    <th>Actions</th>
+                    {canPerformActions && <th>Actions</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -157,28 +163,30 @@ const EventList = () => {
                           {event.event_status}
                         </span>
                       </td>
-                      <td>
-                        <div className="btn-group">
-                          <Link
-                            to={`/events/${event.id}`}
-                            className="btn btn-sm btn-outline-primary"
-                          >
-                            <i className="bi bi-eye"></i>
-                          </Link>
-                          <Link
-                            to={`/events/${event.id}/edit`}
-                            className="btn btn-sm btn-outline-warning"
-                          >
-                            <i className="bi bi-pencil"></i>
-                          </Link>
-                          <button
-                            onClick={() => handleDelete(event.id)}
-                            className="btn btn-sm btn-outline-danger"
-                          >
-                            <i className="bi bi-trash"></i>
-                          </button>
-                        </div>
-                      </td>
+                      {canPerformActions && (
+                        <td>
+                          <div className="btn-group">
+                            <Link
+                              to={`/events/${event.id}`}
+                              className="btn btn-sm btn-outline-primary"
+                            >
+                              <i className="bi bi-eye"></i>
+                            </Link>
+                            <Link
+                              to={`/events/${event.id}/edit`}
+                              className="btn btn-sm btn-outline-warning"
+                            >
+                              <i className="bi bi-pencil"></i>
+                            </Link>
+                            <button
+                              onClick={() => handleDelete(event.id)}
+                              className="btn btn-sm btn-outline-danger"
+                            >
+                              <i className="bi bi-trash"></i>
+                            </button>
+                          </div>
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>

@@ -2,15 +2,24 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import Login from './pages/auth/Login';
+import Register from './pages/auth/Register';
 import Dashboard from './pages/Dashboard';
 import SchoolList from './pages/schools/SchoolList';
+import SchoolForm from './pages/schools/SchoolForm';
+import SchoolDetail from './pages/schools/SchoolDetail';
 import EventList from './pages/events/EventList';
+import EventForm from './pages/events/EventForm';
 import AccidentList from './pages/accidents/AccidentList';
+import AccidentForm from './pages/accidents/AccidentForm';
 import BudgetList from './pages/budgets/BudgetList';
+import BudgetForm from './pages/budgets/BudgetForm';
 import UserList from './pages/users/UserList';
+import UserForm from './pages/users/UserForm';
+import Profile from './pages/users/Profile';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 import './styles/theme.css';
 
@@ -20,13 +29,14 @@ function App() {
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
 
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
           <Route
             path="/dashboard"
             element={
-              <ProtectedRoute roles={['admin', 'staff']}>
+              <ProtectedRoute roles={['admin', 'staff', 'viewer']}>
                 <Dashboard />
               </ProtectedRoute>
             }
@@ -35,8 +45,35 @@ function App() {
           <Route
             path="/schools"
             element={
-              <ProtectedRoute roles={['admin', 'staff']}>
+              <ProtectedRoute roles={['admin', 'staff', 'viewer']}>
                 <SchoolList />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/schools/new"
+            element={
+              <ProtectedRoute roles={['admin', 'staff']}>
+                <SchoolForm />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/schools/:id"
+            element={
+              <ProtectedRoute roles={['admin', 'staff', 'viewer']}>
+                <SchoolDetail />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/schools/:id/edit"
+            element={
+              <ProtectedRoute roles={['admin', 'staff']}>
+                <SchoolForm />
               </ProtectedRoute>
             }
           />
@@ -44,8 +81,26 @@ function App() {
           <Route
             path="/events"
             element={
-              <ProtectedRoute roles={['admin', 'staff']}>
+              <ProtectedRoute roles={['admin', 'staff', 'viewer']}>
                 <EventList />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/events/new"
+            element={
+              <ProtectedRoute roles={['admin', 'staff']}>
+                <EventForm />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/events/:id/edit"
+            element={
+              <ProtectedRoute roles={['admin', 'staff']}>
+                <EventForm />
               </ProtectedRoute>
             }
           />
@@ -53,8 +108,26 @@ function App() {
           <Route
             path="/accidents"
             element={
-              <ProtectedRoute roles={['admin', 'staff']}>
+              <ProtectedRoute roles={['admin', 'staff', 'viewer']}>
                 <AccidentList />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/accidents/new"
+            element={
+              <ProtectedRoute roles={['admin', 'staff']}>
+                <AccidentForm />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/accidents/:id/edit"
+            element={
+              <ProtectedRoute roles={['admin', 'staff']}>
+                <AccidentForm />
               </ProtectedRoute>
             }
           />
@@ -62,8 +135,26 @@ function App() {
           <Route
             path="/budgets"
             element={
-              <ProtectedRoute roles={['admin']}>
+              <ProtectedRoute roles={['admin', 'viewer']}>
                 <BudgetList />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/budgets/new"
+            element={
+              <ProtectedRoute roles={['admin', 'staff']}>
+                <BudgetForm />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/budgets/:id/edit"
+            element={
+              <ProtectedRoute roles={['admin', 'staff']}>
+                <BudgetForm />
               </ProtectedRoute>
             }
           />
@@ -73,6 +164,33 @@ function App() {
             element={
               <ProtectedRoute roles={['admin']}>
                 <UserList />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/users/new"
+            element={
+              <ProtectedRoute roles={['admin']}>
+                <UserForm />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/users/:id/edit"
+            element={
+              <ProtectedRoute roles={['admin']}>
+                <UserForm />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute roles={['admin', 'staff', 'viewer']}>
+                <Profile />
               </ProtectedRoute>
             }
           />

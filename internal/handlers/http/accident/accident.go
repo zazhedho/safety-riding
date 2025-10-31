@@ -127,7 +127,7 @@ func (h *AccidentHandler) FetchAccident(ctx *gin.Context) {
 	logPrefix := fmt.Sprintf("[%s][AccidentHandler][FetchAccident]", logId)
 
 	params, _ := filter.GetBaseParams(ctx, "accident_date", "desc", 10)
-	params.Filters = filter.WhitelistFilter(params.Filters, []string{"district_id", "city_id", "province_id", "accident_type", "vehicle_type", "police_station"})
+	params.Filters = filter.WhitelistStringFilter(params.Filters, []string{"district_id", "city_id", "province_id", "accident_type", "vehicle_type", "police_station"})
 
 	accidents, totalData, err := h.Service.FetchAccident(params)
 	if err != nil {

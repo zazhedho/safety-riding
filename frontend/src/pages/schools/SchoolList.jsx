@@ -5,8 +5,10 @@ import SchoolMap from '../../components/maps/SchoolMap';
 import schoolService from '../../services/schoolService';
 import locationService from '../../services/locationService';
 import { toast } from 'react-toastify';
+import { useAuth } from '../../contexts/AuthContext';
 
 const SchoolList = () => {
+  const { user } = useAuth();
   const [schools, setSchools] = useState([]);
   const [provinces, setProvinces] = useState([]);
   const [cities, setCities] = useState([]);
@@ -19,6 +21,7 @@ const SchoolList = () => {
     district_id: '',
     search: ''
   });
+  const [selectedSchoolForMap, setSelectedSchoolForMap] = useState(null);
 
   useEffect(() => {
     fetchProvinces();
@@ -37,15 +40,13 @@ const SchoolList = () => {
   useEffect(() => {
     if (filters.city_id) {
       fetchDistricts(filters.province_id, filters.city_id);
-    } else {
-      setDistricts([]);
     }
   }, [filters.city_id]);
 
   const fetchProvinces = async () => {
     try {
       const response = await locationService.getProvinces();
-      setProvinces(response.data || []);
+      setProvinces(response.data.data || []);
     } catch (error) {
       toast.error('Failed to load provinces');
     }
@@ -54,7 +55,7 @@ const SchoolList = () => {
   const fetchCities = async (provinceCode) => {
     try {
       const response = await locationService.getCities(provinceCode);
-      setCities(response.data || []);
+      setCities(response.data.data || []);
     } catch (error) {
       toast.error('Failed to load cities');
     }
@@ -63,7 +64,7 @@ const SchoolList = () => {
   const fetchDistricts = async (provinceCode, cityCode) => {
     try {
       const response = await locationService.getDistricts(provinceCode, cityCode);
-      setDistricts(response.data || []);
+      setDistricts(response.data.data || []);
     } catch (error) {
       toast.error('Failed to load districts');
     }
@@ -73,9 +74,9 @@ const SchoolList = () => {
     setLoading(true);
     try {
       const params = {};
-      if (filters.province_id) params.province_id = filters.province_id;
-      if (filters.city_id) params.city_id = filters.city_id;
-      if (filters.district_id) params.district_id = filters.district_id;
+      if (filters.province_id) params['filters[province_id]'] = filters.province_id;
+      if (filters.city_id) params['filters[city_id]'] = filters.city_id;
+      if (filters.district_id) params['filters[district_id]'] = filters.district_id;
       if (filters.search) params.search = filters.search;
 
       const response = await schoolService.getAll(params);
@@ -93,7 +94,7 @@ const SchoolList = () => {
       ...prev,
       [name]: value,
       ...(name === 'province_id' && { city_id: '', district_id: '' }),
-      ...(name === 'city_id' && { district_id: '' })
+      ...(name === 'city_id' && { district_id: '', selectedSchoolForMap: null })
     }));
   };
 
@@ -113,6 +114,14 @@ const SchoolList = () => {
     }
   };
 
+  const handleCoordinateClick = (school) => {
+    setSelectedSchoolForMap(school);
+    setViewMode('map');
+  };
+
+  const canPerformActions = user?.role === 'admin' || user?.role === 'staff';
+  const canView = user?.role === 'admin' || user?.role === 'staff' || user?.role === 'viewer';
+
   return (
     <DashboardLayout>
       <div className="d-flex justify-content-between align-items-center mb-4">
@@ -121,7 +130,7 @@ const SchoolList = () => {
           <div className="btn-group">
             <button
               className={`btn ${viewMode === 'table' ? 'btn-danger' : 'btn-outline-danger'}`}
-              onClick={() => setViewMode('table')}
+              onClick={() => { setViewMode('table'); setSelectedSchoolForMap(null); }}
             >
               <i className="bi bi-table me-2"></i>Table
             </button>
@@ -132,9 +141,11 @@ const SchoolList = () => {
               <i className="bi bi-map me-2"></i>Map
             </button>
           </div>
-          <Link to="/schools/new" className="btn btn-danger">
-            <i className="bi bi-plus-circle me-2"></i>Add School
-          </Link>
+          {canPerformActions && (
+            <Link to="/schools/new" className="btn btn-danger">
+              <i className="bi bi-plus-circle me-2"></i>Add School
+            </Link>
+          )}
         </div>
       </div>
 
@@ -204,7 +215,7 @@ const SchoolList = () => {
       {viewMode === 'map' ? (
         <div className="card">
           <div className="card-body p-0">
-            <SchoolMap schools={schools} />
+            <SchoolMap schools={schools} selectedSchool={selectedSchoolForMap} />
           </div>
         </div>
       ) : (
@@ -235,8 +246,11 @@ const SchoolList = () => {
                         <td>{school.npsn}</td>
                         <td>{school.name}</td>
                         <td>{school.address}</td>
-                        <td>{school.phone_number || '-'}</td>
-                        <td>
+                        <td>{school.phone || '-'}</td>
+                        <td
+                          onClick={() => school.latitude && school.longitude && handleCoordinateClick(school)}
+                          style={{ cursor: school.latitude && school.longitude ? 'pointer' : 'default' }}
+                        >
                           {school.latitude && school.longitude ? (
                             <span className="badge bg-success">
                               {school.latitude}, {school.longitude}
@@ -247,24 +261,30 @@ const SchoolList = () => {
                         </td>
                         <td>
                           <div className="btn-group">
-                            <Link
-                              to={`/schools/${school.id}`}
-                              className="btn btn-sm btn-outline-primary"
-                            >
-                              <i className="bi bi-eye"></i>
-                            </Link>
-                            <Link
-                              to={`/schools/${school.id}/edit`}
-                              className="btn btn-sm btn-outline-warning"
-                            >
-                              <i className="bi bi-pencil"></i>
-                            </Link>
-                            <button
-                              onClick={() => handleDelete(school.id)}
-                              className="btn btn-sm btn-outline-danger"
-                            >
-                              <i className="bi bi-trash"></i>
-                            </button>
+                            {canView && (
+                              <Link
+                                to={`/schools/${school.id}`}
+                                className="btn btn-sm btn-outline-primary"
+                              >
+                                <i className="bi bi-eye"></i>
+                              </Link>
+                            )}
+                            {canPerformActions && (
+                              <>
+                                <Link
+                                  to={`/schools/${school.id}/edit`}
+                                  className="btn btn-sm btn-outline-warning"
+                                >
+                                  <i className="bi bi-pencil"></i>
+                                </Link>
+                                <button
+                                  onClick={() => handleDelete(school.id)}
+                                  className="btn btn-sm btn-outline-danger"
+                                >
+                                  <i className="bi bi-trash"></i>
+                                </button>
+                              </>
+                            )}
                           </div>
                         </td>
                       </tr>

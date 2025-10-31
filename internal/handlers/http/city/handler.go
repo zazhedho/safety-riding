@@ -26,7 +26,7 @@ func (h *CityHandler) GetCity(ctx *gin.Context) {
 	logId := utils.GenerateLogId(ctx)
 	logPrefix := fmt.Sprintf("[%s][CityHandler][GetCity]", logId)
 
-	year := ctx.DefaultQuery("thn", "2025")
+	year := ctx.DefaultQuery("thn", utils.GetEnv("PROVINCE_YEAR", "2025").(string))
 	lvl := ctx.DefaultQuery("lvl", "11")
 	pro := ctx.Query("pro")
 

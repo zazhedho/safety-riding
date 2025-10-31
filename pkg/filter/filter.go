@@ -2,6 +2,7 @@ package filter
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -55,22 +56,50 @@ func GetBaseParams(ctx *gin.Context, defOrderBy, defOrderDirection string, defLi
 	return
 }
 
-func WhitelistFilter(filters map[string]interface{}, allowed []string) map[string]interface{} {
+func whitelistTransform(
+	filters map[string]interface{},
+	allowed []string,
+	transform func(interface{}) interface{},
+) map[string]interface{} {
 	if filters == nil {
 		return nil
 	}
 
-	// convert allowed slice -> map biar lookup O(1)
-	allowedMap := make(map[string]bool, len(allowed))
+	allowedSet := make(map[string]struct{}, len(allowed))
 	for _, k := range allowed {
-		allowedMap[k] = true
+		allowedSet[k] = struct{}{}
 	}
 
-	cleanFilters := make(map[string]interface{})
+	out := make(map[string]interface{}, len(allowedSet))
 	for k, v := range filters {
-		if allowedMap[k] {
-			cleanFilters[k] = v
+		if _, ok := allowedSet[k]; ok {
+			if transform != nil {
+				out[k] = transform(v)
+			} else {
+				out[k] = v
+			}
 		}
 	}
-	return cleanFilters
+	return out
+}
+
+func WhitelistFilter(filters map[string]interface{}, allowed []string) map[string]interface{} {
+	return whitelistTransform(filters, allowed, nil)
+}
+
+func WhitelistStringFilter(filters map[string]interface{}, allowed []string) map[string]interface{} {
+	return whitelistTransform(filters, allowed, func(v interface{}) interface{} {
+		switch t := v.(type) {
+		case nil:
+			return ""
+		case string:
+			return t
+		case fmt.Stringer:
+			return t.String()
+		case []string:
+			return strings.Join(t, ",")
+		default:
+			return fmt.Sprintf("%v", v)
+		}
+	})
 }

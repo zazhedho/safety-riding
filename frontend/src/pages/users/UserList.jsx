@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import DashboardLayout from '../../components/common/DashboardLayout';
 import api from '../../services/api';
 import { toast } from 'react-toastify';
@@ -95,6 +96,9 @@ const UserList = () => {
     <DashboardLayout>
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2>Users Management</h2>
+        <Link to="/users/new" className="btn btn-danger">
+          <i className="bi bi-plus-circle me-2"></i>Add User
+        </Link>
       </div>
 
       <div className="card mb-4">
@@ -152,6 +156,7 @@ const UserList = () => {
                       <th>Phone</th>
                       <th>Role</th>
                       <th>Created At</th>
+                      <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -174,6 +179,11 @@ const UserList = () => {
                         <td>{user.phone || '-'}</td>
                         <td>{getRoleBadge(user.role)}</td>
                         <td>{formatDate(user.created_at)}</td>
+                        <td>
+                          <Link to={`/users/${user.id}/edit`} className="btn btn-sm btn-outline-warning">
+                            <i className="bi bi-pencil"></i>
+                          </Link>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
