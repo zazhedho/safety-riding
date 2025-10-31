@@ -42,7 +42,8 @@ body.sidebar-is-open {
   background: linear-gradient(180deg, #ffffff 0%, #f5f7fa 100%);
   box-shadow: 2px 0 10px rgba(137, 180, 248, 0.1);
   z-index: 1020; /* Higher than overlay */
-  transition: transform 0.3s ease-in-out;
+  transition: width 0.3s ease, transform 0.3s ease-in-out;
+  overflow-x: hidden;
 }
 
 .main-container {

@@ -8,6 +8,7 @@ const DashboardLayout = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -17,6 +18,10 @@ const DashboardLayout = ({ children }) => {
   const toggleMobileMenu = () => {
     console.log('Toggle mobile menu clicked. Current state:', isMobileMenuOpen);
     setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const toggleSidebar = () => {
+    setIsSidebarCollapsed(!isSidebarCollapsed);
   };
 
   const closeMobileMenu = () => {
@@ -61,7 +66,9 @@ const DashboardLayout = ({ children }) => {
   );
 
   return (
-    <div className={`layout-wrapper ${isMobileMenuOpen ? 'sidebar-open' : ''}`}>
+    <div className={`layout-wrapper ${isMobileMenuOpen ? 'sidebar-open' : ''} ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+      <ThemeSwitcher />
+
       {/* Mobile Menu Toggle Button */}
       <button
         className="mobile-menu-toggle"
@@ -69,6 +76,15 @@ const DashboardLayout = ({ children }) => {
         aria-label="Toggle mobile menu"
       >
         <i className={`bi ${isMobileMenuOpen ? 'bi-x-lg' : 'bi-list'}`}></i>
+      </button>
+
+      {/* Desktop Sidebar Toggle Button */}
+      <button
+        className="sidebar-toggle-btn"
+        onClick={toggleSidebar}
+        aria-label="Toggle sidebar"
+      >
+        <i className={`bi ${isSidebarCollapsed ? 'bi-chevron-right' : 'bi-chevron-left'}`}></i>
       </button>
 
       {/* Mobile Overlay */}
@@ -79,9 +95,9 @@ const DashboardLayout = ({ children }) => {
 
       <div className="sidebar">
         <div className="sidebar-header">
-          <img src="/astra-motor.png" alt="Astra Motor Logo" style={{ width: '150px', marginBottom: '10px' }} />
-          <h3>Safety Riding</h3>
-          <small>Management System</small>
+          <img src="/astra-motor.png" alt="Astra Motor Logo" style={{ width: '150px', marginBottom: '10px' }} className="sidebar-logo" />
+          <h3 className="sidebar-title">Safety Riding</h3>
+          <small className="sidebar-subtitle">Management System</small>
         </div>
         <div className="sidebar-menu">
           {filteredMenu.map(item => (
@@ -90,9 +106,10 @@ const DashboardLayout = ({ children }) => {
               to={item.path}
               className={`sidebar-menu-item ${location.pathname === item.path ? 'active' : ''}`}
               onClick={closeMobileMenu}
+              title={item.label}
             >
               <i className={`bi ${item.icon}`}></i>
-              <span>{item.label}</span>
+              <span className="menu-label">{item.label}</span>
             </Link>
           ))}
         </div>
@@ -102,7 +119,6 @@ const DashboardLayout = ({ children }) => {
         <div className="top-nav">
           <h5 className="mb-0">Welcome, {user?.name || 'User'} !</h5>
           <div className="top-nav-user d-flex align-items-center">
-            <ThemeSwitcher />
             {user?.role && <span className="badge badge-primary me-3">{user.role.toUpperCase()}</span>}
             <div className="dropdown">
               <button
