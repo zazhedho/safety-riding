@@ -345,35 +345,108 @@ body {
   transition: all 0.2s ease;
 }
 
-/* Soft Warning/Danger Button */
-.btn-danger {
-  background: linear-gradient(135deg, #f8a5a5 0%, #e88989 100%);
+/* Secondary Button */
+.btn-secondary {
+  background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
   border: none;
-  color: #5a1f1f;
+  color: white;
   font-weight: 500;
-  box-shadow: 0 2px 4px rgba(232, 137, 137, 0.3);
+}
+
+.btn-secondary:hover {
+  background: linear-gradient(135deg, #7f8c8d 0%, #6c7a7b 100%);
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(127, 140, 141, 0.3);
+}
+
+/* Soft Danger Button for Delete Actions */
+.btn-danger {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+  border: none;
+  color: white;
+  font-weight: 500;
+  box-shadow: 0 2px 4px rgba(238, 90, 82, 0.3);
 }
 
 .btn-danger:hover {
-  background: linear-gradient(135deg, #e88989 0%, #d67777 100%);
-  color: #5a1f1f;
+  background: linear-gradient(135deg, #ee5a52 0%, #dc4b42 100%);
+  color: white;
   transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(232, 137, 137, 0.4);
+  box-shadow: 0 4px 8px rgba(238, 90, 82, 0.4);
 }
 
 .btn-outline-danger {
-  color: #d67777;
-  border: 1.5px solid #f8a5a5;
+  color: #ee5a52;
+  border: 1.5px solid #ff6b6b;
   background-color: transparent;
   font-weight: 500;
 }
 
 .btn-outline-danger:hover {
-  background-color: #f8a5a5;
-  border-color: #e88989;
-  color: #5a1f1f;
+  background-color: #ff6b6b;
+  border-color: #ee5a52;
+  color: white;
   transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(232, 137, 137, 0.3);
+  box-shadow: 0 4px 8px rgba(238, 90, 82, 0.3);
+}
+
+/* Small button variants */
+.btn-sm.btn-outline-danger {
+  padding: 0.35rem 0.65rem;
+  font-size: 0.875rem;
+}
+
+.btn-sm.btn-outline-danger:hover {
+  background-color: #ff6b6b;
+  color: white;
+}
+
+/* Warning Button */
+.btn-warning {
+  background: linear-gradient(135deg, #ffd93d 0%, #ffbe0b 100%);
+  border: none;
+  color: #5a4000;
+  font-weight: 500;
+  box-shadow: 0 2px 4px rgba(255, 190, 11, 0.3);
+}
+
+.btn-warning:hover {
+  background: linear-gradient(135deg, #ffbe0b 0%, #f4a900 100%);
+  color: #5a4000;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(255, 190, 11, 0.4);
+}
+
+.btn-outline-warning {
+  color: #f4a900;
+  border: 1.5px solid #ffd93d;
+  background-color: transparent;
+  font-weight: 500;
+}
+
+.btn-outline-warning:hover {
+  background-color: #ffd93d;
+  border-color: #ffbe0b;
+  color: #5a4000;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(255, 190, 11, 0.3);
+}
+
+/* Success Button */
+.btn-success {
+  background: linear-gradient(135deg, #51cf66 0%, #37b24d 100%);
+  border: none;
+  color: white;
+  font-weight: 500;
+  box-shadow: 0 2px 4px rgba(55, 178, 77, 0.3);
+}
+
+.btn-success:hover {
+  background: linear-gradient(135deg, #37b24d 0%, #2f9e44 100%);
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(55, 178, 77, 0.4);
 }
 
 
@@ -485,6 +558,43 @@ body {
   border-radius: 20px;
   font-size: 0.75rem;
   font-weight: 500;
+}
+
+/* Text colors */
+.text-danger {
+  color: #ee5a52 !important;
+}
+
+/* Progress bars */
+.progress-bar.bg-danger {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%) !important;
+}
+
+/* Spinner colors */
+.spinner-border.text-danger {
+  color: #ee5a52 !important;
+}
+
+/* Modal backdrop for danger actions */
+.modal-content .btn-danger {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+  border: none;
+  color: white;
+  font-weight: 500;
+  box-shadow: 0 2px 4px rgba(238, 90, 82, 0.3);
+}
+
+.modal-content .btn-danger:hover {
+  background: linear-gradient(135deg, #ee5a52 0%, #dc4b42 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(238, 90, 82, 0.4);
+}
+
+/* Alert danger */
+.alert-danger {
+  background-color: rgba(255, 107, 107, 0.1);
+  border-color: #ff6b6b;
+  color: #dc4b42;
 }
 
 /* Mobile Menu Toggle */

@@ -174,6 +174,36 @@ body.sidebar-is-open {
   font-size: 0.85rem;
 }
 
+/* Danger badge for accidents/critical items */
+.bg-danger {
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%) !important;
+  color: white;
+}
+
+/* Warning badge */
+.bg-warning {
+  background: linear-gradient(135deg, #ffd93d 0%, #ffbe0b 100%) !important;
+  color: #5a4000;
+}
+
+/* Success badge */
+.bg-success {
+  background: linear-gradient(135deg, #51cf66 0%, #37b24d 100%) !important;
+  color: white;
+}
+
+/* Info badge */
+.bg-info {
+  background: linear-gradient(135deg, #74c0fc 0%, #339af0 100%) !important;
+  color: white;
+}
+
+/* Secondary badge */
+.bg-secondary {
+  background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%) !important;
+  color: white;
+}
+
 .navbar {
   background: linear-gradient(135deg, #ffffff 0%, #f5f7fa 50%) !important;
   box-shadow: 0 2px 4px rgba(137, 180, 248, 0.1);
