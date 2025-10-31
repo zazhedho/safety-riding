@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import DashboardLayout from '../../components/common/DashboardLayout';
 import SchoolMap from '../../components/maps/SchoolMap';
+import ConfirmationModal from '../../components/common/ConfirmationModal';
 import schoolService from '../../services/schoolService';
 import locationService from '../../services/locationService';
 import { toast } from 'react-toastify';
@@ -22,6 +23,8 @@ const SchoolList = () => {
     search: ''
   });
   const [selectedSchoolForMap, setSelectedSchoolForMap] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [schoolToDelete, setSchoolToDelete] = useState(null);
 
   useEffect(() => {
     fetchProvinces();
@@ -102,16 +105,30 @@ const SchoolList = () => {
     fetchSchools();
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this school?')) return;
+  const handleDeleteClick = (school) => {
+    setSchoolToDelete(school);
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!schoolToDelete) return;
 
     try {
-      await schoolService.delete(id);
+      await schoolService.delete(schoolToDelete.id);
       toast.success('School deleted successfully');
       fetchSchools();
+      setShowDeleteModal(false);
+      setSchoolToDelete(null);
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to delete school');
+      setShowDeleteModal(false);
+      setSchoolToDelete(null);
     }
+  };
+
+  const handleDeleteCancel = () => {
+    setShowDeleteModal(false);
+    setSchoolToDelete(null);
   };
 
   const handleCoordinateClick = (school) => {
@@ -278,7 +295,7 @@ const SchoolList = () => {
                                   <i className="bi bi-pencil"></i>
                                 </Link>
                                 <button
-                                  onClick={() => handleDelete(school.id)}
+                                  onClick={() => handleDeleteClick(school)}
                                   className="btn btn-sm btn-outline-danger"
                                 >
                                   <i className="bi bi-trash"></i>
@@ -300,6 +317,15 @@ const SchoolList = () => {
           </div>
         </div>
       )}
+
+      <ConfirmationModal
+        show={showDeleteModal}
+        title="Delete School"
+        message={`Are you sure you want to delete "${schoolToDelete?.name}"? This action cannot be undone.`}
+        confirmText="Delete"
+        onConfirm={handleDeleteConfirm}
+        onCancel={handleDeleteCancel}
+      />
     </DashboardLayout>
   );
 };
