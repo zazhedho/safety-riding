@@ -1,15 +1,49 @@
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { useState, useEffect } from 'react';
 
 const DashboardLayout = ({ children }) => {
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
+
+  const toggleMobileMenu = () => {
+    console.log('Toggle mobile menu clicked. Current state:', isMobileMenuOpen);
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
+  const closeMobileMenu = () => {
+    console.log('Closing mobile menu');
+    setIsMobileMenuOpen(false);
+  };
+
+  // Debug: Log when menu state changes
+  useEffect(() => {
+    console.log('Mobile menu state changed:', isMobileMenuOpen);
+  }, [isMobileMenuOpen]);
+
+  // Close menu when route changes
+  useEffect(() => {
+    closeMobileMenu();
+  }, [location.pathname]);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isMobileMenuOpen && !event.target.closest('.sidebar') && !event.target.closest('.mobile-menu-toggle')) {
+        closeMobileMenu();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isMobileMenuOpen]);
 
   const menuItems = [
     { path: '/dashboard', label: 'Dashboard', icon: 'bi-speedometer2', roles: ['admin', 'staff', 'viewer'] },
@@ -17,7 +51,7 @@ const DashboardLayout = ({ children }) => {
     { path: '/schools', label: 'Schools', icon: 'bi-building', roles: ['admin', 'staff', 'viewer'] },
     { path: '/events', label: 'Events', icon: 'bi-calendar-event', roles: ['admin', 'staff', 'viewer'] },
     { path: '/accidents', label: 'Accidents', icon: 'bi-exclamation-triangle', roles: ['admin', 'staff', 'viewer'] },
-    { path: '/budgets', label: 'Budgets', icon: 'bi-cash-stack', roles: ['admin', 'viewer'] },
+    { path: '/budgets', label: 'Budgets', icon: 'bi-cash-stack', roles: ['admin', 'staff', 'viewer'] },
     { path: '/users', label: 'Users', icon: 'bi-people', roles: ['admin'] },
   ];
 
@@ -26,9 +60,25 @@ const DashboardLayout = ({ children }) => {
   );
 
   return (
-    <div className="dashboard-container">
+    <div className={`layout-wrapper ${isMobileMenuOpen ? 'sidebar-open' : ''}`}>
+      {/* Mobile Menu Toggle Button */}
+      <button
+        className="mobile-menu-toggle"
+        onClick={toggleMobileMenu}
+        aria-label="Toggle mobile menu"
+      >
+        <i className={`bi ${isMobileMenuOpen ? 'bi-x-lg' : 'bi-list'}`}></i>
+      </button>
+
+      {/* Mobile Overlay */}
+      <div
+        className="sidebar-overlay"
+        onClick={closeMobileMenu}
+      ></div>
+
       <div className="sidebar">
         <div className="sidebar-header">
+          <img src="/astra-motor.png" alt="Astra Motor Logo" style={{ width: '150px', marginBottom: '10px' }} />
           <h3>Safety Riding</h3>
           <small>Management System</small>
         </div>
@@ -38,6 +88,7 @@ const DashboardLayout = ({ children }) => {
               key={item.path}
               to={item.path}
               className={`sidebar-menu-item ${location.pathname === item.path ? 'active' : ''}`}
+              onClick={closeMobileMenu}
             >
               <i className={`bi ${item.icon}`}></i>
               <span>{item.label}</span>

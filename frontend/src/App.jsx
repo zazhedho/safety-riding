@@ -135,7 +135,7 @@ function App() {
           <Route
             path="/budgets"
             element={
-              <ProtectedRoute roles={['admin', 'viewer']}>
+              <ProtectedRoute roles={['admin', 'staff', 'viewer']}>
                 <BudgetList />
               </ProtectedRoute>
             }

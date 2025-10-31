@@ -9,6 +9,7 @@ import (
 	"safety-riding/internal/interfaces/user"
 	"safety-riding/pkg/filter"
 	"safety-riding/utils"
+	"strings"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -27,13 +28,17 @@ func NewUserService(userRepo interfaceuser.RepoUserInterface, blacklistRepo inte
 }
 
 func (s *ServiceUser) RegisterUser(req dto.UserRegister) (domainuser.Users, error) {
+	data, _ := s.UserRepo.GetByEmail(req.Email)
+	if data.Id != "" || data.Email == req.Email || data.Phone == req.Phone {
+		return domainuser.Users{}, errors.New("email or phone already exists")
+	}
 	hashedPwd, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return domainuser.Users{}, err
 	}
 
 	phone := utils.NormalizePhoneTo62(req.Phone)
-	data := domainuser.Users{
+	data = domainuser.Users{
 		Id:        utils.CreateUUID(),
 		Name:      req.Name,
 		Phone:     phone,
@@ -95,7 +100,7 @@ func (s *ServiceUser) GetAllUsers(params filter.BaseParams) ([]domainuser.Users,
 	return s.UserRepo.GetAll(params)
 }
 
-func (s *ServiceUser) Update(id string, req dto.UserUpdate) (domainuser.Users, error) {
+func (s *ServiceUser) Update(id, role string, req dto.UserUpdate) (domainuser.Users, error) {
 	data, err := s.UserRepo.GetByID(id)
 	if err != nil {
 		return domainuser.Users{}, err
@@ -112,6 +117,12 @@ func (s *ServiceUser) Update(id string, req dto.UserUpdate) (domainuser.Users, e
 
 	if req.Email != "" {
 		data.Email = req.Email
+	}
+
+	if role == utils.RoleAdmin {
+		if req.Role != "" {
+			data.Role = strings.ToLower(req.Role)
+		}
 	}
 
 	if err = s.UserRepo.Update(data); err != nil {

@@ -273,12 +273,11 @@ func (h *HandlerUser) GetAllUsers(ctx *gin.Context) {
 }
 
 // Update godoc
-// @Summary Update a user
-// @Description Update a user
+// @Summary Update current user
+// @Description Update current authenticated user
 // @Tags Users
 // @Accept  json
 // @Produce  json
-// @Param id path string true "User ID"
 // @Param user body dto.UserUpdate true "User update details"
 // @Success 200 {object} response.Success
 // @Failure 400 {object} response.Error
@@ -290,6 +289,7 @@ func (h *HandlerUser) Update(ctx *gin.Context) {
 	var req dto.UserUpdate
 	authData := utils.GetAuthData(ctx)
 	userId := utils.InterfaceString(authData["user_id"])
+	role := utils.InterfaceString(authData["role"])
 	logId := utils.GenerateLogId(ctx)
 	logPrefix := fmt.Sprintf("[%s][UserHandler][Update]", logId)
 
@@ -302,7 +302,64 @@ func (h *HandlerUser) Update(ctx *gin.Context) {
 		return
 	}
 
-	data, err := h.Service.Update(userId, req)
+	data, err := h.Service.Update(userId, role, req)
+	if err != nil {
+		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; Service.Update; ERROR: %s;", logPrefix, err))
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			res := response.Response(http.StatusNotFound, messages.MsgNotFound, logId, nil)
+			res.Error = response.Errors{Code: http.StatusNotFound, Message: "user not found"}
+			ctx.JSON(http.StatusNotFound, res)
+			return
+		}
+
+		res := response.Response(http.StatusBadRequest, messages.MsgFail, logId, nil)
+		res.Error = err.Error()
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	res := response.Response(http.StatusOK, "User updated successfully", logId, data)
+	logger.WriteLog(logger.LogLevelDebug, fmt.Sprintf("%s; Response: %+v;", logPrefix, utils.JsonEncode(data)))
+	ctx.JSON(http.StatusOK, res)
+}
+
+// UpdateUserById godoc
+// @Summary Update a user by ID (Admin only)
+// @Description Update a user by ID (Admin only)
+// @Tags Users
+// @Accept  json
+// @Produce  json
+// @Param id path string true "User ID"
+// @Param user body dto.UserUpdate true "User update details"
+// @Success 200 {object} response.Success
+// @Failure 400 {object} response.Error
+// @Failure 404 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /user/{id} [put]
+func (h *HandlerUser) UpdateUserById(ctx *gin.Context) {
+	var req dto.UserUpdate
+	authData := utils.GetAuthData(ctx)
+	role := utils.InterfaceString(authData["role"])
+	logId := utils.GenerateLogId(ctx)
+	logPrefix := fmt.Sprintf("[%s][UserHandler][UpdateUserById]", logId)
+
+	id, err := utils.ValidateUUID(ctx, logId)
+	if err != nil {
+		return
+	}
+
+	if err := ctx.BindJSON(&req); err != nil {
+		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; BindJSON ERROR: %s;", logPrefix, err.Error()))
+
+		res := response.Response(http.StatusBadRequest, messages.InvalidRequest, logId, nil)
+		res.Error = utils.ValidateError(err, reflect.TypeOf(req), "json")
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+	logger.WriteLog(logger.LogLevelDebug, fmt.Sprintf("%s; Request: %+v;", logPrefix, utils.JsonEncode(req)))
+
+	data, err := h.Service.Update(id, role, req)
 	if err != nil {
 		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; Service.Update; ERROR: %s;", logPrefix, err))
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -400,6 +457,48 @@ func (h *HandlerUser) Delete(ctx *gin.Context) {
 	userId := utils.InterfaceString(authData["user_id"])
 
 	if err := h.Service.Delete(userId); err != nil {
+		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; Service.Delete; ERROR: %s;", logPrefix, err))
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			res := response.Response(http.StatusNotFound, messages.MsgNotFound, logId, nil)
+			res.Error = response.Errors{Code: http.StatusNotFound, Message: "user not found"}
+			ctx.JSON(http.StatusNotFound, res)
+			return
+		}
+
+		res := response.Response(http.StatusInternalServerError, messages.MsgFail, logId, nil)
+		res.Error = err.Error()
+		ctx.JSON(http.StatusInternalServerError, res)
+		return
+	}
+
+	res := response.Response(http.StatusOK, "User deleted successfully", logId, nil)
+	logger.WriteLog(logger.LogLevelDebug, fmt.Sprintf("%s; Success: User deleted successfully", logPrefix))
+	ctx.JSON(http.StatusOK, res)
+}
+
+// DeleteUserById godoc
+// @Summary Delete a user by ID (Admin only)
+// @Description Delete a user by ID (Admin only)
+// @Tags Users
+// @Accept  json
+// @Produce  json
+// @Param id path string true "User ID"
+// @Success 200 {object} response.Success
+// @Failure 400 {object} response.Error
+// @Failure 404 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /user/{id} [delete]
+func (h *HandlerUser) DeleteUserById(ctx *gin.Context) {
+	logId := utils.GenerateLogId(ctx)
+	logPrefix := fmt.Sprintf("[%s][UserHandler][DeleteUserById]", logId)
+
+	id, err := utils.ValidateUUID(ctx, logId)
+	if err != nil {
+		return
+	}
+
+	if err := h.Service.Delete(id); err != nil {
 		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; Service.Delete; ERROR: %s;", logPrefix, err))
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			res := response.Response(http.StatusNotFound, messages.MsgNotFound, logId, nil)

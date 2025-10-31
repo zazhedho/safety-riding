@@ -52,9 +52,19 @@ export const AuthProvider = ({ children }) => {
       const user = await fetchUser();
       return { success: true, user };
     } catch (error) {
+      let errorMessage = 'Login failed';
+      if (error.response && error.response.data) {
+        if (error.response.data.message) {
+          errorMessage = error.response.data.message;
+        } else if (Array.isArray(error.response.data.error) && error.response.data.error.length > 0) {
+          errorMessage = error.response.data.error.map(err => err.message).join(', ');
+        } else if (typeof error.response.data.error === 'string') {
+          errorMessage = error.response.data.error;
+        }
+      }
       return { 
         success: false, 
-        error: error.response?.data?.error || 'Login failed' 
+        error: errorMessage 
       };
     }
   };
@@ -64,9 +74,19 @@ export const AuthProvider = ({ children }) => {
       const response = await api.post('/user/register', userData);
       return { success: true, data: response.data };
     } catch (error) {
+      let errorMessage = 'Registration failed';
+      if (error.response && error.response.data) {
+        if (error.response.data.message) {
+          errorMessage = error.response.data.message;
+        } else if (Array.isArray(error.response.data.error) && error.response.data.error.length > 0) {
+          errorMessage = error.response.data.error.map(err => err.message).join(', ');
+        } else if (typeof error.response.data.error === 'string') {
+          errorMessage = error.response.data.error;
+        }
+      }
       return { 
         success: false, 
-        error: error.response?.data?.error || 'Registration failed' 
+        error: errorMessage 
       };
     }
   };
@@ -92,9 +112,19 @@ export const AuthProvider = ({ children }) => {
       setUser(response.data.data);
       return { success: true, data: response.data };
     } catch (error) {
+      let errorMessage = 'Update failed';
+      if (error.response && error.response.data) {
+        if (error.response.data.message) {
+          errorMessage = error.response.data.message;
+        } else if (Array.isArray(error.response.data.error) && error.response.data.error.length > 0) {
+          errorMessage = error.response.data.error.map(err => err.message).join(', ');
+        } else if (typeof error.response.data.error === 'string') {
+          errorMessage = error.response.data.error;
+        }
+      }
       return { 
         success: false, 
-        error: error.response?.data?.error || 'Update failed' 
+        error: errorMessage 
       };
     }
   };
@@ -104,9 +134,19 @@ export const AuthProvider = ({ children }) => {
       const response = await userService.updatePassword(passwordData);
       return { success: true, data: response.data };
     } catch (error) {
+      let errorMessage = 'Password update failed';
+      if (error.response && error.response.data) {
+        if (error.response.data.message) {
+          errorMessage = error.response.data.message;
+        } else if (Array.isArray(error.response.data.error) && error.response.data.error.length > 0) {
+          errorMessage = error.response.data.error.map(err => err.message).join(', ');
+        } else if (typeof error.response.data.error === 'string') {
+          errorMessage = error.response.data.error;
+        }
+      }
       return {
         success: false,
-        error: error.response?.data?.error || 'Password update failed'
+        error: errorMessage
       };
     }
   };

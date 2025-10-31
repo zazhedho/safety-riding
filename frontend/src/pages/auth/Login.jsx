@@ -36,7 +36,7 @@ const Login = () => {
   return (
     <div className="min-vh-100 d-flex align-items-center justify-content-center"
          style={{ background: 'linear-gradient(135deg, #dc3545 0%, #c82333 100%)' }}>
-      <div className="card shadow-lg" style={{ width: '400px', borderRadius: '15px' }}>
+      <div className="card shadow-lg" style={{ maxWidth: '400px', width: '90%', borderRadius: '15px' }}>
         <div className="card-body p-5">
           <div className="text-center mb-4">
             <h2 className="text-danger fw-bold">Safety Riding</h2>
