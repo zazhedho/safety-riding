@@ -96,12 +96,18 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
+  const hasRole = (roles) => {
+    if (!user || !user.role) return false;
+    return roles.includes(user.role);
+  };
+
   const value = {
     user,
     login,
     register,
     logout,
     updateProfile,
+    hasRole,
     loading,
     isAuthenticated: !!user
   }

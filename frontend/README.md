@@ -1,142 +1,144 @@
-# Workshop Management Dashboard
+# Safety Riding Management System - Frontend
 
-A modern React.js dashboard for the Workshop Management System with Bootstrap styling.
+A comprehensive web application for managing safety riding programs, schools, events, accidents, and budgets with a white-red themed dashboard.
 
 ## Features
 
-- **Authentication**: Login/Register with JWT tokens
-- **Dashboard**: Overview with statistics and recent bookings
-- **User Management**: View and manage users (Admin/Cashier only)
-- **Vehicle Management**: CRUD operations for vehicles
-- **Service Management**: CRUD operations for services (Admin only)
-- **Booking Management**: Create and manage bookings with status updates
-- **Profile Management**: Update user profile information
-- **Responsive Design**: Mobile-friendly interface
-- **Role-based Access Control**: Different permissions for different user roles
+- **Dashboard**: Overview with statistics for schools, events, accidents, and budgets
+- **School Management**: CRUD operations with interactive map showing school locations
+- **Event Management**: Manage safety riding events with photo support
+- **Accident Records**: Track and manage accident data with police reports
+- **Budget Management**: Track event budgets with monthly/yearly summaries
+- **Role-Based Access Control**: Admin and staff roles with different permissions
+- **White-Red Theme**: Professional dashboard with gradient red sidebar
+- **Free Maps**: Uses OpenStreetMap (Leaflet) - no API key or billing required
 
-## User Roles
+## Prerequisites
 
-- **Admin**: Full access to all features
-- **Cashier**: Can view users and update booking status
-- **Customer**: Can manage their own vehicles and create bookings
-- **Mechanic**: Basic access (can be extended)
+- Node.js 16+ and npm
+- Backend API running (default: http://localhost:8080)
 
-## Tech Stack
+## Installation
 
-- React.js 18
-- React Router DOM
-- React Bootstrap
-- Axios for API calls
-- FontAwesome icons
-- Vite build tool
+1. Install dependencies:
+```bash
+npm install
+```
 
-## Getting Started
+2. Configure environment variables:
+```bash
+cp .env.example .env
+```
 
-1. **Install dependencies:**
-   ```bash
-   npm install
-   ```
+3. Edit `.env` file with your configuration:
+```env
+VITE_API_BASE_URL=http://localhost:8080
+```
 
-2. **Set up environment variables:**
-   ```bash
-   cp .env.example .env
-   ```
-   Update the `VITE_API_URL` in `.env` to match your backend API URL.
+## Development
 
-3. **Start the development server:**
-   ```bash
-   npm run dev
-   ```
+Run the development server:
+```bash
+npm run dev
+```
 
-4. **Build for production:**
-   ```bash
-   npm run build
-   ```
+The application will be available at http://localhost:5173
 
-## API Integration
+## Build
 
-The dashboard integrates with the Go backend API with the following endpoints:
+Build for production:
+```bash
+npm run build
+```
 
-- `POST /user/register` - User registration
-- `POST /user/login` - User login
-- `POST /user/logout` - User logout
-- `GET /user` - Get current user profile
-- `PUT /user` - Update user profile
-- `GET /users` - Get all users (Admin/Cashier)
-- `GET /vehicles` - Get vehicles
-- `POST /vehicle` - Create vehicle
-- `PUT /vehicle/:id` - Update vehicle
-- `DELETE /vehicle/:id` - Delete vehicle
-- `GET /services` - Get services
-- `POST /service` - Create service (Admin)
-- `PUT /service/:id` - Update service (Admin)
-- `DELETE /service/:id` - Delete service (Admin)
-- `GET /bookings` - Get bookings
-- `POST /booking` - Create booking
-- `PUT /booking/:id/status` - Update booking status
+Preview production build:
+```bash
+npm run preview
+```
 
 ## Project Structure
 
 ```
 src/
-├── components/          # Reusable components
-│   ├── Header.jsx
-│   ├── Layout.jsx
-│   ├── ProtectedRoute.jsx
-│   └── Sidebar.jsx
-├── contexts/           # React contexts
-│   └── AuthContext.jsx
-├── pages/              # Page components
-│   ├── Bookings.jsx
-│   ├── Dashboard.jsx
-│   ├── Login.jsx
-│   ├── Profile.jsx
-│   ├── Register.jsx
-│   ├── Services.jsx
-│   ├── Users.jsx
-│   └── Vehicles.jsx
-├── services/           # API services
-│   └── api.js
-├── App.jsx
-├── main.jsx
-└── index.css
+├── components/
+│   ├── common/
+│   │   ├── DashboardLayout.jsx    # Main dashboard layout with sidebar
+│   │   └── ProtectedRoute.jsx     # Route protection component
+│   └── maps/
+│       └── SchoolMap.jsx           # Google Maps integration
+├── contexts/
+│   └── AuthContext.jsx             # Authentication context
+├── pages/
+│   ├── auth/
+│   │   └── Login.jsx               # Login page
+│   ├── schools/
+│   │   └── SchoolList.jsx          # Schools list with map view
+│   ├── events/
+│   │   └── EventList.jsx           # Events management
+│   ├── accidents/
+│   │   └── AccidentList.jsx        # Accident records
+│   ├── budgets/
+│   │   └── BudgetList.jsx          # Budget tracking
+│   └── Dashboard.jsx               # Dashboard home
+├── services/
+│   ├── api.js                      # Axios instance with interceptors
+│   ├── authService.js              # Authentication API calls
+│   ├── schoolService.js            # School API calls
+│   ├── eventService.js             # Event API calls
+│   ├── accidentService.js          # Accident API calls
+│   ├── budgetService.js            # Budget API calls
+│   └── locationService.js          # Location API calls
+├── styles/
+│   └── theme.css                   # White-red theme styles
+└── App.jsx                         # Main app with routing
 ```
 
-## Features by Role
+## User Roles
 
-### Admin
-- Full dashboard access
-- User management
-- Vehicle CRUD operations
-- Service CRUD operations
-- Booking management and status updates
-- Profile management
+- **Admin**: Full access to all features including budget management
+- **Staff**: Access to schools, events, and accidents (no budget access)
 
-### Cashier
-- Dashboard access
-- View users
-- View vehicles and services
-- Booking status updates
-- Profile management
+## API Integration
 
-### Customer
-- Dashboard access
-- Vehicle CRUD operations (own vehicles)
-- View services
-- Create bookings
-- Profile management
+The frontend integrates with the following backend endpoints:
 
-## Styling
+- `/auth/login` - User authentication
+- `/schools` - School CRUD operations
+- `/events` - Event management with photos
+- `/accidents` - Accident records
+- `/budgets` - Budget tracking with summaries
+- `/province`, `/city`, `/district` - Location data from Indonesian government API
 
-The dashboard uses a modern design with:
-- Gradient backgrounds
-- Card-based layouts
-- Hover effects and animations
-- Responsive design
-- Bootstrap components
-- FontAwesome icons
-- Custom CSS for enhanced UI/UX
+## Interactive Maps Integration
 
-## Environment Variables
+Schools with latitude and longitude coordinates are displayed on an interactive map with:
+- **Leaflet + OpenStreetMap** (100% free, no API key needed)
+- Red marker pins for each school
+- Popup windows showing school details on marker click
+- Toggle between table and map view
+- Zoom and pan functionality
 
-- `VITE_API_URL`: Backend API base URL (default: http://localhost:8080/api)
+## Technologies Used
+
+- **React 18** - UI library
+- **React Router v6** - Client-side routing
+- **Axios** - HTTP client
+- **Bootstrap 5** - UI framework
+- **Bootstrap Icons** - Icon library
+- **React Toastify** - Toast notifications
+- **Leaflet + React Leaflet** - Free maps with OpenStreetMap
+
+## Authentication
+
+The application uses JWT token-based authentication:
+- Token stored in localStorage
+- Automatic token injection in API requests
+- Auto-redirect on 401 unauthorized responses
+- Protected routes based on user roles
+
+## Notes
+
+- Make sure the backend API is running before starting the frontend
+- Maps are provided by OpenStreetMap - completely free, no API key required
+- The theme uses CSS custom properties for easy color customization
+- All API calls include error handling with toast notifications

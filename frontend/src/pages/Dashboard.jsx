@@ -1,169 +1,147 @@
-import React, { useState, useEffect } from 'react'
-import { Row, Col, Card, Table, Badge } from 'react-bootstrap'
-import { useNavigate } from 'react-router-dom' // Import useNavigate
-import api from '../services/api'
-import { useAuth } from '../contexts/AuthContext'
+import { useState, useEffect } from 'react';
+import DashboardLayout from '../components/common/DashboardLayout';
+import schoolService from '../services/schoolService';
+import eventService from '../services/eventService';
+import accidentService from '../services/accidentService';
+import budgetService from '../services/budgetService';
+import { toast } from 'react-toastify';
 
 const Dashboard = () => {
-  const { user } = useAuth()
-  const navigate = useNavigate() // Get the navigate function
   const [stats, setStats] = useState({
-    totalBookings: 0,
-    pendingBookings: 0,
-    totalVehicles: 0,
-    totalServices: 0
-  })
-  const [recentBookings, setRecentBookings] = useState([])
-  const [loading, setLoading] = useState(true)
+    schools: 0,
+    events: 0,
+    accidents: 0,
+    budgets: 0
+  });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchDashboardData()
-  }, [])
+    fetchStats();
+  }, []);
 
-  const fetchDashboardData = async () => {
+  const fetchStats = async () => {
     try {
-      const [bookingsRes, vehiclesRes, servicesRes] = await Promise.all([
-        api.get('/bookings?limit=5'),
-        api.get('/vehicles?limit=1'),
-        api.get('/services?limit=1')
-      ])
-
-      const bookings = bookingsRes.data.data || []
-      const pendingCount = bookings.filter(b => b.status === 'pending').length
+      const [schoolsRes, eventsRes, accidentsRes, budgetsRes] = await Promise.all([
+        schoolService.getAll({ limit: 1 }),
+        eventService.getAll({ limit: 1 }),
+        accidentService.getAll({ limit: 1 }),
+        budgetService.getAll({ limit: 1 })
+      ]);
 
       setStats({
-        totalBookings: bookingsRes.data.total_data || 0,
-        pendingBookings: pendingCount,
-        totalVehicles: vehiclesRes.data.total_data || 0,
-        totalServices: servicesRes.data.total_data || 0
-      })
-
-      setRecentBookings(bookings)
+        schools: schoolsRes.data.total || 0,
+        events: eventsRes.data.total || 0,
+        accidents: accidentsRes.data.total || 0,
+        budgets: budgetsRes.data.total || 0
+      });
     } catch (error) {
-      console.error('Failed to fetch dashboard data:', error)
+      toast.error('Failed to load dashboard stats');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
-
-  const getStatusBadge = (status) => {
-    const variants = {
-      pending: 'warning',
-      confirmed: 'info',
-      'on progress': 'primary',
-      completed: 'success',
-      cancelled: 'danger'
-    }
-    return <Badge bg={variants[status] || 'secondary'}>{status}</Badge>
-  }
-
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    })
-  }
+  };
 
   if (loading) {
     return (
-      <div className="d-flex justify-content-center">
-        <div className="spinner-border" role="status">
-          <span className="visually-hidden">Loading...</span>
+      <DashboardLayout>
+        <div className="d-flex justify-content-center align-items-center" style={{ height: '60vh' }}>
+          <div className="spinner-border text-danger" role="status">
+            <span className="visually-hidden">Loading...</span>
+          </div>
         </div>
-      </div>
-    )
+      </DashboardLayout>
+    );
   }
 
   return (
-    <div>
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2>Dashboard</h2>
-        <p className="text-muted mb-0">Welcome back, {user?.name}!</p>
+    <DashboardLayout>
+      <h2 className="mb-4">Dashboard Overview</h2>
+
+      <div className="row g-4">
+        <div className="col-md-3">
+          <div className="stats-card">
+            <div className="d-flex justify-content-between align-items-center">
+              <div>
+                <h6 className="text-muted mb-1">Total Schools</h6>
+                <div className="stats-number">{stats.schools}</div>
+              </div>
+              <i className="bi bi-building fs-1 text-danger"></i>
+            </div>
+          </div>
+        </div>
+
+        <div className="col-md-3">
+          <div className="stats-card">
+            <div className="d-flex justify-content-between align-items-center">
+              <div>
+                <h6 className="text-muted mb-1">Total Events</h6>
+                <div className="stats-number">{stats.events}</div>
+              </div>
+              <i className="bi bi-calendar-event fs-1 text-danger"></i>
+            </div>
+          </div>
+        </div>
+
+        <div className="col-md-3">
+          <div className="stats-card">
+            <div className="d-flex justify-content-between align-items-center">
+              <div>
+                <h6 className="text-muted mb-1">Total Accidents</h6>
+                <div className="stats-number">{stats.accidents}</div>
+              </div>
+              <i className="bi bi-exclamation-triangle fs-1 text-danger"></i>
+            </div>
+          </div>
+        </div>
+
+        <div className="col-md-3">
+          <div className="stats-card">
+            <div className="d-flex justify-content-between align-items-center">
+              <div>
+                <h6 className="text-muted mb-1">Total Budgets</h6>
+                <div className="stats-number">{stats.budgets}</div>
+              </div>
+              <i className="bi bi-cash-stack fs-1 text-danger"></i>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Stats Cards */}
-      <Row className="mb-4">
-        <Col md={3} sm={6} className="mb-3">
-          <Card className="stats-card" onClick={() => navigate('/bookings')} style={{ cursor: 'pointer' }}>
-            <Card.Body className="d-flex align-items-center">
-              <div className="flex-grow-1">
-                <h3 className="mb-0">{stats.totalBookings}</h3>
-                <p className="mb-0">Total Bookings</p>
+      <div className="row mt-4">
+        <div className="col-12">
+          <div className="card">
+            <div className="card-header">
+              <h5 className="mb-0">Quick Actions</h5>
+            </div>
+            <div className="card-body">
+              <div className="row g-3">
+                <div className="col-md-3">
+                  <a href="/schools" className="btn btn-outline-danger w-100">
+                    <i className="bi bi-building me-2"></i>Manage Schools
+                  </a>
+                </div>
+                <div className="col-md-3">
+                  <a href="/events" className="btn btn-outline-danger w-100">
+                    <i className="bi bi-calendar-event me-2"></i>Manage Events
+                  </a>
+                </div>
+                <div className="col-md-3">
+                  <a href="/accidents" className="btn btn-outline-danger w-100">
+                    <i className="bi bi-exclamation-triangle me-2"></i>View Accidents
+                  </a>
+                </div>
+                <div className="col-md-3">
+                  <a href="/budgets" className="btn btn-outline-danger w-100">
+                    <i className="bi bi-cash-stack me-2"></i>Budget Reports
+                  </a>
+                </div>
               </div>
-              <i className="fas fa-calendar-check stats-icon"></i>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col md={3} sm={6} className="mb-3">
-          <Card className="stats-card" onClick={() => navigate('/bookings?status=pending')} style={{ cursor: 'pointer' }}>
-            <Card.Body className="d-flex align-items-center">
-              <div className="flex-grow-1">
-                <h3 className="mb-0">{stats.pendingBookings}</h3>
-                <p className="mb-0">Pending Bookings</p>
-              </div>
-              <i className="fas fa-clock stats-icon"></i>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col md={3} sm={6} className="mb-3">
-          <Card className="stats-card" onClick={() => navigate('/vehicles')} style={{ cursor: 'pointer' }}>
-            <Card.Body className="d-flex align-items-center">
-              <div className="flex-grow-1">
-                <h3 className="mb-0">{stats.totalVehicles}</h3>
-                <p className="mb-0">Total Vehicles</p>
-              </div>
-              <i className="fas fa-car stats-icon"></i>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col md={3} sm={6} className="mb-3">
-          <Card className="stats-card" onClick={() => navigate('/services')} style={{ cursor: 'pointer' }}>
-            <Card.Body className="d-flex align-items-center">
-              <div className="flex-grow-1">
-                <h3 className="mb-0">{stats.totalServices}</h3>
-                <p className="mb-0">Total Services</p>
-              </div>
-              <i className="fas fa-tools stats-icon"></i>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
+            </div>
+          </div>
+        </div>
+      </div>
+    </DashboardLayout>
+  );
+};
 
-      {/* Recent Bookings */}
-      <Card>
-        <Card.Header>
-          <h5 className="mb-0">Recent Bookings</h5>
-        </Card.Header>
-        <Card.Body>
-          {recentBookings.length > 0 ? (
-            <Table responsive hover>
-              <thead>
-                <tr>
-                  <th>Booking Date</th>
-                  <th>Vehicle</th>
-                  <th>Status</th>
-                  <th>Notes</th>
-                </tr>
-              </thead>
-              <tbody>
-                {recentBookings.map((booking) => (
-                  <tr key={booking.id}>
-                    <td>{formatDate(booking.booking_date)}</td>
-                    <td>{booking.Vehicle.model}</td>
-                    <td>{getStatusBadge(booking.status)}</td>
-                    <td>{booking.notes || '-'}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          ) : (
-            <p className="text-muted text-center py-4">No recent bookings found</p>
-          )}
-        </Card.Body>
-      </Card>
-    </div>
-  )
-}
-
-export default Dashboard
+export default Dashboard;
