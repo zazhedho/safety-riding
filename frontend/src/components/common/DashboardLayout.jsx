@@ -17,6 +17,7 @@ const DashboardLayout = ({ children }) => {
     { path: '/events', label: 'Events', icon: 'bi-calendar-event', roles: ['admin', 'staff'] },
     { path: '/accidents', label: 'Accidents', icon: 'bi-exclamation-triangle', roles: ['admin', 'staff'] },
     { path: '/budgets', label: 'Budgets', icon: 'bi-cash-stack', roles: ['admin'] },
+    { path: '/users', label: 'Users', icon: 'bi-people', roles: ['admin'] },
   ];
 
   const filteredMenu = menuItems.filter(item =>

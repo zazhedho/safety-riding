@@ -1,0 +1,248 @@
+import { useState, useEffect } from 'react';
+import DashboardLayout from '../../components/common/DashboardLayout';
+import api from '../../services/api';
+import { toast } from 'react-toastify';
+import { useAuth } from '../../contexts/AuthContext';
+
+const UserList = () => {
+  const { user: currentUser } = useAuth();
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState({
+    role: '',
+    search: ''
+  });
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0
+  });
+
+  useEffect(() => {
+    fetchUsers();
+  }, [pagination.page, filters]);
+
+  const fetchUsers = async () => {
+    setLoading(true);
+    try {
+      const params = {
+        page: pagination.page,
+        limit: pagination.limit
+      };
+
+      if (filters.role) params['filters[role]'] = filters.role;
+      if (filters.search) params.search = filters.search;
+
+      const response = await api.get('/users', { params });
+
+      setUsers(response.data.data || []);
+      setPagination(prev => ({
+        ...prev,
+        total: response.data.total_data || 0,
+        totalPages: response.data.total_pages || 0
+      }));
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to load users');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilters(prev => ({ ...prev, [name]: value }));
+    setPagination(prev => ({ ...prev, page: 1 }));
+  };
+
+  const handlePageChange = (newPage) => {
+    setPagination(prev => ({ ...prev, page: newPage }));
+  };
+
+  const formatDate = (dateStr) => {
+    return new Date(dateStr).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  const getRoleBadge = (role) => {
+    const variants = {
+      admin: 'bg-danger',
+      staff: 'bg-primary',
+      member: 'bg-success',
+      viewer: 'bg-secondary'
+    };
+    return <span className={`badge ${variants[role] || 'bg-secondary'}`}>{role?.toUpperCase()}</span>;
+  };
+
+  if (currentUser?.role !== 'admin') {
+    return (
+      <DashboardLayout>
+        <div className="card">
+          <div className="card-body text-center py-5">
+            <i className="bi bi-lock fs-1 text-danger mb-3"></i>
+            <h4>Access Denied</h4>
+            <p className="text-muted">Only administrators can view this page.</p>
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  return (
+    <DashboardLayout>
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h2>Users Management</h2>
+      </div>
+
+      <div className="card mb-4">
+        <div className="card-body">
+          <div className="row g-3">
+            <div className="col-md-6">
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Search by name, email, or phone..."
+                name="search"
+                value={filters.search}
+                onChange={handleFilterChange}
+              />
+            </div>
+            <div className="col-md-3">
+              <select
+                className="form-select"
+                name="role"
+                value={filters.role}
+                onChange={handleFilterChange}
+              >
+                <option value="">All Roles</option>
+                <option value="admin">Admin</option>
+                <option value="staff">Staff</option>
+                <option value="member">Member</option>
+                <option value="viewer">Viewer</option>
+              </select>
+            </div>
+            <div className="col-md-3">
+              <button className="btn btn-primary w-100" onClick={fetchUsers}>
+                <i className="bi bi-search me-2"></i>Search
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="card-body">
+          {loading ? (
+            <div className="text-center py-5">
+              <div className="spinner-border text-danger" role="status">
+                <span className="visually-hidden">Loading...</span>
+              </div>
+            </div>
+          ) : users.length > 0 ? (
+            <>
+              <div className="table-responsive">
+                <table className="table table-hover">
+                  <thead>
+                    <tr>
+                      <th>Name</th>
+                      <th>Email</th>
+                      <th>Phone</th>
+                      <th>Role</th>
+                      <th>Created At</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {users.map(user => (
+                      <tr key={user.id}>
+                        <td>
+                          <div className="d-flex align-items-center">
+                            <div className="avatar-circle bg-danger text-white me-3">
+                              {user.name?.charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                              <div className="fw-bold">{user.name}</div>
+                              {user.id === currentUser?.id && (
+                                <small className="text-muted">(You)</small>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                        <td>{user.email}</td>
+                        <td>{user.phone || '-'}</td>
+                        <td>{getRoleBadge(user.role)}</td>
+                        <td>{formatDate(user.created_at)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {pagination.totalPages > 1 && (
+                <div className="d-flex justify-content-center mt-4">
+                  <nav>
+                    <ul className="pagination">
+                      <li className={`page-item ${pagination.page === 1 ? 'disabled' : ''}`}>
+                        <button
+                          className="page-link"
+                          onClick={() => handlePageChange(pagination.page - 1)}
+                          disabled={pagination.page === 1}
+                        >
+                          Previous
+                        </button>
+                      </li>
+
+                      {[...Array(pagination.totalPages)].map((_, index) => {
+                        const pageNum = index + 1;
+                        if (
+                          pageNum === 1 ||
+                          pageNum === pagination.totalPages ||
+                          (pageNum >= pagination.page - 1 && pageNum <= pagination.page + 1)
+                        ) {
+                          return (
+                            <li key={pageNum} className={`page-item ${pagination.page === pageNum ? 'active' : ''}`}>
+                              <button
+                                className="page-link"
+                                onClick={() => handlePageChange(pageNum)}
+                              >
+                                {pageNum}
+                              </button>
+                            </li>
+                          );
+                        } else if (
+                          pageNum === pagination.page - 2 ||
+                          pageNum === pagination.page + 2
+                        ) {
+                          return <li key={pageNum} className="page-item disabled"><span className="page-link">...</span></li>;
+                        }
+                        return null;
+                      })}
+
+                      <li className={`page-item ${pagination.page === pagination.totalPages ? 'disabled' : ''}`}>
+                        <button
+                          className="page-link"
+                          onClick={() => handlePageChange(pagination.page + 1)}
+                          disabled={pagination.page === pagination.totalPages}
+                        >
+                          Next
+                        </button>
+                      </li>
+                    </ul>
+                  </nav>
+                </div>
+              )}
+            </>
+          ) : (
+            <div className="text-center py-5 text-muted">
+              No users found
+            </div>
+          )}
+        </div>
+      </div>
+    </DashboardLayout>
+  );
+};
+
+export default UserList;

@@ -7,6 +7,7 @@ import SchoolList from './pages/schools/SchoolList';
 import EventList from './pages/events/EventList';
 import AccidentList from './pages/accidents/AccidentList';
 import BudgetList from './pages/budgets/BudgetList';
+import UserList from './pages/users/UserList';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -63,6 +64,15 @@ function App() {
             element={
               <ProtectedRoute roles={['admin']}>
                 <BudgetList />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/users"
+            element={
+              <ProtectedRoute roles={['admin']}>
+                <UserList />
               </ProtectedRoute>
             }
           />
