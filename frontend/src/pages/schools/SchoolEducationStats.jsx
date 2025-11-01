@@ -181,10 +181,12 @@ const SchoolEducationStats = () => {
                 <div className="d-flex justify-content-between align-items-center">
                   <div>
                     <h6 className="text-muted mb-1">Educated Schools</h6>
-                    <h3 className="mb-0">{stats.total_educated_schools}</h3>
-                    <small className="text-success">
-                      {calculatePercentage(stats.total_educated_schools, stats.total_schools)}%
-                    </small>
+                    <div className="d-flex align-items-baseline">
+                      <h3 className="mb-0">{stats.total_educated_schools}</h3>
+                      <small className="text-success ms-2">
+                        ({calculatePercentage(stats.total_educated_schools, stats.total_schools)}%)
+                      </small>
+                    </div>
                   </div>
                   <div className="text-success" style={{ fontSize: '2rem' }}>
                     <i className="bi bi-check-circle"></i>
