@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import DashboardLayout from '../../components/common/DashboardLayout';
+import LocationPickerMap from '../../components/maps/LocationPickerMap';
 import schoolService from '../../services/schoolService';
 import locationService from '../../services/locationService';
 import { toast } from 'react-toastify';
@@ -34,6 +35,7 @@ const SchoolForm = () => {
   const [cities, setCities] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showMapPicker, setShowMapPicker] = useState(false);
 
   useEffect(() => {
     fetchProvinces();
@@ -104,6 +106,109 @@ const SchoolForm = () => {
       ...prev,
       [name]: type === 'checkbox' ? checked : value,
     }));
+  };
+
+  const handleLocationSelect = (lat, lng, addressData) => {
+    if (lat && lng) {
+      setFormData(prev => ({
+        ...prev,
+        latitude: lat.toString(),
+        longitude: lng.toString(),
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        latitude: '',
+        longitude: '',
+      }));
+    }
+  };
+
+  const handleAddressDataReceived = async (addressData) => {
+    if (!addressData) return;
+
+    const updates = {};
+
+    // Auto-fill school name if available and current name is empty
+    if (addressData.schoolName && !formData.name) {
+      updates.name = addressData.schoolName;
+    }
+
+    // Auto-fill address if available
+    if (addressData.address) {
+      updates.address = addressData.address;
+    }
+
+    // Auto-fill postal code if available
+    if (addressData.postalCode) {
+      updates.postal_code = addressData.postalCode;
+    }
+
+    // Try to match and auto-select province
+    if (addressData.province && provinces.length > 0) {
+      const matchedProvince = provinces.find(p =>
+        p.name.toLowerCase().includes(addressData.province.toLowerCase()) ||
+        addressData.province.toLowerCase().includes(p.name.toLowerCase())
+      );
+      if (matchedProvince) {
+        updates.province_id = matchedProvince.code;
+        updates.province_name = matchedProvince.name;
+
+        // Fetch cities for this province
+        try {
+          const response = await locationService.getCities(matchedProvince.code);
+          const fetchedCities = response.data.data || [];
+          setCities(fetchedCities);
+
+          // Try to match city
+          if (addressData.city && fetchedCities.length > 0) {
+            const matchedCity = fetchedCities.find(c =>
+              c.name.toLowerCase().includes(addressData.city.toLowerCase()) ||
+              addressData.city.toLowerCase().includes(c.name.toLowerCase())
+            );
+            if (matchedCity) {
+              updates.city_id = matchedCity.code;
+              updates.city_name = matchedCity.name;
+
+              // Fetch districts for this city
+              try {
+                const districtResponse = await locationService.getDistricts(matchedProvince.code, matchedCity.code);
+                const fetchedDistricts = districtResponse.data.data || [];
+                setDistricts(fetchedDistricts);
+
+                // Try to match district
+                if (addressData.district && fetchedDistricts.length > 0) {
+                  const matchedDistrict = fetchedDistricts.find(d =>
+                    d.name.toLowerCase().includes(addressData.district.toLowerCase()) ||
+                    addressData.district.toLowerCase().includes(d.name.toLowerCase())
+                  );
+                  if (matchedDistrict) {
+                    updates.district_id = matchedDistrict.code;
+                    updates.district_name = matchedDistrict.name;
+                  }
+                }
+              } catch (error) {
+                console.error('Error fetching districts:', error);
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching cities:', error);
+        }
+      }
+    }
+
+    // Apply all updates
+    setFormData(prev => ({
+      ...prev,
+      ...updates,
+    }));
+
+    // Show success message with what was auto-filled
+    const filledFields = Object.keys(updates).filter(key => updates[key]);
+    if (filledFields.length > 0) {
+      toast.success(`Auto-filled ${filledFields.length} field(s) from location data`);
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -216,6 +321,29 @@ const SchoolForm = () => {
                 <input type="number" step="any" className="form-control" name="longitude" value={formData.longitude} onChange={handleChange} />
               </div>
             </div>
+
+            {/* Map Location Picker */}
+            <div className="mb-3">
+              <button
+                type="button"
+                className="btn btn-outline-primary"
+                onClick={() => setShowMapPicker(!showMapPicker)}
+              >
+                <i className={`bi ${showMapPicker ? 'bi-chevron-up' : 'bi-map'} me-2`}></i>
+                {showMapPicker ? 'Hide Map Picker' : 'Pick Location on Map'}
+              </button>
+            </div>
+
+            {showMapPicker && (
+              <div className="mb-3">
+                <LocationPickerMap
+                  onLocationSelect={handleLocationSelect}
+                  onAddressDataReceived={handleAddressDataReceived}
+                  initialLat={formData.latitude}
+                  initialLng={formData.longitude}
+                />
+              </div>
+            )}
             <div className="row">
               <div className="col-md-4 mb-3">
                 <label className="form-label">Student Count</label>

@@ -79,6 +79,7 @@ func (r *repo) Fetch(params filter.BaseParams) (ret []domainevent.Event, totalDa
 			"title":           true,
 			"status":          true,
 			"attendees_count": true,
+			"instructor_name": true,
 			"event_type":      true,
 			"created_at":      true,
 			"updated_at":      true,

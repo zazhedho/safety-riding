@@ -15,11 +15,18 @@ const EventList = () => {
     school_id: '',
     search: ''
   });
+  const [sorting, setSorting] = useState({
+    order_by: 'event_date',
+    order_direction: 'desc'
+  });
 
   useEffect(() => {
     fetchSchools();
-    fetchEvents();
   }, []);
+
+  useEffect(() => {
+    fetchEvents();
+  }, [sorting]);
 
   const fetchSchools = async () => {
     try {
@@ -33,7 +40,10 @@ const EventList = () => {
   const fetchEvents = async () => {
     setLoading(true);
     try {
-      const params = {};
+      const params = {
+        order_by: sorting.order_by,
+        order_direction: sorting.order_direction,
+      };
       if (filters.school_id) params['filters[school_id]'] = filters.school_id;
       if (filters.search) params.search = filters.search;
 
@@ -53,6 +63,22 @@ const EventList = () => {
 
   const handleSearch = () => {
     fetchEvents();
+  };
+
+  const handleSort = (column) => {
+    setSorting(prev => ({
+      order_by: column,
+      order_direction: prev.order_by === column && prev.order_direction === 'asc' ? 'desc' : 'asc'
+    }));
+  };
+
+  const getSortIcon = (column) => {
+    if (sorting.order_by !== column) {
+      return <i className="bi bi-arrow-down-up ms-1 text-muted"></i>;
+    }
+    return sorting.order_direction === 'asc'
+      ? <i className="bi bi-arrow-up ms-1"></i>
+      : <i className="bi bi-arrow-down ms-1"></i>;
   };
 
   const handleDelete = async (id) => {
@@ -136,12 +162,22 @@ const EventList = () => {
               <table className="table table-hover">
                 <thead>
                   <tr>
-                    <th>Event Name</th>
+                    <th style={{ cursor: 'pointer' }} onClick={() => handleSort('title')}>
+                      Event Name {getSortIcon('title')}
+                    </th>
                     <th>School</th>
-                    <th>Event Date</th>
-                    <th>Participants</th>
-                    <th>Instructor</th>
-                    <th>Status</th>
+                    <th style={{ cursor: 'pointer' }} onClick={() => handleSort('event_date')}>
+                      Event Date {getSortIcon('event_date')}
+                    </th>
+                    <th style={{ cursor: 'pointer' }} onClick={() => handleSort('attendees_count')}>
+                      Participants {getSortIcon('attendees_count')}
+                    </th>
+                    <th style={{ cursor: 'pointer' }} onClick={() => handleSort('instructor_name')}>
+                      Instructor {getSortIcon('instructor_name')}
+                    </th>
+                    <th style={{ cursor: 'pointer' }} onClick={() => handleSort('status')}>
+                      Status {getSortIcon('status')}
+                    </th>
                     {canPerformActions && <th>Actions</th>}
                   </tr>
                 </thead>

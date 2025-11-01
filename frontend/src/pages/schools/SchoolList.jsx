@@ -22,14 +22,21 @@ const SchoolList = () => {
     district_id: '',
     search: ''
   });
+  const [sorting, setSorting] = useState({
+    order_by: 'updated_at',
+    order_direction: 'desc'
+  });
   const [selectedSchoolForMap, setSelectedSchoolForMap] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [schoolToDelete, setSchoolToDelete] = useState(null);
 
   useEffect(() => {
     fetchProvinces();
-    fetchSchools();
   }, []);
+
+  useEffect(() => {
+    fetchSchools();
+  }, [sorting]);
 
   useEffect(() => {
     if (filters.province_id) {
@@ -76,7 +83,10 @@ const SchoolList = () => {
   const fetchSchools = async () => {
     setLoading(true);
     try {
-      const params = {};
+      const params = {
+        order_by: sorting.order_by,
+        order_direction: sorting.order_direction,
+      };
       if (filters.province_id) params['filters[province_id]'] = filters.province_id;
       if (filters.city_id) params['filters[city_id]'] = filters.city_id;
       if (filters.district_id) params['filters[district_id]'] = filters.district_id;
@@ -103,6 +113,22 @@ const SchoolList = () => {
 
   const handleSearch = () => {
     fetchSchools();
+  };
+
+  const handleSort = (column) => {
+    setSorting(prev => ({
+      order_by: column,
+      order_direction: prev.order_by === column && prev.order_direction === 'asc' ? 'desc' : 'asc'
+    }));
+  };
+
+  const getSortIcon = (column) => {
+    if (sorting.order_by !== column) {
+      return <i className="bi bi-arrow-down-up ms-1 text-muted"></i>;
+    }
+    return sorting.order_direction === 'asc'
+      ? <i className="bi bi-arrow-up ms-1"></i>
+      : <i className="bi bi-arrow-down ms-1"></i>;
   };
 
   const handleDeleteClick = (school) => {
@@ -249,10 +275,16 @@ const SchoolList = () => {
                 <table className="table table-hover">
                   <thead>
                     <tr>
-                      <th>NPSN</th>
-                      <th>Name</th>
+                      <th style={{ cursor: 'pointer' }} onClick={() => handleSort('npsn')}>
+                        NPSN {getSortIcon('npsn')}
+                      </th>
+                      <th style={{ cursor: 'pointer' }} onClick={() => handleSort('name')}>
+                        Name {getSortIcon('name')}
+                      </th>
                       <th>Address</th>
-                      <th>Phone</th>
+                      <th style={{ cursor: 'pointer' }} onClick={() => handleSort('phone')}>
+                        Phone {getSortIcon('phone')}
+                      </th>
                       <th>Coordinates</th>
                       <th>Actions</th>
                     </tr>

@@ -71,6 +71,7 @@ func (r *repo) Fetch(params filter.BaseParams) (ret []domainschool.School, total
 		validColumns := map[string]bool{
 			"name":          true,
 			"npsn":          true,
+			"phone":         true,
 			"student_count": true,
 			"teacher_count": true,
 			"major_count":   true,
