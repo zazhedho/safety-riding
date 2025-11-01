@@ -8,6 +8,7 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"gorm.io/gorm"
 
+	"safety-riding/infrastructure/media"
 	accidentHandler "safety-riding/internal/handlers/http/accident"
 	budgetHandler "safety-riding/internal/handlers/http/budget"
 	cityHandler "safety-riding/internal/handlers/http/city"
@@ -96,6 +97,8 @@ func (r *Routes) SchoolRoutes() {
 	mdw := middlewares.NewMiddleware(authRepo.NewBlacklistRepo(r.DB))
 
 	r.App.GET("/api/schools", mdw.AuthMiddleware(), h.FetchSchool)
+	r.App.GET("/api/schools/education-stats", mdw.AuthMiddleware(), h.GetEducationStats)
+
 	school := r.App.Group("/api/school").Use(mdw.AuthMiddleware())
 	{
 		school.POST("", mdw.RoleMiddleware(utils.RoleAdmin, utils.RoleStaff), h.AddSchool)
@@ -152,8 +155,16 @@ func (r *Routes) AccidentRoutes() {
 }
 
 func (r *Routes) EventRoutes() {
+	// Initialize MinIO client from infrastructure
+	minioClient, err := media.InitMinio()
+	if err != nil {
+		logger.WriteLog(logger.LogLevelError, "Failed to initialize MinIO client: "+err.Error())
+		panic("Failed to initialize MinIO client: " + err.Error())
+	}
+
 	repo := eventRepo.NewEventRepo(r.DB)
-	svc := eventSvc.NewEventService(repo)
+	repoSchool := schoolRepo.NewSchoolRepo(r.DB)
+	svc := eventSvc.NewEventService(repo, repoSchool, minioClient)
 	h := eventHandler.NewEventHandler(svc)
 	mdw := middlewares.NewMiddleware(authRepo.NewBlacklistRepo(r.DB))
 

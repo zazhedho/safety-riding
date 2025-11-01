@@ -1,21 +1,32 @@
 package serviceevent
 
 import (
+	"context"
+	"fmt"
+	"mime/multipart"
 	"safety-riding/internal/domain/event"
 	"safety-riding/internal/dto"
 	interfaceevent "safety-riding/internal/interfaces/event"
+	interfaceschool "safety-riding/internal/interfaces/school"
 	"safety-riding/pkg/filter"
+	minioclient "safety-riding/pkg/minio"
 	"safety-riding/utils"
+	"strconv"
+	"strings"
 	"time"
 )
 
 type EventService struct {
-	EventRepo interfaceevent.RepoEventInterface
+	EventRepo   interfaceevent.RepoEventInterface
+	SchoolRepo  interfaceschool.RepoSchoolInterface
+	MinioClient *minioclient.MinioClient
 }
 
-func NewEventService(eventRepo interfaceevent.RepoEventInterface) *EventService {
+func NewEventService(eventRepo interfaceevent.RepoEventInterface, schoolRepo interfaceschool.RepoSchoolInterface, minioClient *minioclient.MinioClient) *EventService {
 	return &EventService{
-		EventRepo: eventRepo,
+		EventRepo:   eventRepo,
+		SchoolRepo:  schoolRepo,
+		MinioClient: minioClient,
 	}
 }
 
@@ -26,7 +37,7 @@ func (s *EventService) AddEvent(username string, req dto.AddEvent) (domainevent.
 	data := domainevent.Event{
 		ID:              eventId,
 		SchoolId:        req.SchoolId,
-		Title:           req.Title,
+		Title:           utils.TitleCase(req.Title),
 		Description:     req.Description,
 		EventDate:       req.EventDate,
 		StartTime:       req.StartTime,
@@ -38,9 +49,9 @@ func (s *EventService) AddEvent(username string, req dto.AddEvent) (domainevent.
 		EventType:       req.EventType,
 		TargetAudience:  req.TargetAudience,
 		AttendeesCount:  req.AttendeesCount,
-		InstructorName:  req.InstructorName,
+		InstructorName:  utils.TitleCase(req.InstructorName),
 		InstructorPhone: phone,
-		Status:          req.Status,
+		Status:          strings.ToLower(req.Status),
 		Notes:           req.Notes,
 		CreatedAt:       time.Now(),
 		CreatedBy:       username,
@@ -65,6 +76,22 @@ func (s *EventService) AddEvent(username string, req dto.AddEvent) (domainevent.
 
 	if err := s.EventRepo.Create(data); err != nil {
 		return domainevent.Event{}, err
+	}
+
+	// Update school data if schoolId is provided
+	if req.SchoolId != "" && strings.EqualFold(req.Status, utils.StsCompleted) {
+		school, err := s.SchoolRepo.GetByID(req.SchoolId)
+		if err == nil {
+			school.IsEducated = true
+			school.VisitCount++
+			now := time.Now()
+			school.LastVisitAt = &now
+			school.UpdatedBy = username
+			err := s.SchoolRepo.Update(school)
+			if err != nil {
+				return domainevent.Event{}, err
+			}
+		}
 	}
 
 	return data, nil
@@ -142,6 +169,22 @@ func (s *EventService) UpdateEvent(id, username string, req dto.UpdateEvent) (do
 		return domainevent.Event{}, err
 	}
 
+	// Update school data if schoolId is provided
+	if req.SchoolId != "" && strings.EqualFold(req.Status, utils.StsCompleted) {
+		school, err := s.SchoolRepo.GetByID(req.SchoolId)
+		if err == nil {
+			school.IsEducated = true
+			school.VisitCount++
+			now := time.Now()
+			school.LastVisitAt = &now
+			school.UpdatedBy = username
+			err := s.SchoolRepo.Update(school)
+			if err != nil {
+				return domainevent.Event{}, err
+			}
+		}
+	}
+
 	return event, nil
 }
 
@@ -200,5 +243,75 @@ func (s *EventService) AddEventPhotos(eventId, username string, photos []dto.Add
 }
 
 func (s *EventService) DeleteEventPhoto(photoId, username string) error {
-	return s.EventRepo.DeletePhoto(photoId)
+	eventPhoto, err := s.EventRepo.GetPhotoByID(photoId)
+	if err != nil {
+		return err
+	}
+
+	if err = s.EventRepo.DeletePhoto(photoId); err == nil {
+		_ = s.MinioClient.DeleteFile(context.Background(), eventPhoto.PhotoUrl)
+	}
+
+	return err
+}
+
+// AddEventPhotosFromFiles uploads photos to MinIO and saves to database
+func (s *EventService) AddEventPhotosFromFiles(ctx context.Context, eventId, username string, files []*multipart.FileHeader, captions []string, photoOrders []string) ([]domainevent.EventPhoto, error) {
+	// Verify event exists
+	if _, err := s.EventRepo.GetByID(eventId); err != nil {
+		return nil, err
+	}
+
+	eventPhotos := make([]domainevent.EventPhoto, 0, len(files))
+
+	var photoURL string
+	for i, fileHeader := range files {
+		// Open file
+		file, err := fileHeader.Open()
+		if err != nil {
+			return nil, fmt.Errorf("failed to open file %s: %w", fileHeader.Filename, err)
+		}
+		defer file.Close()
+
+		// Upload to MinIO
+		photoURL, err = s.MinioClient.UploadFile(ctx, file, fileHeader, "event-photos")
+		if err != nil {
+			return nil, fmt.Errorf("failed to upload file %s to MinIO: %w", fileHeader.Filename, err)
+		}
+
+		// Get caption if provided
+		caption := ""
+		if i < len(captions) {
+			caption = captions[i]
+		}
+
+		// Get photo order if provided
+		photoOrder := 0
+		if i < len(photoOrders) {
+			if order, err := strconv.Atoi(photoOrders[i]); err == nil {
+				photoOrder = order
+			}
+		}
+
+		// Create photo record
+		eventPhoto := domainevent.EventPhoto{
+			ID:         utils.CreateUUID(),
+			EventId:    eventId,
+			PhotoUrl:   photoURL,
+			Caption:    caption,
+			PhotoOrder: photoOrder,
+			CreatedAt:  time.Now(),
+			CreatedBy:  username,
+		}
+
+		eventPhotos = append(eventPhotos, eventPhoto)
+	}
+
+	// Save photos to database
+	if err := s.EventRepo.AddPhotos(eventPhotos); err != nil {
+		_ = s.MinioClient.DeleteFile(ctx, photoURL)
+		return nil, err
+	}
+
+	return eventPhotos, nil
 }

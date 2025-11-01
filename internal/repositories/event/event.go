@@ -25,7 +25,9 @@ func (r *repo) Create(event domainevent.Event) error {
 
 func (r *repo) GetByID(id string) (domainevent.Event, error) {
 	var event domainevent.Event
-	err := r.DB.Preload("Photos").Where("id = ?", id).First(&event).Error
+	err := r.DB.Preload("Photos").Preload("School", func(db *gorm.DB) *gorm.DB {
+		return db.Select("id", "name")
+	}).Where("id = ?", id).First(&event).Error
 	return event, err
 }
 
@@ -34,14 +36,18 @@ func (r *repo) Update(event domainevent.Event) error {
 }
 
 func (r *repo) Fetch(params filter.BaseParams) (ret []domainevent.Event, totalData int64, err error) {
-	query := r.DB.Model(&domainevent.Event{}).Preload("Photos").Debug()
+	query := r.DB.Model(&domainevent.Event{}).
+		Preload("Photos").
+		Preload("School", func(db *gorm.DB) *gorm.DB {
+			return db.Select("id", "name")
+		}).Debug()
 
 	if len(params.Columns) > 0 {
 		query = query.Select(params.Columns)
 	}
 
 	if params.Search != "" {
-		query = query.Where("LOWER(title) LIKE LOWER(?) OR LOWER(location) LIKE LOWER(?)", "%"+params.Search+"%", "%"+params.Search+"%")
+		query = query.Where("LOWER(title) LIKE LOWER(?) OR LOWER(instructor_name) LIKE LOWER(?)", "%"+params.Search+"%", "%"+params.Search+"%")
 	}
 
 	// apply filters
@@ -108,6 +114,12 @@ func (r *repo) GetPhotosByEventID(eventId string) ([]domainevent.EventPhoto, err
 	var photos []domainevent.EventPhoto
 	err := r.DB.Where("event_id = ?", eventId).Order("photo_order ASC").Find(&photos).Error
 	return photos, err
+}
+
+func (r *repo) GetPhotoByID(photoId string) (domainevent.EventPhoto, error) {
+	var photo domainevent.EventPhoto
+	err := r.DB.Where("id = ?", photoId).First(&photo).Error
+	return photo, err
 }
 
 func (r *repo) DeletePhoto(photoId string) error {

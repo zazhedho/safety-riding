@@ -27,4 +27,6 @@ const (
 	StsApproved   = "approved"
 	StsRejected   = "rejected"
 	StsOpen       = "open"
+	StsPlanned    = "planned"
+	StsOnGoing    = "ongoing"
 )

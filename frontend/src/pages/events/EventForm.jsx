@@ -22,7 +22,7 @@ const EventForm = () => {
     district_id: '',
     event_type: 'seminar',
     target_audience: '',
-    attendees_count: 0,
+    attendees_count: '',
     instructor_name: '',
     instructor_phone: '',
     status: 'planned',
@@ -105,7 +105,11 @@ const EventForm = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    if (name === 'attendees_count') {
+      setFormData(prev => ({ ...prev, [name]: parseInt(value)}));
+    } else {
+      setFormData(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSubmit = async (e) => {

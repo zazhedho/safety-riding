@@ -95,7 +95,7 @@ const EventList = () => {
               <input
                 type="text"
                 className="form-control"
-                placeholder="Search by event name..."
+                placeholder="Search by event and instructor name..."
                 name="search"
                 value={filters.search}
                 onChange={handleFilterChange}
@@ -148,19 +148,19 @@ const EventList = () => {
                 <tbody>
                   {events.map(event => (
                     <tr key={event.id}>
-                      <td>{event.event_name}</td>
-                      <td>{event.School?.name || '-'}</td>
+                      <td>{event.title}</td>
+                      <td>{event.school?.name || '-'}</td>
                       <td>{formatDate(event.event_date)}</td>
-                      <td>{event.participants_count || 0}</td>
+                      <td>{event.attendees_count || 0}</td>
                       <td>{event.instructor_name || '-'}</td>
                       <td>
                         <span className={`badge ${
-                          event.event_status === 'completed' ? 'bg-success' :
-                          event.event_status === 'ongoing' ? 'bg-primary' :
-                          event.event_status === 'cancelled' ? 'bg-danger' :
+                          event.status === 'completed' ? 'bg-success' :
+                          event.status === 'ongoing' ? 'bg-primary' :
+                          event.status === 'cancelled' ? 'bg-danger' :
                           'bg-warning'
                         }`}>
-                          {event.event_status}
+                          {event.status.toUpperCase()}
                         </span>
                       </td>
                       {canPerformActions && (
@@ -181,6 +181,7 @@ const EventList = () => {
                             <button
                               onClick={() => handleDelete(event.id)}
                               className="btn btn-sm btn-outline-danger"
+                              disabled={event.status === 'completed'}
                             >
                               <i className="bi bi-trash"></i>
                             </button>

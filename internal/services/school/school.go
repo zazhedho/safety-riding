@@ -154,3 +154,80 @@ func (s *SchoolService) DeleteSchool(id, username string) error {
 
 	return nil
 }
+
+func (s *SchoolService) GetEducationStats(params filter.BaseParams) (dto.SchoolEducationStatsResponse, error) {
+	results, err := s.SchoolRepo.GetEducationStats(params)
+	if err != nil {
+		return dto.SchoolEducationStatsResponse{}, err
+	}
+
+	schools := make([]dto.SchoolEducationStats, 0, len(results))
+	totalAllStudents := 0
+	totalEducatedSchools := 0
+
+	for _, result := range results {
+		// Parse total_student_educated (it comes as int64 from database)
+		totalStudentEducated := 0
+		if val, ok := result["total_student_educated"].(int64); ok {
+			totalStudentEducated = int(val)
+		} else if val, ok := result["total_student_educated"].(int); ok {
+			totalStudentEducated = val
+		}
+
+		isEducated := false
+		if val, ok := result["is_educated"].(bool); ok {
+			isEducated = val
+		}
+
+		studentCount := 0
+		if val, ok := result["student_count"].(int); ok {
+			studentCount = val
+		} else if val, ok := result["student_count"].(int32); ok {
+			studentCount = int(val)
+		} else if val, ok := result["student_count"].(int64); ok {
+			studentCount = int(val)
+		}
+
+		school := dto.SchoolEducationStats{
+			ID:                   result["id"].(string),
+			Name:                 result["name"].(string),
+			NPSN:                 getStringValue(result["npsn"]),
+			DistrictId:           getStringValue(result["district_id"]),
+			DistrictName:         getStringValue(result["district_name"]),
+			CityId:               getStringValue(result["city_id"]),
+			CityName:             getStringValue(result["city_name"]),
+			ProvinceId:           getStringValue(result["province_id"]),
+			ProvinceName:         getStringValue(result["province_name"]),
+			StudentCount:         studentCount,
+			IsEducated:           isEducated,
+			TotalStudentEducated: totalStudentEducated,
+		}
+
+		schools = append(schools, school)
+		totalAllStudents += totalStudentEducated
+
+		if isEducated {
+			totalEducatedSchools++
+		}
+	}
+
+	response := dto.SchoolEducationStatsResponse{
+		Schools:              schools,
+		TotalAllStudents:     totalAllStudents,
+		TotalSchools:         len(schools),
+		TotalEducatedSchools: totalEducatedSchools,
+	}
+
+	return response, nil
+}
+
+// Helper function to safely get string values
+func getStringValue(val interface{}) string {
+	if val == nil {
+		return ""
+	}
+	if str, ok := val.(string); ok {
+		return str
+	}
+	return ""
+}

@@ -95,7 +95,16 @@ func main() {
 	FailOnError(err, "Failed to open db")
 	defer sqlDb.Close()
 
+	// Register all routes
 	routes.UserRoutes()
+	routes.SchoolRoutes()
+	routes.ProvinceRoutes()
+	routes.CityRoutes()
+	routes.DistrictRoutes()
+	routes.AccidentRoutes()
+	routes.EventRoutes()
+	routes.BudgetRoutes()
+
 	err = routes.App.Run(fmt.Sprintf(":%s", port))
 	FailOnError(err, "Failed run service")
 }

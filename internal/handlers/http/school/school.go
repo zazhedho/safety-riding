@@ -177,3 +177,24 @@ func (h *SchoolHandler) DeleteSchool(ctx *gin.Context) {
 	logger.WriteLog(logger.LogLevelDebug, fmt.Sprintf("%s; Success;", logPrefix))
 	ctx.JSON(http.StatusOK, res)
 }
+
+func (h *SchoolHandler) GetEducationStats(ctx *gin.Context) {
+	logId := utils.GenerateLogId(ctx)
+	logPrefix := fmt.Sprintf("[%s][SchoolHandler][GetEducationStats]", logId)
+
+	params, _ := filter.GetBaseParams(ctx, "name", "asc", 10)
+	params.Filters = filter.WhitelistStringFilter(params.Filters, []string{"district_id", "city_id", "province_id", "is_educated"})
+
+	stats, err := h.Service.GetEducationStats(params)
+	if err != nil {
+		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; GetEducationStats; Error: %+v", logPrefix, err))
+		res := response.Response(http.StatusInternalServerError, messages.MsgFail, logId, nil)
+		res.Error = err.Error()
+		ctx.JSON(http.StatusInternalServerError, res)
+		return
+	}
+
+	res := response.Response(http.StatusOK, "Get school education statistics successfully", logId, stats)
+	logger.WriteLog(logger.LogLevelDebug, fmt.Sprintf("%s; Response: total schools=%d, total students educated=%d", logId, stats.TotalSchools, stats.TotalAllStudents))
+	ctx.JSON(http.StatusOK, res)
+}

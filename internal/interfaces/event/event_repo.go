@@ -15,6 +15,7 @@ type RepoEventInterface interface {
 	// Event Photo methods
 	AddPhotos(photos []domainevent.EventPhoto) error
 	GetPhotosByEventID(eventId string) ([]domainevent.EventPhoto, error)
+	GetPhotoByID(photoId string) (domainevent.EventPhoto, error)
 	DeletePhoto(photoId string) error
 	DeletePhotosByEventID(eventId string) error
 }

@@ -192,20 +192,33 @@ func (h *EventHandler) AddEventPhotos(ctx *gin.Context) {
 		return
 	}
 
-	var req struct {
-		Photos []dto.AddEventPhoto `json:"photos" binding:"required,min=1"`
-	}
-	if err := ctx.BindJSON(&req); err != nil {
-		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; BindJSON ERROR: %s;", logPrefix, err.Error()))
-		res := response.Response(http.StatusBadRequest, messages.InvalidRequest, logId, nil)
-		res.Error = utils.ValidateError(err, reflect.TypeOf(req), "json")
+	// Parse multipart form
+	form, err := ctx.MultipartForm()
+	if err != nil {
+		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; MultipartForm ERROR: %s;", logPrefix, err.Error()))
+		res := response.Response(http.StatusBadRequest, "Failed to parse form data", logId, nil)
+		res.Error = err.Error()
 		ctx.JSON(http.StatusBadRequest, res)
 		return
 	}
 
-	data, err := h.Service.AddEventPhotos(eventId, username, req.Photos)
+	// Get files from form
+	files := form.File["photos"]
+	if len(files) == 0 {
+		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; No photos uploaded", logPrefix))
+		res := response.Response(http.StatusBadRequest, "At least one photo is required", logId, nil)
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	// Get optional captions and photo orders from form data
+	captions := form.Value["captions"]
+	photoOrders := form.Value["photo_orders"]
+
+	// Call service to upload photos to MinIO and save to database
+	data, err := h.Service.AddEventPhotosFromFiles(ctx, eventId, username, files, captions, photoOrders)
 	if err != nil {
-		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; Service.AddEventPhotos; Error: %+v", logPrefix, err))
+		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; Service.AddEventPhotosFromFiles; Error: %+v", logPrefix, err))
 		res := response.Response(http.StatusInternalServerError, messages.MsgFail, logId, nil)
 		res.Error = err.Error()
 		ctx.JSON(http.StatusInternalServerError, res)
@@ -213,7 +226,7 @@ func (h *EventHandler) AddEventPhotos(ctx *gin.Context) {
 	}
 
 	res := response.Response(http.StatusCreated, "Add event photos successfully", logId, data)
-	logger.WriteLog(logger.LogLevelDebug, fmt.Sprintf("%s; Success: %+v;", logPrefix, utils.JsonEncode(data)))
+	logger.WriteLog(logger.LogLevelDebug, fmt.Sprintf("%s; Success: uploaded %d photos;", logPrefix, len(files)))
 	ctx.JSON(http.StatusCreated, res)
 }
 

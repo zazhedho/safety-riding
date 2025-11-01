@@ -1,10 +1,15 @@
 package domainevent
 
 import (
+	domainschool "safety-riding/internal/domain/school"
 	"time"
 
 	"gorm.io/gorm"
 )
+
+func (Event) TableName() string {
+	return "events"
+}
 
 type Event struct {
 	ID              string `json:"id" gorm:"column:id;primaryKey"`
@@ -26,7 +31,8 @@ type Event struct {
 	Status          string `json:"status" gorm:"column:status"`
 	Notes           string `json:"notes" gorm:"column:notes"`
 
-	Photos []EventPhoto `json:"photos,omitempty" gorm:"foreignKey:EventId;constraint:OnDelete:CASCADE"`
+	Photos []EventPhoto        `json:"photos,omitempty" gorm:"foreignKey:EventId;constraint:OnDelete:CASCADE"`
+	School domainschool.School `json:"school,omitempty" gorm:"foreignKey:SchoolId;references:ID"`
 
 	CreatedAt time.Time      `json:"created_at" gorm:"column:created_at"`
 	CreatedBy string         `json:"created_by" gorm:"column:created_by"`
@@ -34,6 +40,10 @@ type Event struct {
 	UpdatedBy string         `json:"updated_by" gorm:"column:updated_by"`
 	DeletedAt gorm.DeletedAt `json:"-"`
 	DeletedBy string         `json:"-"`
+}
+
+func (EventPhoto) TableName() string {
+	return "event_photos"
 }
 
 type EventPhoto struct {

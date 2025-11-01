@@ -49,3 +49,27 @@ type UpdateSchool struct {
 
 	LastVisitAt *time.Time `json:"last_visit_at,omitempty"`
 }
+
+// SchoolEducationStats represents education statistics for a school
+type SchoolEducationStats struct {
+	ID                   string `json:"id"`
+	Name                 string `json:"name"`
+	NPSN                 string `json:"npsn"`
+	DistrictId           string `json:"district_id"`
+	DistrictName         string `json:"district_name"`
+	CityId               string `json:"city_id"`
+	CityName             string `json:"city_name"`
+	ProvinceId           string `json:"province_id"`
+	ProvinceName         string `json:"province_name"`
+	StudentCount         int    `json:"student_count"`
+	IsEducated           bool   `json:"is_educated"`
+	TotalStudentEducated int    `json:"total_student_educated"`
+}
+
+// SchoolEducationStatsResponse represents the complete education statistics response
+type SchoolEducationStatsResponse struct {
+	Schools              []SchoolEducationStats `json:"schools"`
+	TotalAllStudents     int                    `json:"total_all_students"`
+	TotalSchools         int                    `json:"total_schools"`
+	TotalEducatedSchools int                    `json:"total_educated_schools"`
+}

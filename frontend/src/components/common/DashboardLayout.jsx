@@ -55,6 +55,7 @@ const DashboardLayout = ({ children }) => {
     { path: '/dashboard', label: 'Dashboard', icon: 'bi-speedometer2', roles: ['admin', 'staff', 'viewer'] },
     { path: '/profile', label: 'Profile', icon: 'bi-person-circle', roles: ['admin', 'staff', 'viewer'] },
     { path: '/schools', label: 'Schools', icon: 'bi-building', roles: ['admin', 'staff', 'viewer'] },
+    { path: '/schools/education-stats', label: 'Education Stats', icon: 'bi-bar-chart', roles: ['admin', 'staff', 'viewer'] },
     { path: '/events', label: 'Events', icon: 'bi-calendar-event', roles: ['admin', 'staff', 'viewer'] },
     { path: '/accidents', label: 'Accidents', icon: 'bi-exclamation-triangle', roles: ['admin', 'staff', 'viewer'] },
     { path: '/budgets', label: 'Budgets', icon: 'bi-cash-stack', roles: ['admin', 'staff', 'viewer'] },
@@ -100,18 +101,42 @@ const DashboardLayout = ({ children }) => {
           <small className="sidebar-subtitle">Management System</small>
         </div>
         <div className="sidebar-menu">
-          {filteredMenu.map(item => (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={`sidebar-menu-item ${location.pathname === item.path ? 'active' : ''}`}
-              onClick={closeMobileMenu}
-              title={item.label}
-            >
-              <i className={`bi ${item.icon}`}></i>
-              <span className="menu-label">{item.label}</span>
-            </Link>
-          ))}
+          {filteredMenu.map(item => {
+            // Helper function to check if menu item should be active
+            const isMenuActive = () => {
+              const currentPath = location.pathname;
+
+              // Exact match
+              if (currentPath === item.path) return true;
+
+              // For /schools menu, activate on /schools/new or /schools/:id (detail/edit), but NOT on /schools/education-stats
+              if (item.path === '/schools') {
+                return (currentPath === '/schools/new' || currentPath.match(/^\/schools\/[a-f0-9-]{36}/) !== null);
+              }
+
+              // For other parent routes, activate on /new or child routes with UUID (detail/edit pages)
+              if (item.path.startsWith('/events') || item.path.startsWith('/accidents') ||
+                  item.path.startsWith('/budgets') || item.path.startsWith('/users')) {
+                const baseRoute = item.path.split('/')[1]; // Get 'events', 'accidents', etc.
+                return currentPath === `/${baseRoute}/new` || currentPath.match(new RegExp(`^/${baseRoute}/[a-f0-9-]{36}`)) !== null;
+              }
+
+              return false;
+            };
+
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                className={`sidebar-menu-item ${isMenuActive() ? 'active' : ''}`}
+                onClick={closeMobileMenu}
+                title={item.label}
+              >
+                <i className={`bi ${item.icon}`}></i>
+                <span className="menu-label">{item.label}</span>
+              </Link>
+            );
+          })}
         </div>
       </div>
 

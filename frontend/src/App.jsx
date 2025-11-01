@@ -7,8 +7,10 @@ import Dashboard from './pages/Dashboard';
 import SchoolList from './pages/schools/SchoolList';
 import SchoolForm from './pages/schools/SchoolForm';
 import SchoolDetail from './pages/schools/SchoolDetail';
+import SchoolEducationStats from './pages/schools/SchoolEducationStats';
 import EventList from './pages/events/EventList';
 import EventForm from './pages/events/EventForm';
+import EventDetail from './pages/events/EventDetail';
 import AccidentList from './pages/accidents/AccidentList';
 import AccidentForm from './pages/accidents/AccidentForm';
 import BudgetList from './pages/budgets/BudgetList';
@@ -47,6 +49,15 @@ function App() {
             element={
               <ProtectedRoute roles={['admin', 'staff', 'viewer']}>
                 <SchoolList />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/schools/education-stats"
+            element={
+              <ProtectedRoute roles={['admin', 'staff', 'viewer']}>
+                <SchoolEducationStats />
               </ProtectedRoute>
             }
           />
@@ -92,6 +103,15 @@ function App() {
             element={
               <ProtectedRoute roles={['admin', 'staff']}>
                 <EventForm />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/events/:id"
+            element={
+              <ProtectedRoute roles={['admin', 'staff', 'viewer']}>
+                <EventDetail />
               </ProtectedRoute>
             }
           />

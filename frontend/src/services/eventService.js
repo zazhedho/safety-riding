@@ -8,7 +8,11 @@ const eventService = {
   delete: (id) => api.delete(`/event/${id}`),
 
   // Photo endpoints
-  addPhotos: (eventId, photos) => api.post(`/event/${eventId}/photos`, { photos }),
+  addPhotos: (eventId, formData) => api.post(`/event/${eventId}/photos`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  }),
   deletePhoto: (photoId) => api.delete(`/event/photo/${photoId}`),
 };
 
