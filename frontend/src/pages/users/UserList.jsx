@@ -19,17 +19,23 @@ const UserList = () => {
     total: 0,
     totalPages: 0
   });
+  const [sorting, setSorting] = useState({
+    order_by: 'updated_at',
+    order_direction: 'desc'
+  });
 
   useEffect(() => {
     fetchUsers();
-  }, [pagination.page, filters]);
+  }, [pagination.page, filters, sorting]);
 
   const fetchUsers = async () => {
     setLoading(true);
     try {
       const params = {
         page: pagination.page,
-        limit: pagination.limit
+        limit: pagination.limit,
+        order_by: sorting.order_by,
+        order_direction: sorting.order_direction
       };
 
       if (filters.role) params['filters[role]'] = filters.role;
@@ -58,6 +64,22 @@ const UserList = () => {
 
   const handlePageChange = (newPage) => {
     setPagination(prev => ({ ...prev, page: newPage }));
+  };
+
+  const handleSort = (column) => {
+    setSorting(prev => ({
+      order_by: column,
+      order_direction: prev.order_by === column && prev.order_direction === 'asc' ? 'desc' : 'asc'
+    }));
+  };
+
+  const getSortIcon = (column) => {
+    if (sorting.order_by !== column) {
+      return <i className="bi bi-arrow-down-up ms-1 text-muted"></i>;
+    }
+    return sorting.order_direction === 'asc'
+      ? <i className="bi bi-arrow-up ms-1"></i>
+      : <i className="bi bi-arrow-down ms-1"></i>;
   };
 
   const formatDate = (dateStr) => {
@@ -151,11 +173,21 @@ const UserList = () => {
                 <table className="table table-hover">
                   <thead>
                     <tr>
-                      <th>Name</th>
-                      <th>Email</th>
-                      <th>Phone</th>
-                      <th>Role</th>
-                      <th>Created At</th>
+                      <th style={{ cursor: 'pointer' }} onClick={() => handleSort('name')}>
+                        Name {getSortIcon('name')}
+                      </th>
+                      <th style={{ cursor: 'pointer' }} onClick={() => handleSort('email')}>
+                        Email {getSortIcon('email')}
+                      </th>
+                      <th style={{ cursor: 'pointer' }} onClick={() => handleSort('phone')}>
+                        Phone {getSortIcon('phone')}
+                      </th>
+                      <th style={{ cursor: 'pointer' }} onClick={() => handleSort('role')}>
+                        Role {getSortIcon('role')}
+                      </th>
+                      <th style={{ cursor: 'pointer' }} onClick={() => handleSort('created_at')}>
+                        Created At {getSortIcon('created_at')}
+                      </th>
                       <th>Actions</th>
                     </tr>
                   </thead>
