@@ -178,7 +178,7 @@ const EventList = () => {
                     <th style={{ cursor: 'pointer' }} onClick={() => handleSort('status')}>
                       Status {getSortIcon('status')}
                     </th>
-                    {canPerformActions && <th>Actions</th>}
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -199,31 +199,33 @@ const EventList = () => {
                           {event.status.toUpperCase()}
                         </span>
                       </td>
-                      {canPerformActions && (
-                        <td>
-                          <div className="btn-group">
-                            <Link
-                              to={`/events/${event.id}`}
-                              className="btn btn-sm btn-outline-primary"
-                            >
-                              <i className="bi bi-eye"></i>
-                            </Link>
-                            <Link
-                              to={`/events/${event.id}/edit`}
-                              className="btn btn-sm btn-outline-warning"
-                            >
-                              <i className="bi bi-pencil"></i>
-                            </Link>
-                            <button
-                              onClick={() => handleDelete(event.id)}
-                              className="btn btn-sm btn-outline-danger"
-                              disabled={event.status === 'completed'}
-                            >
-                              <i className="bi bi-trash"></i>
-                            </button>
-                          </div>
-                        </td>
-                      )}
+                      <td>
+                        <div className="btn-group">
+                          <Link
+                            to={`/events/${event.id}`}
+                            className="btn btn-sm btn-outline-primary"
+                          >
+                            <i className="bi bi-eye"></i>
+                          </Link>
+                          {canPerformActions && (
+                            <>
+                              <Link
+                                to={`/events/${event.id}/edit`}
+                                className="btn btn-sm btn-outline-warning"
+                              >
+                                <i className="bi bi-pencil"></i>
+                              </Link>
+                              <button
+                                onClick={() => handleDelete(event.id)}
+                                className="btn btn-sm btn-outline-danger"
+                                disabled={event.status === 'completed'}
+                              >
+                                <i className="bi bi-trash"></i>
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>

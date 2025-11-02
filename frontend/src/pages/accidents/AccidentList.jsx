@@ -246,12 +246,12 @@ const AccidentList = () => {
               <table className="table table-hover">
                 <thead>
                   <tr>
-                    <th>Police Report No</th>
+                    <th>Report Number</th>
                     <th>Date & Time</th>
                     <th>Location</th>
                     <th>Casualties</th>
                     <th>Weather</th>
-                    {canPerformActions && <th>Actions</th>}
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -275,30 +275,32 @@ const AccidentList = () => {
                         </span>
                       </td>
                       <td>{accident.weather_condition || '-'}</td>
-                      {canPerformActions && (
-                        <td>
-                          <div className="btn-group">
-                            <Link
-                              to={`/accidents/${accident.id}`}
-                              className="btn btn-sm btn-outline-primary"
-                            >
-                              <i className="bi bi-eye"></i>
-                            </Link>
-                            <Link
-                              to={`/accidents/${accident.id}/edit`}
-                              className="btn btn-sm btn-outline-warning"
-                            >
-                              <i className="bi bi-pencil"></i>
-                            </Link>
-                            <button
-                              onClick={() => handleDelete(accident.id)}
-                              className="btn btn-sm btn-outline-danger"
+                      <td>
+                        <div className="btn-group">
+                          <Link
+                            to={`/accidents/${accident.id}`}
+                            className="btn btn-sm btn-outline-primary"
+                          >
+                            <i className="bi bi-eye"></i>
+                          </Link>
+                          {canPerformActions && (
+                            <>
+                              <Link
+                                to={`/accidents/${accident.id}/edit`}
+                                className="btn btn-sm btn-outline-warning"
                               >
-                                <i className="bi bi-trash"></i>
-                            </button>
-                          </div>
-                        </td>
-                      )}
+                                <i className="bi bi-pencil"></i>
+                              </Link>
+                              <button
+                                onClick={() => handleDelete(accident.id)}
+                                className="btn btn-sm btn-outline-danger"
+                                >
+                                  <i className="bi bi-trash"></i>
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
