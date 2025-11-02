@@ -122,6 +122,7 @@ const UserForm = () => {
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
+                placeholder="e.g., John Doe"
                 required
               />
             </div>
@@ -133,6 +134,7 @@ const UserForm = () => {
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
+                placeholder="e.g., john.doe@example.com"
                 required
               />
             </div>
@@ -144,6 +146,7 @@ const UserForm = () => {
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
+                placeholder="e.g., 081234567890"
                 required
               />
             </div>
@@ -176,7 +179,7 @@ const UserForm = () => {
                 name="password"
                 value={formData.password}
                 onChange={handleChange}
-                placeholder={id ? 'Leave blank to keep current password' : ''}
+                placeholder={id ? 'Leave blank to keep current password' : 'Enter a strong password'}
                 required={!id}
               />
             </div>
@@ -188,6 +191,7 @@ const UserForm = () => {
                 name="confirmPassword"
                 value={formData.confirmPassword}
                 onChange={handleChange}
+                placeholder={id ? 'Confirm new password' : 'Confirm your password'}
                 required={!id}
               />
             </div>

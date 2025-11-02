@@ -25,17 +25,20 @@ func (s *AccidentService) AddAccident(username string, req dto.AddAccident) (dom
 		PoliceReportNo:    req.PoliceReportNo,
 		AccidentDate:      req.AccidentDate,
 		AccidentTime:      req.AccidentTime,
-		Location:          req.Location,
+		Location:          utils.TitleCase(req.Location),
 		DistrictId:        req.DistrictId,
+		DistrictName:      req.DistrictName,
 		CityId:            req.CityId,
+		CityName:          req.CityName,
 		ProvinceId:        req.ProvinceId,
+		ProvinceName:      req.ProvinceName,
 		Latitude:          req.Latitude,
 		Longitude:         req.Longitude,
-		RoadType:          req.RoadType,
-		WeatherCondition:  req.WeatherCondition,
-		RoadCondition:     req.RoadCondition,
-		VehicleType:       req.VehicleType,
-		AccidentType:      req.AccidentType,
+		RoadType:          utils.TitleCase(req.RoadType),
+		WeatherCondition:  utils.TitleCase(req.WeatherCondition),
+		RoadCondition:     utils.TitleCase(req.RoadCondition),
+		VehicleType:       utils.TitleCase(req.VehicleType),
+		AccidentType:      utils.TitleCase(req.AccidentType),
 		DeathCount:        req.DeathCount,
 		InjuredCount:      req.InjuredCount,
 		MinorInjuredCount: req.MinorInjuredCount,
@@ -43,7 +46,7 @@ func (s *AccidentService) AddAccident(username string, req dto.AddAccident) (dom
 		CauseOfAccident:   req.CauseOfAccident,
 		Description:       req.Description,
 		PoliceStation:     req.PoliceStation,
-		OfficerName:       req.OfficerName,
+		OfficerName:       utils.TitleCase(req.OfficerName),
 		CreatedAt:         time.Now(),
 		CreatedBy:         username,
 	}
@@ -82,11 +85,20 @@ func (s *AccidentService) UpdateAccident(id, username string, req dto.UpdateAcci
 	if req.DistrictId != "" {
 		accident.DistrictId = req.DistrictId
 	}
+	if req.DistrictName != "" {
+		accident.DistrictName = req.DistrictName
+	}
 	if req.CityId != "" {
 		accident.CityId = req.CityId
 	}
+	if req.CityName != "" {
+		accident.CityName = req.CityName
+	}
 	if req.ProvinceId != "" {
 		accident.ProvinceId = req.ProvinceId
+	}
+	if req.ProvinceName != "" {
+		accident.ProvinceName = req.ProvinceName
 	}
 	if req.Latitude != 0 {
 		accident.Latitude = req.Latitude

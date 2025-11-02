@@ -41,7 +41,8 @@ func (r *repo) Fetch(params filter.BaseParams) (ret []domainaccident.Accident, t
 	}
 
 	if params.Search != "" {
-		query = query.Where("LOWER(location) LIKE LOWER(?) OR LOWER(police_report_no) LIKE LOWER(?)", "%"+params.Search+"%", "%"+params.Search+"%")
+		search := "%" + params.Search + "%"
+		query = query.Where("LOWER(location) LIKE LOWER(?) OR LOWER(police_report_no) LIKE LOWER(?) OR LOWER(accident_type) LIKE LOWER(?) OR LOWER(vehicle_type) LIKE LOWER(?) OR LOWER(police_station) LIKE LOWER(?)", search, search, search, search, search)
 	}
 
 	// apply filters

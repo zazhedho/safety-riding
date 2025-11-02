@@ -114,10 +114,10 @@ func (r *repo) GetEducationStats(params filter.BaseParams) ([]map[string]interfa
 			schools.province_name,
 			schools.student_count,
 			schools.is_educated,
-			COALESCE(SUM(events.attendees_count), 0) as total_student_educated
+			COALESCE(SUM(CASE WHEN schools.is_educated = TRUE then events.attendees_count ELSE 0 END), 0) as total_student_educated
 		`).
 		Joins("LEFT JOIN events ON schools.id = events.school_id AND events.deleted_at IS NULL").
-		Where("events.status = 'completed' AND schools.is_educated = true AND schools.deleted_at IS NULL").
+		Where("schools.deleted_at IS NULL").
 		Group("schools.id, schools.name, schools.npsn, schools.district_id, schools.district_name, schools.city_id, schools.city_name, schools.province_id, schools.province_name, schools.student_count, schools.is_educated")
 
 	// Apply search filter

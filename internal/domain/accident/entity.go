@@ -13,8 +13,11 @@ type Accident struct {
 	AccidentTime      string  `json:"accident_time" gorm:"column:accident_time"`
 	Location          string  `json:"location" gorm:"column:location"`
 	DistrictId        string  `json:"district_id" gorm:"column:district_id"`
+	DistrictName      string  `json:"district_name" gorm:"column:district_name"`
 	CityId            string  `json:"city_id" gorm:"column:city_id"`
+	CityName          string  `json:"city_name" gorm:"column:city_name"`
 	ProvinceId        string  `json:"province_id" gorm:"column:province_id"`
+	ProvinceName      string  `json:"province_name" gorm:"column:province_name"`
 	Latitude          float64 `json:"latitude" gorm:"column:latitude"`
 	Longitude         float64 `json:"longitude" gorm:"column:longitude"`
 	RoadType          string  `json:"road_type" gorm:"column:road_type"`

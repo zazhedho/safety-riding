@@ -141,7 +141,7 @@ const EventForm = () => {
             <div className="row">
               <div className="col-md-6 mb-3">
                 <label className="form-label">Title</label>
-                <input type="text" className="form-control" name="title" value={formData.title} onChange={handleChange} required />
+                <input type="text" className="form-control" name="title" value={formData.title} onChange={handleChange} placeholder="e.g., Safety Riding Seminar for Students" required />
               </div>
               <div className="col-md-6 mb-3">
                 <label className="form-label">School</label>
@@ -153,7 +153,7 @@ const EventForm = () => {
             </div>
             <div className="mb-3">
               <label className="form-label">Description</label>
-              <textarea className="form-control" name="description" value={formData.description} onChange={handleChange} required />
+              <textarea className="form-control" name="description" value={formData.description} onChange={handleChange} placeholder="e.g., A seminar on the importance of safe driving for high school students" required />
             </div>
             <div className="row">
               <div className="col-md-4 mb-3">
@@ -171,7 +171,7 @@ const EventForm = () => {
             </div>
             <div className="mb-3">
               <label className="form-label">Location</label>
-              <input type="text" className="form-control" name="location" value={formData.location} onChange={handleChange} required />
+              <input type="text" className="form-control" name="location" value={formData.location} onChange={handleChange} placeholder="e.g., School Auditorium" required />
             </div>
             <div className="row">
               <div className="col-md-4 mb-3">
@@ -208,21 +208,21 @@ const EventForm = () => {
               </div>
               <div className="col-md-6 mb-3">
                 <label className="form-label">Target Audience</label>
-                <input type="text" className="form-control" name="target_audience" value={formData.target_audience} onChange={handleChange} />
+                <input type="text" className="form-control" name="target_audience" value={formData.target_audience} onChange={handleChange} placeholder="e.g., High School Students, Grade 10-12" />
               </div>
             </div>
             <div className="row">
               <div className="col-md-4 mb-3">
                 <label className="form-label">Attendees Count</label>
-                <input type="number" className="form-control" name="attendees_count" value={formData.attendees_count} onChange={handleChange} />
+                <input type="number" className="form-control" name="attendees_count" value={formData.attendees_count} onChange={handleChange} placeholder="e.g., 150" />
               </div>
               <div className="col-md-4 mb-3">
                 <label className="form-label">Instructor Name</label>
-                <input type="text" className="form-control" name="instructor_name" value={formData.instructor_name} onChange={handleChange} />
+                <input type="text" className="form-control" name="instructor_name" value={formData.instructor_name} onChange={handleChange} placeholder="e.g., John Doe" />
               </div>
               <div className="col-md-4 mb-3">
                 <label className="form-label">Instructor Phone</label>
-                <input type="text" className="form-control" name="instructor_phone" value={formData.instructor_phone} onChange={handleChange} />
+                <input type="text" className="form-control" name="instructor_phone" value={formData.instructor_phone} onChange={handleChange} placeholder="e.g., 081234567890" />
               </div>
             </div>
             <div className="row">
@@ -238,7 +238,7 @@ const EventForm = () => {
             </div>
             <div className="mb-3">
               <label className="form-label">Notes</label>
-              <textarea className="form-control" name="notes" value={formData.notes} onChange={handleChange} />
+              <textarea className="form-control" name="notes" value={formData.notes} onChange={handleChange} placeholder="e.g., The event was a great success, with enthusiastic participation from students."/>
             </div>
             <button type="submit" className="btn btn-primary">{id ? 'Update' : 'Create'}</button>
             <button type="button" className="btn btn-secondary ms-2" onClick={() => navigate('/events')}>Cancel</button>

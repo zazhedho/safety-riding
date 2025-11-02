@@ -13,6 +13,7 @@ import EventForm from './pages/events/EventForm';
 import EventDetail from './pages/events/EventDetail';
 import AccidentList from './pages/accidents/AccidentList';
 import AccidentForm from './pages/accidents/AccidentForm';
+import AccidentDetail from './pages/accidents/AccidentDetail';
 import BudgetList from './pages/budgets/BudgetList';
 import BudgetForm from './pages/budgets/BudgetForm';
 import UserList from './pages/users/UserList';
@@ -139,6 +140,15 @@ function App() {
             element={
               <ProtectedRoute roles={['admin', 'staff']}>
                 <AccidentForm />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/accidents/:id"
+            element={
+              <ProtectedRoute roles={['admin', 'staff', 'viewer']}>
+                <AccidentDetail />
               </ProtectedRoute>
             }
           />

@@ -268,10 +268,10 @@ const AccidentList = () => {
                       </td>
                       <td>
                         <span className="badge bg-danger me-1">
-                          {accident.fatalities || 0} deaths
+                          {accident.death_count || 0} deaths
                         </span>
                         <span className="badge bg-warning">
-                          {accident.injured || 0} injured
+                          {accident.injured_count || 0} injured
                         </span>
                       </td>
                       <td>{accident.weather_condition || '-'}</td>

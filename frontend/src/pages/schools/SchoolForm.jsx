@@ -261,25 +261,25 @@ const SchoolForm = () => {
             <div className="row">
               <div className="col-md-6 mb-3">
                 <label className="form-label">Name</label>
-                <input type="text" className="form-control" name="name" value={formData.name} onChange={handleChange} required />
+                <input type="text" className="form-control" name="name" value={formData.name} onChange={handleChange} placeholder="e.g., SMA Negeri 1 Makassar" required />
               </div>
               <div className="col-md-6 mb-3">
                 <label className="form-label">NPSN</label>
-                <input type="text" className="form-control" name="npsn" value={formData.npsn} onChange={handleChange} required />
+                <input type="text" className="form-control" name="npsn" value={formData.npsn} onChange={handleChange} placeholder="e.g., 40313421" required />
               </div>
             </div>
             <div className="mb-3">
               <label className="form-label">Address</label>
-              <textarea className="form-control" name="address" value={formData.address} onChange={handleChange} required />
+              <textarea className="form-control" name="address" value={formData.address} onChange={handleChange} placeholder="e.g., Jl. Gunung Bawakaraeng No.53, Pisang Utara" required />
             </div>
             <div className="row">
               <div className="col-md-6 mb-3">
                 <label className="form-label">Phone</label>
-                <input type="text" className="form-control" name="phone" value={formData.phone} onChange={handleChange} required />
+                <input type="text" className="form-control" name="phone" value={formData.phone} onChange={handleChange} placeholder="e.g., (0411) 3616292" required />
               </div>
               <div className="col-md-6 mb-3">
                 <label className="form-label">Email</label>
-                <input type="email" className="form-control" name="email" value={formData.email} onChange={handleChange} required />
+                <input type="email" className="form-control" name="email" value={formData.email} onChange={handleChange} placeholder="e.g., info@sman1mks.sch.id" required />
               </div>
             </div>
             <div className="row">
@@ -308,17 +308,17 @@ const SchoolForm = () => {
             <div className="row">
               <div className="col-md-6 mb-3">
                 <label className="form-label">Postal Code</label>
-                <input type="text" className="form-control" name="postal_code" value={formData.postal_code} onChange={handleChange} />
+                <input type="text" className="form-control" name="postal_code" value={formData.postal_code} onChange={handleChange} placeholder="e.g., 90115" />
               </div>
             </div>
             <div className="row">
               <div className="col-md-6 mb-3">
                 <label className="form-label">Latitude</label>
-                <input type="number" step="any" className="form-control" name="latitude" value={formData.latitude} onChange={handleChange} />
+                <input type="number" step="any" className="form-control" name="latitude" value={formData.latitude} onChange={handleChange} placeholder="e.g., -5.1353" />
               </div>
               <div className="col-md-6 mb-3">
                 <label className="form-label">Longitude</label>
-                <input type="number" step="any" className="form-control" name="longitude" value={formData.longitude} onChange={handleChange} />
+                <input type="number" step="any" className="form-control" name="longitude" value={formData.longitude} onChange={handleChange} placeholder="e.g., 119.4238" />
               </div>
             </div>
 
@@ -347,21 +347,21 @@ const SchoolForm = () => {
             <div className="row">
               <div className="col-md-4 mb-3">
                 <label className="form-label">Student Count</label>
-                <input type="number" className="form-control" name="student_count" value={formData.student_count} onChange={handleChange} />
+                <input type="number" className="form-control" name="student_count" value={formData.student_count} onChange={handleChange} placeholder="e.g., 1200" />
               </div>
               <div className="col-md-4 mb-3">
                 <label className="form-label">Teacher Count</label>
-                <input type="number" className="form-control" name="teacher_count" value={formData.teacher_count} onChange={handleChange} />
+                <input type="number" className="form-control" name="teacher_count" value={formData.teacher_count} onChange={handleChange} placeholder="e.g., 75" />
               </div>
               <div className="col-md-4 mb-3">
                 <label className="form-label">Major Count</label>
-                <input type="number" className="form-control" name="major_count" value={formData.major_count} onChange={handleChange} />
+                <input type="number" className="form-control" name="major_count" value={formData.major_count} onChange={handleChange} placeholder="e.g., 3" />
               </div>
             </div>
             <div className="row">
               <div className="col-md-4 mb-3">
                 <label className="form-label">Visit Count</label>
-                <input type="number" className="form-control" name="visit_count" value={formData.visit_count} onChange={handleChange} />
+                <input type="number" className="form-control" name="visit_count" value={formData.visit_count} onChange={handleChange} placeholder="e.g., 2" />
               </div>
               <div className="col-md-4 mb-3">
                 <label className="form-label">Last Visit At</label>

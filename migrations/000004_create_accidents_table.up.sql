@@ -6,8 +6,11 @@ CREATE TABLE IF NOT EXISTS accidents (
     location                TEXT NOT NULL,
 
     district_id             VARCHAR(20) NOT NULL,
+    district_name           VARCHAR(100) NOT NULL,
     city_id                 VARCHAR(20) NOT NULL,
+    city_name               VARCHAR(100) NOT NULL,
     province_id             VARCHAR(20) NOT NULL,
+    province_name           VARCHAR(100) NOT NULL,
 
     latitude                DOUBLE PRECISION,
     longitude               DOUBLE PRECISION,
