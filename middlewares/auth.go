@@ -71,6 +71,7 @@ func (m *Middleware) AuthMiddleware() gin.HandlerFunc {
 
 		ctx.Set(utils.CtxKeyAuthData, dataJWT)
 		ctx.Set("token", tokenString)
+		ctx.Set("userId", utils.InterfaceString(dataJWT["user_id"]))
 
 		ctx.Next()
 	}

@@ -27,9 +27,10 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Don't automatically redirect on 401
+    // Let the component/context handle it
     if (error.response?.status === 401) {
-      localStorage.removeItem('token')
-      window.location.href = '/login'
+      console.warn('Unauthorized request detected:', error.config?.url);
     }
     return Promise.reject(error)
   }

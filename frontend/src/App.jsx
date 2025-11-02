@@ -19,6 +19,10 @@ import BudgetForm from './pages/budgets/BudgetForm';
 import UserList from './pages/users/UserList';
 import UserForm from './pages/users/UserForm';
 import Profile from './pages/users/Profile';
+import RoleList from './pages/roles/RoleList';
+import RoleForm from './pages/roles/RoleForm';
+import MenuList from './pages/menus/MenuList';
+import MenuForm from './pages/menus/MenuForm';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -221,6 +225,60 @@ function App() {
             element={
               <ProtectedRoute roles={['admin', 'staff', 'viewer']}>
                 <Profile />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/roles"
+            element={
+              <ProtectedRoute roles={['admin']}>
+                <RoleList />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/roles/new"
+            element={
+              <ProtectedRoute roles={['admin']}>
+                <RoleForm />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/roles/:id/edit"
+            element={
+              <ProtectedRoute roles={['admin']}>
+                <RoleForm />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/menus"
+            element={
+              <ProtectedRoute roles={['admin']}>
+                <MenuList />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/menus/new"
+            element={
+              <ProtectedRoute roles={['admin']}>
+                <MenuForm />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/menus/:id/edit"
+            element={
+              <ProtectedRoute roles={['admin']}>
+                <MenuForm />
               </ProtectedRoute>
             }
           />

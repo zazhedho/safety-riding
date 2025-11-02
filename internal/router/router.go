@@ -14,13 +14,19 @@ import (
 	cityHandler "safety-riding/internal/handlers/http/city"
 	districtHandler "safety-riding/internal/handlers/http/district"
 	eventHandler "safety-riding/internal/handlers/http/event"
+	menuHandler "safety-riding/internal/handlers/http/menu"
+	permissionHandler "safety-riding/internal/handlers/http/permission"
 	provinceHandler "safety-riding/internal/handlers/http/province"
+	roleHandler "safety-riding/internal/handlers/http/role"
 	schoolHandler "safety-riding/internal/handlers/http/school"
 	userHandler "safety-riding/internal/handlers/http/user"
 	accidentRepo "safety-riding/internal/repositories/accident"
 	authRepo "safety-riding/internal/repositories/auth"
 	budgetRepo "safety-riding/internal/repositories/budget"
 	eventRepo "safety-riding/internal/repositories/event"
+	menuRepo "safety-riding/internal/repositories/menu"
+	permissionRepo "safety-riding/internal/repositories/permission"
+	roleRepo "safety-riding/internal/repositories/role"
 	schoolRepo "safety-riding/internal/repositories/school"
 	userRepo "safety-riding/internal/repositories/user"
 	accidentSvc "safety-riding/internal/services/accident"
@@ -28,7 +34,10 @@ import (
 	kabupatenSvc "safety-riding/internal/services/city"
 	kecamatanSvc "safety-riding/internal/services/district"
 	eventSvc "safety-riding/internal/services/event"
+	menuSvc "safety-riding/internal/services/menu"
+	permissionSvc "safety-riding/internal/services/permission"
 	provinsiSvc "safety-riding/internal/services/province"
+	roleSvc "safety-riding/internal/services/role"
 	schoolSvc "safety-riding/internal/services/school"
 	userSvc "safety-riding/internal/services/user"
 	"safety-riding/middlewares"
@@ -205,5 +214,75 @@ func (r *Routes) BudgetRoutes() {
 		budget.GET("/:id", h.GetBudgetById)
 		budget.PUT("/:id", mdw.RoleMiddleware(utils.RoleAdmin, utils.RoleStaff), h.UpdateBudget)
 		budget.DELETE("/:id", mdw.RoleMiddleware(utils.RoleAdmin, utils.RoleStaff), h.DeleteBudget)
+	}
+}
+
+func (r *Routes) RoleRoutes() {
+	repoRole := roleRepo.NewRoleRepo(r.DB)
+	repoPermission := permissionRepo.NewPermissionRepo(r.DB)
+	repoMenu := menuRepo.NewMenuRepo(r.DB)
+	svc := roleSvc.NewRoleService(repoRole, repoPermission, repoMenu)
+	h := roleHandler.NewRoleHandler(svc)
+	mdw := middlewares.NewMiddleware(authRepo.NewBlacklistRepo(r.DB))
+
+	// List endpoints
+	r.App.GET("/api/roles", mdw.AuthMiddleware(), mdw.RoleMiddleware(utils.RoleAdmin), h.GetAll)
+
+	// CRUD endpoints (admin only)
+	role := r.App.Group("/api/role").Use(mdw.AuthMiddleware(), mdw.RoleMiddleware(utils.RoleAdmin))
+	{
+		role.POST("", h.Create)
+		role.GET("/:id", h.GetByID)
+		role.PUT("/:id", h.Update)
+		role.DELETE("/:id", h.Delete)
+
+		// Permission and menu assignment
+		role.POST("/:id/permissions", h.AssignPermissions)
+		role.POST("/:id/menus", h.AssignMenus)
+	}
+}
+
+func (r *Routes) PermissionRoutes() {
+	repo := permissionRepo.NewPermissionRepo(r.DB)
+	svc := permissionSvc.NewPermissionService(repo)
+	h := permissionHandler.NewPermissionHandler(svc)
+	mdw := middlewares.NewMiddleware(authRepo.NewBlacklistRepo(r.DB))
+
+	// List endpoints
+	r.App.GET("/api/permissions", mdw.AuthMiddleware(), mdw.RoleMiddleware(utils.RoleAdmin), h.GetAll)
+
+	// Get current user's permissions
+	r.App.GET("/api/permissions/me", mdw.AuthMiddleware(), h.GetUserPermissions)
+
+	// CRUD endpoints (admin only)
+	permission := r.App.Group("/api/permission").Use(mdw.AuthMiddleware(), mdw.RoleMiddleware(utils.RoleAdmin))
+	{
+		permission.POST("", h.Create)
+		permission.GET("/:id", h.GetByID)
+		permission.PUT("/:id", h.Update)
+		permission.DELETE("/:id", h.Delete)
+	}
+}
+
+func (r *Routes) MenuRoutes() {
+	repo := menuRepo.NewMenuRepo(r.DB)
+	svc := menuSvc.NewMenuService(repo)
+	h := menuHandler.NewMenuHandler(svc)
+	mdw := middlewares.NewMiddleware(authRepo.NewBlacklistRepo(r.DB))
+
+	// Public endpoints for authenticated users
+	r.App.GET("/api/menus/active", mdw.AuthMiddleware(), h.GetActiveMenus)
+	r.App.GET("/api/menus/me", mdw.AuthMiddleware(), h.GetUserMenus)
+
+	// List endpoints (admin only)
+	r.App.GET("/api/menus", mdw.AuthMiddleware(), mdw.RoleMiddleware(utils.RoleAdmin), h.GetAll)
+
+	// CRUD endpoints (admin only)
+	menu := r.App.Group("/api/menu").Use(mdw.AuthMiddleware(), mdw.RoleMiddleware(utils.RoleAdmin))
+	{
+		menu.POST("", h.Create)
+		menu.GET("/:id", h.GetByID)
+		menu.PUT("/:id", h.Update)
+		menu.DELETE("/:id", h.Delete)
 	}
 }

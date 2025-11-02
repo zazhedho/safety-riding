@@ -33,7 +33,13 @@ export const AuthProvider = ({ children }) => {
       return response.data.data;
     } catch (error) {
       console.error('Failed to fetch user:', error);
-      logout();
+      // Only logout if it's an auth error (401/403)
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        logout();
+      } else {
+        // For other errors, just set loading to false without logging out
+        setLoading(false);
+      }
       return null;
     } finally {
       setLoading(false);

@@ -2,6 +2,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { useState, useEffect } from 'react';
 import ThemeSwitcher from './ThemeSwitcher';
+import menuService from '../../services/menuService';
 
 const DashboardLayout = ({ children }) => {
   const { user, logout } = useAuth();
@@ -9,6 +10,7 @@ const DashboardLayout = ({ children }) => {
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [menuItems, setMenuItems] = useState([]);
 
   const handleLogout = () => {
     logout();
@@ -51,20 +53,72 @@ const DashboardLayout = ({ children }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isMobileMenuOpen]);
 
-  const menuItems = [
-    { path: '/dashboard', label: 'Dashboard', icon: 'bi-speedometer2', roles: ['admin', 'staff', 'viewer'] },
-    { path: '/profile', label: 'Profile', icon: 'bi-person-circle', roles: ['admin', 'staff', 'viewer'] },
-    { path: '/schools', label: 'Schools', icon: 'bi-building', roles: ['admin', 'staff', 'viewer'] },
-    { path: '/schools/education-stats', label: 'Education Stats', icon: 'bi-bar-chart', roles: ['admin', 'staff', 'viewer'] },
-    { path: '/events', label: 'Events', icon: 'bi-calendar-event', roles: ['admin', 'staff', 'viewer'] },
-    { path: '/accidents', label: 'Accidents', icon: 'bi-exclamation-triangle', roles: ['admin', 'staff', 'viewer'] },
-    { path: '/budgets', label: 'Budgets', icon: 'bi-cash-stack', roles: ['admin', 'staff', 'viewer'] },
-    { path: '/users', label: 'Users', icon: 'bi-people', roles: ['admin'] },
-  ];
+  // Fetch user menus
+  useEffect(() => {
+    const fetchMenus = async () => {
+      try {
+        console.log('Fetching menus for user:', user);
+        const response = await menuService.getUserMenus();
+        console.log('Menus response:', response);
+        const menus = response.data.data || [];
 
-  const filteredMenu = menuItems.filter(item =>
-    !item.roles || (user && user.role && item.roles.includes(user.role))
-  );
+        if (menus.length === 0) {
+          console.warn('No menus returned from API, using fallback based on role');
+          // Fallback based on user role
+          const fallbackMenus = getFallbackMenus(user?.role);
+          setMenuItems(fallbackMenus);
+          return;
+        }
+
+        // Transform API menu format to component format
+        const transformedMenus = menus.map(menu => ({
+          path: menu.path,
+          label: menu.display_name,
+          icon: menu.icon || 'bi-circle',
+          name: menu.name,
+        }));
+        console.log('Transformed menus:', transformedMenus);
+        setMenuItems(transformedMenus);
+      } catch (error) {
+        console.error('Failed to fetch menus:', error);
+        console.error('Error details:', {
+          status: error.response?.status,
+          data: error.response?.data,
+          message: error.message
+        });
+        // Fallback to role-based menu if API fails
+        const fallbackMenus = getFallbackMenus(user?.role);
+        console.log('Using fallback menus:', fallbackMenus);
+        setMenuItems(fallbackMenus);
+      }
+    };
+
+    if (user) {
+      fetchMenus();
+    }
+  }, [user]);
+
+  const getFallbackMenus = (role) => {
+    const baseMenus = [
+      { path: '/dashboard', label: 'Dashboard', icon: 'bi-speedometer2', name: 'dashboard' },
+      { path: '/profile', label: 'Profile', icon: 'bi-person-circle', name: 'profile' },
+      { path: '/schools', label: 'Schools', icon: 'bi-building', name: 'schools' },
+      { path: '/schools/education-stats', label: 'Education Stats', icon: 'bi-bar-chart', name: 'education_stats' },
+      { path: '/events', label: 'Events', icon: 'bi-calendar-event', name: 'events' },
+      { path: '/accidents', label: 'Accidents', icon: 'bi-exclamation-triangle', name: 'accidents' },
+      { path: '/budgets', label: 'Budgets', icon: 'bi-cash-stack', name: 'budgets' },
+    ];
+
+    if (role === 'admin') {
+      return [
+        ...baseMenus,
+        { path: '/users', label: 'Users', icon: 'bi-people', name: 'users' },
+        { path: '/roles', label: 'Roles', icon: 'bi-shield-lock', name: 'roles' },
+      ];
+    }
+
+    return baseMenus;
+  };
 
   return (
     <div className={`layout-wrapper ${isMobileMenuOpen ? 'sidebar-open' : ''} ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
@@ -101,7 +155,7 @@ const DashboardLayout = ({ children }) => {
           <small className="sidebar-subtitle">Management System</small>
         </div>
         <div className="sidebar-menu">
-          {filteredMenu.map(item => {
+          {menuItems.map(item => {
             // Helper function to check if menu item should be active
             const isMenuActive = () => {
               const currentPath = location.pathname;
@@ -110,13 +164,14 @@ const DashboardLayout = ({ children }) => {
               if (currentPath === item.path) return true;
 
               // For /schools menu, activate on /schools/new or /schools/:id (detail/edit), but NOT on /schools/education-stats
-              if (item.path === '/schools') {
+              if (item.name === 'schools' || item.path === '/schools') {
                 return (currentPath === '/schools/new' || currentPath.match(/^\/schools\/[a-f0-9-]{36}/) !== null);
               }
 
               // For other parent routes, activate on /new or child routes with UUID (detail/edit pages)
               if (item.path.startsWith('/events') || item.path.startsWith('/accidents') ||
-                  item.path.startsWith('/budgets') || item.path.startsWith('/users')) {
+                  item.path.startsWith('/budgets') || item.path.startsWith('/users') ||
+                  item.path.startsWith('/roles')) {
                 const baseRoute = item.path.split('/')[1]; // Get 'events', 'accidents', etc.
                 return currentPath === `/${baseRoute}/new` || currentPath.match(new RegExp(`^/${baseRoute}/[a-f0-9-]{36}`)) !== null;
               }
