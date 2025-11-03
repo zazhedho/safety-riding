@@ -8,7 +8,7 @@ import { useAuth } from '../../contexts/AuthContext';
 const AccidentDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { hasPermission } = useAuth();
   const [accident, setAccident] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -44,8 +44,6 @@ const AccidentDetail = () => {
     return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
   };
 
-  const canPerformActions = user?.role === 'admin' || user?.role === 'staff';
-
   if (loading) {
     return (
       <DashboardLayout>
@@ -78,7 +76,7 @@ const AccidentDetail = () => {
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2>Accident Details</h2>
         <div>
-          {canPerformActions && (
+          {hasPermission('update_accidents') && (
             <Link to={`/accidents/${id}/edit`} className="btn btn-warning me-2">
               <i className="bi bi-pencil-square me-2"></i>Edit
             </Link>

@@ -7,7 +7,7 @@ import { toast } from 'react-toastify';
 import { useAuth } from '../../contexts/AuthContext';
 
 const BudgetList = () => {
-  const { user } = useAuth();
+  const { hasPermission } = useAuth();
   const [budgets, setBudgets] = useState([]);
   const [events, setEvents] = useState([]);
   const [summary, setSummary] = useState(null);
@@ -90,13 +90,11 @@ const BudgetList = () => {
     }).format(amount);
   };
 
-  const canPerformActions = user?.role === 'admin' || user?.role === 'staff';
-
   return (
     <DashboardLayout>
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2>Budget Management</h2>
-        {canPerformActions && (
+        {hasPermission('create_budgets') && (
           <Link to="/budgets/new" className="btn btn-primary">
             <i className="bi bi-plus-circle me-2"></i>Add Budget
           </Link>
@@ -203,7 +201,7 @@ const BudgetList = () => {
                     <th>Actual Spent</th>
                     <th>Remaining</th>
                     <th>Status</th>
-                    {canPerformActions && <th>Actions</th>}
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -236,30 +234,34 @@ const BudgetList = () => {
                             </div>
                           </div>
                         </td>
-                        {canPerformActions && (
-                          <td>
-                            <div className="btn-group">
+                        <td>
+                          <div className="btn-group">
+                            {hasPermission('view_budgets') && (
                               <Link
                                 to={`/budgets/${budget.id}`}
                                 className="btn btn-sm btn-outline-primary"
                               >
                                 <i className="bi bi-eye"></i>
                               </Link>
+                            )}
+                            {hasPermission('update_budgets') && (
                               <Link
                                 to={`/budgets/${budget.id}/edit`}
                                 className="btn btn-sm btn-outline-warning"
                               >
                                 <i className="bi bi-pencil"></i>
                               </Link>
+                            )}
+                            {hasPermission('delete_budgets') && (
                               <button
                                 onClick={() => handleDelete(budget.id)}
                                 className="btn btn-sm btn-outline-danger"
                               >
                                 <i className="bi bi-trash"></i>
                               </button>
-                            </div>
-                          </td>
-                        )}
+                            )}
+                          </div>
+                        </td>
                       </tr>
                     );
                   })}

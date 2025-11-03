@@ -28,7 +28,7 @@ func GetBaseParams(ctx *gin.Context, defOrderBy, defOrderDirection string, defLi
 	if req.Page < 1 {
 		req.Page = 1
 	}
-	if req.Limit < 1 || req.Limit > 100 {
+	if req.Limit < 1 || req.Limit > 10000 {
 		req.Limit = defLimit
 	}
 	if req.OrderBy == "" {

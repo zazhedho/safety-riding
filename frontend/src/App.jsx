@@ -43,7 +43,7 @@ function App() {
           <Route
             path="/dashboard"
             element={
-              <ProtectedRoute roles={['admin', 'staff', 'viewer']}>
+              <ProtectedRoute>
                 <Dashboard />
               </ProtectedRoute>
             }
@@ -52,7 +52,7 @@ function App() {
           <Route
             path="/schools"
             element={
-              <ProtectedRoute roles={['admin', 'staff', 'viewer']}>
+              <ProtectedRoute>
                 <SchoolList />
               </ProtectedRoute>
             }
@@ -61,7 +61,7 @@ function App() {
           <Route
             path="/schools/education-stats"
             element={
-              <ProtectedRoute roles={['admin', 'staff', 'viewer']}>
+              <ProtectedRoute>
                 <SchoolEducationStats />
               </ProtectedRoute>
             }
@@ -70,7 +70,7 @@ function App() {
           <Route
             path="/schools/new"
             element={
-              <ProtectedRoute roles={['admin', 'staff']}>
+              <ProtectedRoute>
                 <SchoolForm />
               </ProtectedRoute>
             }
@@ -79,7 +79,7 @@ function App() {
           <Route
             path="/schools/:id"
             element={
-              <ProtectedRoute roles={['admin', 'staff', 'viewer']}>
+              <ProtectedRoute>
                 <SchoolDetail />
               </ProtectedRoute>
             }
@@ -88,7 +88,7 @@ function App() {
           <Route
             path="/schools/:id/edit"
             element={
-              <ProtectedRoute roles={['admin', 'staff']}>
+              <ProtectedRoute>
                 <SchoolForm />
               </ProtectedRoute>
             }
@@ -97,7 +97,7 @@ function App() {
           <Route
             path="/events"
             element={
-              <ProtectedRoute roles={['admin', 'staff', 'viewer']}>
+              <ProtectedRoute>
                 <EventList />
               </ProtectedRoute>
             }
@@ -106,7 +106,7 @@ function App() {
           <Route
             path="/events/new"
             element={
-              <ProtectedRoute roles={['admin', 'staff']}>
+              <ProtectedRoute>
                 <EventForm />
               </ProtectedRoute>
             }
@@ -115,7 +115,7 @@ function App() {
           <Route
             path="/events/:id"
             element={
-              <ProtectedRoute roles={['admin', 'staff', 'viewer']}>
+              <ProtectedRoute>
                 <EventDetail />
               </ProtectedRoute>
             }
@@ -124,7 +124,7 @@ function App() {
           <Route
             path="/events/:id/edit"
             element={
-              <ProtectedRoute roles={['admin', 'staff']}>
+              <ProtectedRoute>
                 <EventForm />
               </ProtectedRoute>
             }
@@ -133,7 +133,7 @@ function App() {
           <Route
             path="/accidents"
             element={
-              <ProtectedRoute roles={['admin', 'staff', 'viewer']}>
+              <ProtectedRoute>
                 <AccidentList />
               </ProtectedRoute>
             }
@@ -142,7 +142,7 @@ function App() {
           <Route
             path="/accidents/new"
             element={
-              <ProtectedRoute roles={['admin', 'staff']}>
+              <ProtectedRoute>
                 <AccidentForm />
               </ProtectedRoute>
             }
@@ -151,7 +151,7 @@ function App() {
           <Route
             path="/accidents/:id"
             element={
-              <ProtectedRoute roles={['admin', 'staff', 'viewer']}>
+              <ProtectedRoute>
                 <AccidentDetail />
               </ProtectedRoute>
             }
@@ -160,7 +160,7 @@ function App() {
           <Route
             path="/accidents/:id/edit"
             element={
-              <ProtectedRoute roles={['admin', 'staff']}>
+              <ProtectedRoute>
                 <AccidentForm />
               </ProtectedRoute>
             }
@@ -169,7 +169,7 @@ function App() {
           <Route
             path="/budgets"
             element={
-              <ProtectedRoute roles={['admin', 'staff', 'viewer']}>
+              <ProtectedRoute>
                 <BudgetList />
               </ProtectedRoute>
             }
@@ -178,7 +178,7 @@ function App() {
           <Route
             path="/budgets/new"
             element={
-              <ProtectedRoute roles={['admin', 'staff']}>
+              <ProtectedRoute>
                 <BudgetForm />
               </ProtectedRoute>
             }
@@ -187,7 +187,7 @@ function App() {
           <Route
             path="/budgets/:id/edit"
             element={
-              <ProtectedRoute roles={['admin', 'staff']}>
+              <ProtectedRoute>
                 <BudgetForm />
               </ProtectedRoute>
             }
@@ -196,7 +196,7 @@ function App() {
           <Route
             path="/users"
             element={
-              <ProtectedRoute roles={['admin']}>
+              <ProtectedRoute>
                 <UserList />
               </ProtectedRoute>
             }
@@ -205,7 +205,7 @@ function App() {
           <Route
             path="/users/new"
             element={
-              <ProtectedRoute roles={['admin']}>
+              <ProtectedRoute>
                 <UserForm />
               </ProtectedRoute>
             }
@@ -214,7 +214,7 @@ function App() {
           <Route
             path="/users/:id/edit"
             element={
-              <ProtectedRoute roles={['admin']}>
+              <ProtectedRoute>
                 <UserForm />
               </ProtectedRoute>
             }
@@ -223,7 +223,7 @@ function App() {
           <Route
             path="/profile"
             element={
-              <ProtectedRoute roles={['admin', 'staff', 'viewer']}>
+              <ProtectedRoute>
                 <Profile />
               </ProtectedRoute>
             }
@@ -232,7 +232,7 @@ function App() {
           <Route
             path="/roles"
             element={
-              <ProtectedRoute roles={['admin']}>
+              <ProtectedRoute>
                 <RoleList />
               </ProtectedRoute>
             }
@@ -241,7 +241,7 @@ function App() {
           <Route
             path="/roles/new"
             element={
-              <ProtectedRoute roles={['admin']}>
+              <ProtectedRoute>
                 <RoleForm />
               </ProtectedRoute>
             }
@@ -250,7 +250,7 @@ function App() {
           <Route
             path="/roles/:id/edit"
             element={
-              <ProtectedRoute roles={['admin']}>
+              <ProtectedRoute>
                 <RoleForm />
               </ProtectedRoute>
             }
@@ -259,7 +259,7 @@ function App() {
           <Route
             path="/menus"
             element={
-              <ProtectedRoute roles={['admin']}>
+              <ProtectedRoute>
                 <MenuList />
               </ProtectedRoute>
             }
@@ -268,7 +268,7 @@ function App() {
           <Route
             path="/menus/new"
             element={
-              <ProtectedRoute roles={['admin']}>
+              <ProtectedRoute>
                 <MenuForm />
               </ProtectedRoute>
             }
@@ -277,7 +277,7 @@ function App() {
           <Route
             path="/menus/:id/edit"
             element={
-              <ProtectedRoute roles={['admin']}>
+              <ProtectedRoute>
                 <MenuForm />
               </ProtectedRoute>
             }

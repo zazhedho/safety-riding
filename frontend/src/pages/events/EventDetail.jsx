@@ -8,7 +8,7 @@ import { useAuth } from '../../contexts/AuthContext';
 
 const EventDetail = () => {
   const { id } = useParams();
-  const { user } = useAuth();
+  const { hasPermission } = useAuth();
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('details');
@@ -294,8 +294,8 @@ const EventDetail = () => {
 
             {activeTab === 'photos' && (
               <div>
-                {/* Upload Form - Only for admin/staff */}
-                {(user?.role === 'admin' || user?.role === 'staff') && (
+                {/* Upload Form */}
+                {hasPermission('update_events') && (
                   <div className="card mb-4 border-primary">
                     <div className="card-header bg-primary text-white">
                       <h5 className="mb-0"><i className="bi bi-cloud-upload me-2"></i>Upload Photos</h5>
@@ -381,7 +381,7 @@ const EventDetail = () => {
                           <img src={photo.photo_url} className="card-img-top" alt={photo.caption} style={{ height: '250px', objectFit: 'cover' }} />
                           <div className="card-body">
                             {photo.caption && <p className="card-text">{photo.caption}</p>}
-                            {(user?.role === 'admin' || user?.role === 'staff') && (
+                            {hasPermission('delete_events') && (
                               <button
                                 className="btn btn-danger btn-sm w-100"
                                 onClick={() => handleDeleteClick(photo)}

@@ -74,7 +74,9 @@ func NewRoutes() *Routes {
 func (r *Routes) UserRoutes() {
 	blacklistRepo := authRepo.NewBlacklistRepo(r.DB)
 	repo := userRepo.NewUserRepo(r.DB)
-	uc := userSvc.NewUserService(repo, blacklistRepo)
+	rRepo := roleRepo.NewRoleRepo(r.DB)
+	pRepo := permissionRepo.NewPermissionRepo(r.DB)
+	uc := userSvc.NewUserService(repo, blacklistRepo, rRepo, pRepo)
 	h := userHandler.NewUserHandler(uc)
 	mdw := middlewares.NewMiddleware(blacklistRepo)
 

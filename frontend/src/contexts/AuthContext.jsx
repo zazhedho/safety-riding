@@ -177,6 +177,11 @@ export const AuthProvider = ({ children }) => {
     return roles.includes(user.role);
   };
 
+  const hasPermission = (permission) => {
+    if (!user || !user.permissions) return false;
+    return user.permissions.includes(permission);
+  };
+
   const value = {
     user,
     login,
@@ -186,6 +191,7 @@ export const AuthProvider = ({ children }) => {
     updatePassword,
     deleteUser,
     hasRole,
+    hasPermission,
     loading,
     isAuthenticated: !!user
   };

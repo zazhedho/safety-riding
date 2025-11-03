@@ -7,7 +7,7 @@ import { toast } from 'react-toastify';
 import { useAuth } from '../../contexts/AuthContext';
 
 const EventList = () => {
-  const { user } = useAuth();
+  const { hasPermission } = useAuth();
   const [events, setEvents] = useState([]);
   const [schools, setSchools] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -101,13 +101,11 @@ const EventList = () => {
     });
   };
 
-  const canPerformActions = user?.role === 'admin' || user?.role === 'staff';
-
   return (
     <DashboardLayout>
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2>Events Management</h2>
-        {canPerformActions && (
+        {hasPermission('create_events') && (
           <Link to="/events/new" className="btn btn-primary">
             <i className="bi bi-plus-circle me-2"></i>Add Event
           </Link>
@@ -201,28 +199,30 @@ const EventList = () => {
                       </td>
                       <td>
                         <div className="btn-group">
-                          <Link
-                            to={`/events/${event.id}`}
-                            className="btn btn-sm btn-outline-primary"
-                          >
-                            <i className="bi bi-eye"></i>
-                          </Link>
-                          {canPerformActions && (
-                            <>
-                              <Link
-                                to={`/events/${event.id}/edit`}
-                                className="btn btn-sm btn-outline-warning"
-                              >
-                                <i className="bi bi-pencil"></i>
-                              </Link>
-                              <button
-                                onClick={() => handleDelete(event.id)}
-                                className="btn btn-sm btn-outline-danger"
-                                disabled={event.status === 'completed'}
-                              >
-                                <i className="bi bi-trash"></i>
-                              </button>
-                            </>
+                          {hasPermission('view_events') && (
+                            <Link
+                              to={`/events/${event.id}`}
+                              className="btn btn-sm btn-outline-primary"
+                            >
+                              <i className="bi bi-eye"></i>
+                            </Link>
+                          )}
+                          {hasPermission('update_events') && (
+                            <Link
+                              to={`/events/${event.id}/edit`}
+                              className="btn btn-sm btn-outline-warning"
+                            >
+                              <i className="bi bi-pencil"></i>
+                            </Link>
+                          )}
+                          {hasPermission('delete_events') && (
+                            <button
+                              onClick={() => handleDelete(event.id)}
+                              className="btn btn-sm btn-outline-danger"
+                              disabled={event.status === 'completed'}
+                            >
+                              <i className="bi bi-trash"></i>
+                            </button>
                           )}
                         </div>
                       </td>

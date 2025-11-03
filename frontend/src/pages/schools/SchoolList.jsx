@@ -9,7 +9,7 @@ import { toast } from 'react-toastify';
 import { useAuth } from '../../contexts/AuthContext';
 
 const SchoolList = () => {
-  const { user } = useAuth();
+  const { hasPermission } = useAuth();
   const [schools, setSchools] = useState([]);
   const [provinces, setProvinces] = useState([]);
   const [cities, setCities] = useState([]);
@@ -162,9 +162,6 @@ const SchoolList = () => {
     setViewMode('map');
   };
 
-  const canPerformActions = user?.role === 'admin' || user?.role === 'staff';
-  const canView = user?.role === 'admin' || user?.role === 'staff' || user?.role === 'viewer';
-
   return (
     <DashboardLayout>
       <div className="d-flex justify-content-between align-items-center mb-4">
@@ -184,7 +181,7 @@ const SchoolList = () => {
               <i className="bi bi-map me-2"></i>Map
             </button>
           </div>
-          {canPerformActions && (
+          {hasPermission('create_schools') && (
             <Link to="/schools/new" className="btn btn-primary">
               <i className="bi bi-plus-circle me-2"></i>Add School
             </Link>
@@ -310,7 +307,7 @@ const SchoolList = () => {
                         </td>
                         <td>
                           <div className="btn-group">
-                            {canView && (
+                            {hasPermission('view_schools') && (
                               <Link
                                 to={`/schools/${school.id}`}
                                 className="btn btn-sm btn-outline-primary"
@@ -318,21 +315,21 @@ const SchoolList = () => {
                                 <i className="bi bi-eye"></i>
                               </Link>
                             )}
-                            {canPerformActions && (
-                              <>
-                                <Link
-                                  to={`/schools/${school.id}/edit`}
-                                  className="btn btn-sm btn-outline-warning"
-                                >
-                                  <i className="bi bi-pencil"></i>
-                                </Link>
-                                <button
-                                  onClick={() => handleDeleteClick(school)}
-                                  className="btn btn-sm btn-outline-danger"
-                                >
-                                  <i className="bi bi-trash"></i>
-                                </button>
-                              </>
+                            {hasPermission('update_schools') && (
+                              <Link
+                                to={`/schools/${school.id}/edit`}
+                                className="btn btn-sm btn-outline-warning"
+                              >
+                                <i className="bi bi-pencil"></i>
+                              </Link>
+                            )}
+                            {hasPermission('delete_schools') && (
+                              <button
+                                onClick={() => handleDeleteClick(school)}
+                                className="btn btn-sm btn-outline-danger"
+                              >
+                                <i className="bi bi-trash"></i>
+                              </button>
                             )}
                           </div>
                         </td>

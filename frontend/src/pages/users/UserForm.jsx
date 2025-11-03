@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import DashboardLayout from '../../components/common/DashboardLayout';
 import userService from '../../services/userService';
+import roleService from '../../services/roleService';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../contexts/AuthContext';
 import ConfirmationModal from '../../components/common/ConfirmationModal';
@@ -9,7 +10,7 @@ import ConfirmationModal from '../../components/common/ConfirmationModal';
 const UserForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user, register } = useAuth();
+  const { user, register, hasPermission } = useAuth();
 
   const [formData, setFormData] = useState({
     name: '',
@@ -21,6 +22,7 @@ const UserForm = () => {
   });
   const [loading, setLoading] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [roles, setRoles] = useState([]);
 
   useEffect(() => {
     if (!id && user?.role !== 'admin') {
@@ -28,6 +30,8 @@ const UserForm = () => {
       navigate('/dashboard');
       return;
     }
+
+    fetchRoles();
 
     if (id) {
       fetchUser(id);
@@ -45,6 +49,15 @@ const UserForm = () => {
       toast.error('Failed to fetch user');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchRoles = async () => {
+    try {
+      const response = await roleService.getAll({ limit: 1000 });
+      setRoles(response.data.data || []);
+    } catch (error) {
+      console.error('Failed to fetch roles');
     }
   };
 
@@ -158,15 +171,11 @@ const UserForm = () => {
                 value={formData.role}
                 onChange={handleChange}
               >
-                {id ? (
-                  <>
-                    <option value="admin">Admin</option>
-                    <option value="staff">Staff</option>
-                    <option value="viewer">Viewer</option>
-                  </>
-                ) : (
-                  <option value="viewer">Viewer</option>
-                )}
+                {roles.map(role => (
+                  <option key={role.id} value={role.name}>
+                    {role.display_name}
+                  </option>
+                ))}
               </select>
             </div>
             <hr />
@@ -197,7 +206,7 @@ const UserForm = () => {
             </div>
             <button type="submit" className="btn btn-primary">Save</button>
             <button type="button" className="btn btn-secondary ms-2" onClick={() => navigate('/users')}>Cancel</button>
-            {id && user?.role === 'admin' && (
+            {id && hasPermission('delete_users') && (
               <button type="button" className="btn btn-danger ms-2" onClick={handleDelete}>
                 Delete User
               </button>

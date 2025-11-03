@@ -7,7 +7,7 @@ import { toast } from 'react-toastify';
 import { useAuth } from '../../contexts/AuthContext';
 
 const AccidentList = () => {
-  const { user } = useAuth();
+  const { hasPermission } = useAuth();
   const [accidents, setAccidents] = useState([]);
   const [provinces, setProvinces] = useState([]);
   const [cities, setCities] = useState([]);
@@ -127,13 +127,11 @@ const AccidentList = () => {
     });
   };
 
-  const canPerformActions = user?.role === 'admin' || user?.role === 'staff';
-
   return (
     <DashboardLayout>
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2>Accident Records</h2>
-        {canPerformActions && (
+        {hasPermission('create_accidents') && (
           <Link to="/accidents/new" className="btn btn-primary">
             <i className="bi bi-plus-circle me-2"></i>Add Accident Record
           </Link>
@@ -277,27 +275,29 @@ const AccidentList = () => {
                       <td>{accident.weather_condition || '-'}</td>
                       <td>
                         <div className="btn-group">
-                          <Link
-                            to={`/accidents/${accident.id}`}
-                            className="btn btn-sm btn-outline-primary"
-                          >
-                            <i className="bi bi-eye"></i>
-                          </Link>
-                          {canPerformActions && (
-                            <>
-                              <Link
-                                to={`/accidents/${accident.id}/edit`}
-                                className="btn btn-sm btn-outline-warning"
-                              >
-                                <i className="bi bi-pencil"></i>
-                              </Link>
-                              <button
-                                onClick={() => handleDelete(accident.id)}
-                                className="btn btn-sm btn-outline-danger"
-                                >
-                                  <i className="bi bi-trash"></i>
-                              </button>
-                            </>
+                          {hasPermission('view_accidents') && (
+                            <Link
+                              to={`/accidents/${accident.id}`}
+                              className="btn btn-sm btn-outline-primary"
+                            >
+                              <i className="bi bi-eye"></i>
+                            </Link>
+                          )}
+                          {hasPermission('update_accidents') && (
+                            <Link
+                              to={`/accidents/${accident.id}/edit`}
+                              className="btn btn-sm btn-outline-warning"
+                            >
+                              <i className="bi bi-pencil"></i>
+                            </Link>
+                          )}
+                          {hasPermission('delete_accidents') && (
+                            <button
+                              onClick={() => handleDelete(accident.id)}
+                              className="btn btn-sm btn-outline-danger"
+                            >
+                              <i className="bi bi-trash"></i>
+                            </button>
                           )}
                         </div>
                       </td>

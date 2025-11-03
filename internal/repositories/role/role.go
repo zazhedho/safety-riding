@@ -5,6 +5,7 @@ import (
 	"safety-riding/internal/domain/role"
 	"safety-riding/internal/interfaces/role"
 	"safety-riding/pkg/filter"
+	"safety-riding/utils"
 
 	"gorm.io/gorm"
 )
@@ -115,6 +116,7 @@ func (r *repo) AssignPermissions(roleId string, permissionIds []string) error {
 	// Insert new permissions
 	for _, permissionId := range permissionIds {
 		rolePermission := domainrole.RolePermission{
+			Id:           utils.CreateUUID(),
 			RoleId:       roleId,
 			PermissionId: permissionId,
 		}
@@ -166,6 +168,7 @@ func (r *repo) AssignMenus(roleId string, menuIds []string) error {
 	// Insert new menus
 	for _, menuId := range menuIds {
 		roleMenu := domainrole.RoleMenu{
+			Id:         utils.CreateUUID(),
 			RoleId:     roleId,
 			MenuItemId: menuId,
 		}

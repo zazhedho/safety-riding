@@ -1,26 +1,106 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import DashboardLayout from '../components/common/DashboardLayout';
 import schoolService from '../services/schoolService';
 import eventService from '../services/eventService';
 import accidentService from '../services/accidentService';
 import budgetService from '../services/budgetService';
+import locationService from '../services/locationService';
 import { toast } from 'react-toastify';
+import { useAuth } from '../contexts/AuthContext';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+
+// Import chart components
+import AccidentTrendsChart from '../components/charts/AccidentTrendsChart';
+import EventTypeDistributionChart from '../components/charts/EventTypeDistributionChart';
+import BudgetUtilizationChart from '../components/charts/BudgetUtilizationChart';
+import SchoolsByProvinceChart from '../components/charts/SchoolsByProvinceChart';
 
 const Dashboard = () => {
+  const { hasPermission } = useAuth();
   const [stats, setStats] = useState({
     schools: 0,
     events: 0,
     accidents: 0,
     budgets: 0
   });
+
+  // Additional statistics
+  const [additionalStats, setAdditionalStats] = useState({
+    totalDeaths: 0,
+    totalInjured: 0,
+    avgAttendeesPerEvent: 0,
+    budgetUtilizationRate: 0,
+    activeSchools: 0
+  });
+
+  // Data for charts
+  const [allSchools, setAllSchools] = useState([]);
+  const [allEvents, setAllEvents] = useState([]);
+  const [allAccidents, setAllAccidents] = useState([]);
+  const [allBudgets, setAllBudgets] = useState([]);
+
+  // Filtered data
+  const [filteredEvents, setFilteredEvents] = useState([]);
+  const [filteredAccidents, setFilteredAccidents] = useState([]);
+  const [filteredBudgets, setFilteredBudgets] = useState([]);
+
+  const [recentEvents, setRecentEvents] = useState([]);
+  const [recentAccidents, setRecentAccidents] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Filter states
+  const [dateRange, setDateRange] = useState({
+    startDate: new Date(new Date().setMonth(new Date().getMonth() - 6)),
+    endDate: new Date()
+  });
+  const [provinces, setProvinces] = useState([]);
+  const [cities, setCities] = useState([]);
+  const [selectedProvince, setSelectedProvince] = useState('');
+  const [selectedCity, setSelectedCity] = useState('');
+
   useEffect(() => {
-    fetchStats();
+    fetchProvinces();
+    fetchDashboardData();
   }, []);
 
-  const fetchStats = async () => {
+  useEffect(() => {
+    if (selectedProvince) {
+      fetchCities(selectedProvince);
+    } else {
+      setCities([]);
+      setSelectedCity('');
+    }
+  }, [selectedProvince]);
+
+  useEffect(() => {
+    applyFilters();
+  }, [dateRange, selectedProvince, selectedCity, allEvents, allAccidents, allBudgets]);
+
+  const fetchProvinces = async () => {
     try {
+      const response = await locationService.getProvinces();
+      setProvinces(response.data.data || []);
+    } catch (error) {
+      console.error('Failed to load provinces');
+    }
+  };
+
+  const fetchCities = async (provinceCode) => {
+    try {
+      const response = await locationService.getCities(provinceCode);
+      setCities(response.data.data || []);
+    } catch (error) {
+      console.error('Failed to load cities');
+    }
+  };
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+
+      // Fetch basic statistics
       const [schoolsRes, eventsRes, accidentsRes, budgetsRes] = await Promise.all([
         schoolService.getAll({ limit: 1 }),
         eventService.getAll({ limit: 1 }),
@@ -34,11 +114,142 @@ const Dashboard = () => {
         accidents: accidentsRes.data.total_data || 0,
         budgets: budgetsRes.data.total_data || 0
       });
+
+      // Fetch all data for charts (with reasonable limits)
+      const [schoolsData, eventsData, accidentsData, budgetsData] = await Promise.all([
+        schoolService.getAll({ limit: 10000 }),
+        eventService.getAll({ limit: 10000 }),
+        accidentService.getAll({ limit: 10000 }),
+        budgetService.getAll({ limit: 10000 })
+      ]);
+
+      setAllSchools(schoolsData.data.data || []);
+      setAllEvents(eventsData.data.data || []);
+      setAllAccidents(accidentsData.data.data || []);
+      setAllBudgets(budgetsData.data.data || []);
+
+      // Fetch recent data
+      const [recentEventsRes, recentAccidentsRes] = await Promise.all([
+        eventService.getAll({ limit: 5, order_by: 'created_at', order_direction: 'desc' }),
+        accidentService.getAll({ limit: 5, order_by: 'created_at', order_direction: 'desc' })
+      ]);
+
+      setRecentEvents(recentEventsRes.data.data || []);
+      setRecentAccidents(recentAccidentsRes.data.data || []);
+
+      // Calculate additional statistics
+      calculateAdditionalStats(
+        schoolsData.data.data || [],
+        eventsData.data.data || [],
+        accidentsData.data.data || [],
+        budgetsData.data.data || []
+      );
+
     } catch (error) {
-      toast.error('Failed to load dashboard stats');
+      console.error('Failed to load dashboard data:', error);
+      toast.error('Failed to load dashboard data');
     } finally {
       setLoading(false);
     }
+  };
+
+  const calculateAdditionalStats = (schools, events, accidents, budgets) => {
+    // Total deaths and injured
+    const totalDeaths = accidents.reduce((sum, acc) => sum + (acc.death_count || 0), 0);
+    const totalInjured = accidents.reduce((sum, acc) => sum + (acc.injured_count || 0), 0);
+
+    // Average attendees per event
+    const totalAttendees = events.reduce((sum, evt) => sum + (evt.attendees_count || 0), 0);
+    const avgAttendeesPerEvent = events.length > 0 ? Math.round(totalAttendees / events.length) : 0;
+
+    // Budget utilization rate
+    const totalBudgetAllocated = budgets.reduce((sum, b) => sum + (b.budget_amount || 0), 0);
+    const totalBudgetSpent = budgets.reduce((sum, b) => sum + (b.actual_spent || 0), 0);
+    const budgetUtilizationRate = totalBudgetAllocated > 0
+      ? Math.round((totalBudgetSpent / totalBudgetAllocated) * 100)
+      : 0;
+
+    // Active schools (schools with events in last 6 months)
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
+    const activeSchoolIds = new Set(
+      events
+        .filter(evt => new Date(evt.event_date) >= sixMonthsAgo)
+        .map(evt => evt.school_id)
+    );
+    const activeSchools = activeSchoolIds.size;
+
+    setAdditionalStats({
+      totalDeaths,
+      totalInjured,
+      avgAttendeesPerEvent,
+      budgetUtilizationRate,
+      activeSchools
+    });
+  };
+
+  const applyFilters = () => {
+    let events = [...allEvents];
+    let accidents = [...allAccidents];
+    let budgets = [...allBudgets];
+
+    // Date range filter
+    if (dateRange.startDate && dateRange.endDate) {
+      events = events.filter(evt => {
+        const eventDate = new Date(evt.event_date);
+        return eventDate >= dateRange.startDate && eventDate <= dateRange.endDate;
+      });
+
+      accidents = accidents.filter(acc => {
+        const accidentDate = new Date(acc.accident_date);
+        return accidentDate >= dateRange.startDate && accidentDate <= dateRange.endDate;
+      });
+
+      budgets = budgets.filter(budget => {
+        const budgetDate = new Date(budget.budget_date);
+        return budgetDate >= dateRange.startDate && budgetDate <= dateRange.endDate;
+      });
+    }
+
+    // Province filter
+    if (selectedProvince) {
+      events = events.filter(evt => evt.school?.province_id === selectedProvince);
+      accidents = accidents.filter(acc => acc.province_id === selectedProvince);
+    }
+
+    // City filter
+    if (selectedCity) {
+      events = events.filter(evt => evt.school?.city_id === selectedCity);
+      accidents = accidents.filter(acc => acc.city_id === selectedCity);
+    }
+
+    setFilteredEvents(events);
+    setFilteredAccidents(accidents);
+    setFilteredBudgets(budgets);
+  };
+
+  const handleRefresh = () => {
+    fetchDashboardData();
+    toast.success('Dashboard refreshed');
+  };
+
+  const handleResetFilters = () => {
+    setDateRange({
+      startDate: new Date(new Date().setMonth(new Date().getMonth() - 6)),
+      endDate: new Date()
+    });
+    setSelectedProvince('');
+    setSelectedCity('');
+  };
+
+  const formatDate = (dateStr) => {
+    if (!dateStr) return '-';
+    return new Date(dateStr).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
   };
 
   if (loading) {
@@ -55,15 +266,96 @@ const Dashboard = () => {
 
   return (
     <DashboardLayout>
-      <h2 className="mb-4">Dashboard Overview</h2>
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h2>Dashboard Overview</h2>
+        <button className="btn btn-outline-primary" onClick={handleRefresh}>
+          <i className="bi bi-arrow-clockwise me-2"></i>Refresh
+        </button>
+      </div>
 
-      <div className="row g-4">
+      {/* Filters */}
+      <div className="card mb-4">
+        <div className="card-header">
+          <h5 className="mb-0">
+            <i className="bi bi-funnel me-2"></i>Filters
+          </h5>
+        </div>
+        <div className="card-body">
+          <div className="row g-3">
+            <div className="col-md-4">
+              <label className="form-label small">Date Range</label>
+              <div className="d-flex gap-2">
+                <DatePicker
+                  selected={dateRange.startDate}
+                  onChange={(date) => setDateRange(prev => ({ ...prev, startDate: date }))}
+                  selectsStart
+                  startDate={dateRange.startDate}
+                  endDate={dateRange.endDate}
+                  className="form-control form-control-sm"
+                  dateFormat="dd/MM/yyyy"
+                  placeholderText="Start Date"
+                />
+                <DatePicker
+                  selected={dateRange.endDate}
+                  onChange={(date) => setDateRange(prev => ({ ...prev, endDate: date }))}
+                  selectsEnd
+                  startDate={dateRange.startDate}
+                  endDate={dateRange.endDate}
+                  minDate={dateRange.startDate}
+                  className="form-control form-control-sm"
+                  dateFormat="dd/MM/yyyy"
+                  placeholderText="End Date"
+                />
+              </div>
+            </div>
+            <div className="col-md-3">
+              <label className="form-label small">Province</label>
+              <select
+                className="form-select form-select-sm"
+                value={selectedProvince}
+                onChange={(e) => setSelectedProvince(e.target.value)}
+              >
+                <option value="">All Provinces</option>
+                {provinces.map(prov => (
+                  <option key={prov.code} value={prov.code}>{prov.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="col-md-3">
+              <label className="form-label small">City</label>
+              <select
+                className="form-select form-select-sm"
+                value={selectedCity}
+                onChange={(e) => setSelectedCity(e.target.value)}
+                disabled={!selectedProvince}
+              >
+                <option value="">All Cities</option>
+                {cities.map(city => (
+                  <option key={city.code} value={city.code}>{city.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="col-md-2 d-flex align-items-end">
+              <button className="btn btn-sm btn-outline-secondary w-100" onClick={handleResetFilters}>
+                <i className="bi bi-x-circle me-1"></i>Reset
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Statistics Cards */}
+      <div className="row g-4 mb-4">
         <div className="col-md-3">
           <div className="stats-card">
             <div className="d-flex justify-content-between align-items-center">
               <div>
                 <h6 className="text-muted mb-1">Total Schools</h6>
                 <div className="stats-number">{stats.schools}</div>
+                <small className="text-success">
+                  <i className="bi bi-check-circle me-1"></i>
+                  {additionalStats.activeSchools} active (6 months)
+                </small>
               </div>
               <i className="bi bi-building fs-1 text-danger"></i>
             </div>
@@ -76,6 +368,10 @@ const Dashboard = () => {
               <div>
                 <h6 className="text-muted mb-1">Total Events</h6>
                 <div className="stats-number">{stats.events}</div>
+                <small className="text-info">
+                  <i className="bi bi-people me-1"></i>
+                  Avg {additionalStats.avgAttendeesPerEvent} attendees
+                </small>
               </div>
               <i className="bi bi-calendar-event fs-1 text-danger"></i>
             </div>
@@ -88,6 +384,10 @@ const Dashboard = () => {
               <div>
                 <h6 className="text-muted mb-1">Total Accidents</h6>
                 <div className="stats-number">{stats.accidents}</div>
+                <small className="text-danger">
+                  <i className="bi bi-exclamation-triangle me-1"></i>
+                  {additionalStats.totalDeaths} deaths, {additionalStats.totalInjured} injured
+                </small>
               </div>
               <i className="bi bi-exclamation-triangle fs-1 text-danger"></i>
             </div>
@@ -98,8 +398,12 @@ const Dashboard = () => {
           <div className="stats-card">
             <div className="d-flex justify-content-between align-items-center">
               <div>
-                <h6 className="text-muted mb-1">Total Budgets</h6>
-                <div className="stats-number">{stats.budgets}</div>
+                <h6 className="text-muted mb-1">Budget Utilization</h6>
+                <div className="stats-number">{additionalStats.budgetUtilizationRate}%</div>
+                <small className={additionalStats.budgetUtilizationRate > 100 ? 'text-danger' : 'text-success'}>
+                  <i className={`bi bi-${additionalStats.budgetUtilizationRate > 100 ? 'exclamation' : 'check'}-circle me-1`}></i>
+                  {additionalStats.budgetUtilizationRate > 100 ? 'Over budget' : 'On track'}
+                </small>
               </div>
               <i className="bi bi-cash-stack fs-1 text-danger"></i>
             </div>
@@ -107,35 +411,170 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <div className="row mt-4">
-        <div className="col-12">
-          <div className="card">
+      {/* Charts Row 1 */}
+      <div className="row g-4 mb-4">
+        {/* Accident Trends */}
+        <div className="col-lg-8">
+          <div className="card h-100">
             <div className="card-header">
-              <h5 className="mb-0">Quick Actions</h5>
+              <h5 className="mb-0">
+                <i className="bi bi-graph-up me-2 text-danger"></i>
+                Accident Trends Over Time
+              </h5>
             </div>
             <div className="card-body">
-              <div className="row g-3">
-                <div className="col-md-3">
-                  <a href="/schools" className="btn btn-outline-primary w-100">
-                    <i className="bi bi-building me-2"></i>Manage Schools
-                  </a>
+              <AccidentTrendsChart data={filteredAccidents} />
+            </div>
+          </div>
+        </div>
+
+        {/* Event Type Distribution */}
+        <div className="col-lg-4">
+          <div className="card h-100">
+            <div className="card-header">
+              <h5 className="mb-0">
+                <i className="bi bi-pie-chart me-2 text-danger"></i>
+                Event Type Distribution
+              </h5>
+            </div>
+            <div className="card-body">
+              <EventTypeDistributionChart data={filteredEvents} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Charts Row 2 */}
+      <div className="row g-4 mb-4">
+        {/* Schools by Province */}
+        <div className="col-lg-6">
+          <div className="card h-100">
+            <div className="card-header">
+              <h5 className="mb-0">
+                <i className="bi bi-geo-alt-fill me-2 text-danger"></i>
+                Top 10 Schools by Province
+              </h5>
+            </div>
+            <div className="card-body">
+              <SchoolsByProvinceChart data={allSchools} />
+            </div>
+          </div>
+        </div>
+
+        {/* Budget Utilization */}
+        <div className="col-lg-6">
+          <div className="card h-100">
+            <div className="card-header">
+              <h5 className="mb-0">
+                <i className="bi bi-cash-stack me-2 text-danger"></i>
+                Top 10 Budget vs Spending by Event
+              </h5>
+            </div>
+            <div className="card-body">
+              <BudgetUtilizationChart data={filteredBudgets} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Recent Activity */}
+      <div className="row g-4">
+        {/* Recent Events */}
+        <div className="col-lg-6">
+          <div className="card h-100">
+            <div className="card-header d-flex justify-content-between align-items-center">
+              <h5 className="mb-0">
+                <i className="bi bi-calendar-event me-2 text-danger"></i>
+                Recent Events
+              </h5>
+              {hasPermission('view_events') && (
+                <Link to="/events" className="btn btn-sm btn-outline-primary">
+                  View All
+                </Link>
+              )}
+            </div>
+            <div className="card-body">
+              {recentEvents.length > 0 ? (
+                <div className="list-group list-group-flush">
+                  {recentEvents.map(event => (
+                    <div key={event.id} className="list-group-item px-0">
+                      <div className="d-flex justify-content-between align-items-start">
+                        <div className="flex-grow-1">
+                          <h6 className="mb-1">{event.title}</h6>
+                          <p className="mb-1 text-muted small">
+                            <i className="bi bi-building me-1"></i>
+                            {event.school?.name || 'N/A'}
+                          </p>
+                          <p className="mb-0 text-muted small">
+                            <i className="bi bi-calendar3 me-1"></i>
+                            {formatDate(event.event_date)}
+                          </p>
+                        </div>
+                        <span className={`badge ${
+                          event.status === 'completed' ? 'bg-success' :
+                          event.status === 'ongoing' ? 'bg-primary' :
+                          event.status === 'cancelled' ? 'bg-danger' :
+                          'bg-warning'
+                        }`}>
+                          {event.status}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <div className="col-md-3">
-                  <a href="/events" className="btn btn-outline-primary w-100">
-                    <i className="bi bi-calendar-event me-2"></i>Manage Events
-                  </a>
+              ) : (
+                <p className="text-muted text-center py-4">No recent events</p>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Recent Accidents */}
+        <div className="col-lg-6">
+          <div className="card h-100">
+            <div className="card-header d-flex justify-content-between align-items-center">
+              <h5 className="mb-0">
+                <i className="bi bi-exclamation-triangle me-2 text-danger"></i>
+                Recent Accidents
+              </h5>
+              {hasPermission('view_accidents') && (
+                <Link to="/accidents" className="btn btn-sm btn-outline-primary">
+                  View All
+                </Link>
+              )}
+            </div>
+            <div className="card-body">
+              {recentAccidents.length > 0 ? (
+                <div className="list-group list-group-flush">
+                  {recentAccidents.map(accident => (
+                    <div key={accident.id} className="list-group-item px-0">
+                      <div className="d-flex justify-content-between align-items-start">
+                        <div className="flex-grow-1">
+                          <h6 className="mb-1">Report #{accident.police_report_no}</h6>
+                          <p className="mb-1 text-muted small">
+                            <i className="bi bi-geo-alt me-1"></i>
+                            {accident.location}
+                          </p>
+                          <p className="mb-0 text-muted small">
+                            <i className="bi bi-calendar3 me-1"></i>
+                            {formatDate(accident.accident_date)}
+                          </p>
+                        </div>
+                        <div className="text-end">
+                          <span className="badge bg-danger me-1">
+                            {accident.death_count || 0} deaths
+                          </span>
+                          <span className="badge bg-warning">
+                            {accident.injured_count || 0} injured
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <div className="col-md-3">
-                  <a href="/accidents" className="btn btn-outline-primary w-100">
-                    <i className="bi bi-exclamation-triangle me-2"></i>View Accidents
-                  </a>
-                </div>
-                <div className="col-md-3">
-                  <a href="/budgets" className="btn btn-outline-primary w-100">
-                    <i className="bi bi-cash-stack me-2"></i>Budget Reports
-                  </a>
-                </div>
-              </div>
+              ) : (
+                <p className="text-muted text-center py-4">No recent accidents</p>
+              )}
             </div>
           </div>
         </div>

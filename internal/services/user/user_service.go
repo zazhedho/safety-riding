@@ -6,6 +6,8 @@ import (
 	"safety-riding/internal/domain/user"
 	"safety-riding/internal/dto"
 	"safety-riding/internal/interfaces/auth"
+	"safety-riding/internal/interfaces/permission"
+	"safety-riding/internal/interfaces/role"
 	"safety-riding/internal/interfaces/user"
 	"safety-riding/pkg/filter"
 	"safety-riding/utils"
@@ -16,14 +18,18 @@ import (
 )
 
 type ServiceUser struct {
-	UserRepo      interfaceuser.RepoUserInterface
-	BlacklistRepo interfaceauth.RepoAuthInterface
+	UserRepo       interfaceuser.RepoUserInterface
+	BlacklistRepo  interfaceauth.RepoAuthInterface
+	RoleRepo       interfacerole.RepoRoleInterface
+	PermissionRepo interfacepermission.RepoPermissionInterface
 }
 
-func NewUserService(userRepo interfaceuser.RepoUserInterface, blacklistRepo interfaceauth.RepoAuthInterface) *ServiceUser {
+func NewUserService(userRepo interfaceuser.RepoUserInterface, blacklistRepo interfaceauth.RepoAuthInterface, roleRepo interfacerole.RepoRoleInterface, permissionRepo interfacepermission.RepoPermissionInterface) *ServiceUser {
 	return &ServiceUser{
-		UserRepo:      userRepo,
-		BlacklistRepo: blacklistRepo,
+		UserRepo:       userRepo,
+		BlacklistRepo:  blacklistRepo,
+		RoleRepo:       roleRepo,
+		PermissionRepo: permissionRepo,
 	}
 }
 
@@ -92,8 +98,61 @@ func (s *ServiceUser) GetUserById(id string) (domainuser.Users, error) {
 	return s.UserRepo.GetByID(id)
 }
 
-func (s *ServiceUser) GetUserByAuth(id string) (domainuser.Users, error) {
-	return s.UserRepo.GetByID(id)
+func (s *ServiceUser) GetUserByAuth(id string) (map[string]interface{}, error) {
+	user, err := s.UserRepo.GetByID(id)
+	if err != nil {
+		return nil, err
+	}
+
+	// Get role by name
+	role, err := s.RoleRepo.GetByName(user.Role)
+	if err != nil {
+		return map[string]interface{}{
+			"id":          user.Id,
+			"name":        user.Name,
+			"email":       user.Email,
+			"phone":       user.Phone,
+			"role":        user.Role,
+			"permissions": []string{},
+			"created_at":  user.CreatedAt,
+			"updated_at":  user.UpdatedAt,
+		}, nil
+	}
+
+	// Get permission IDs for this role
+	permissionIds, err := s.RoleRepo.GetRolePermissions(role.Id)
+	if err != nil {
+		return map[string]interface{}{
+			"id":          user.Id,
+			"name":        user.Name,
+			"email":       user.Email,
+			"phone":       user.Phone,
+			"role":        user.Role,
+			"permissions": []string{},
+			"created_at":  user.CreatedAt,
+			"updated_at":  user.UpdatedAt,
+		}, nil
+	}
+
+	// Get permission names from IDs
+	permissionNames := []string{}
+	for _, permId := range permissionIds {
+		perm, err := s.PermissionRepo.GetByID(permId)
+		if err == nil {
+			permissionNames = append(permissionNames, perm.Name)
+		}
+	}
+
+	return map[string]interface{}{
+		"id":          user.Id,
+		"name":        user.Name,
+		"email":       user.Email,
+		"phone":       user.Phone,
+		"role":        user.Role,
+		"permissions": permissionNames,
+		"created_at":  user.CreatedAt,
+		"updated_at":  user.UpdatedAt,
+	}, nil
 }
 
 func (s *ServiceUser) GetAllUsers(params filter.BaseParams) ([]domainuser.Users, int64, error) {
