@@ -12,8 +12,8 @@ const BudgetForm = () => {
     event_id: '',
     category: '',
     description: '',
-    budget_amount: 0,
-    actual_spent: 0,
+    budget_amount: '',
+    actual_spent: '',
     budget_date: '',
     status: 'planned',
     notes: ''
@@ -58,11 +58,17 @@ const BudgetForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      const dataToSend = {
+        ...formData,
+        budget_amount: parseFloat(formData.budget_amount) || 0,
+        actual_spent: parseFloat(formData.actual_spent) || 0,
+      };
+
       if (id) {
-        await budgetService.update(id, formData);
+        await budgetService.update(id, dataToSend);
         toast.success('Budget updated successfully');
       } else {
-        await budgetService.create(formData);
+        await budgetService.create(dataToSend);
         toast.success('Budget created successfully');
       }
       navigate('/budgets');
@@ -86,26 +92,26 @@ const BudgetForm = () => {
                 <label className="form-label">Event</label>
                 <select className="form-select" name="event_id" value={formData.event_id} onChange={handleChange} required>
                   <option value="">Select Event</option>
-                  {events.map(event => <option key={event.id} value={event.id}>{event.event_name}</option>)}
+                  {events.map(event => <option key={event.id} value={event.id}>{event.title}</option>)}
                 </select>
               </div>
               <div className="col-md-6 mb-3">
                 <label className="form-label">Category</label>
-                <input type="text" className="form-control" name="category" value={formData.category} onChange={handleChange} required />
+                <input type="text" className="form-control" name="category" value={formData.category} onChange={handleChange} placeholder="e.g., Venue Rental" required />
               </div>
             </div>
             <div className="mb-3">
               <label className="form-label">Description</label>
-              <textarea className="form-control" name="description" value={formData.description} onChange={handleChange} />
+              <textarea className="form-control" name="description" value={formData.description} onChange={handleChange} placeholder="e.g., Budget for renting the main hall for the seminar" />
             </div>
             <div className="row">
               <div className="col-md-6 mb-3">
                 <label className="form-label">Budget Amount</label>
-                <input type="number" className="form-control" name="budget_amount" value={formData.budget_amount} onChange={handleChange} required />
+                <input type="number" className="form-control" name="budget_amount" value={formData.budget_amount} onChange={handleChange} placeholder="e.g., 5000000" required />
               </div>
               <div className="col-md-6 mb-3">
                 <label className="form-label">Actual Spent</label>
-                <input type="number" className="form-control" name="actual_spent" value={formData.actual_spent} onChange={handleChange} />
+                <input type="number" className="form-control" name="actual_spent" value={formData.actual_spent} onChange={handleChange} placeholder="e.g., 4500000" />
               </div>
             </div>
             <div className="row">
@@ -125,7 +131,7 @@ const BudgetForm = () => {
             </div>
             <div className="mb-3">
               <label className="form-label">Notes</label>
-              <textarea className="form-control" name="notes" value={formData.notes} onChange={handleChange} />
+              <textarea className="form-control" name="notes" value={formData.notes} onChange={handleChange} placeholder="e.g., Received a 10% discount from the venue provider." />
             </div>
             <button type="submit" className="btn btn-primary">{id ? 'Update' : 'Create'}</button>
             <button type="button" className="btn btn-secondary ms-2" onClick={() => navigate('/budgets')}>Cancel</button>

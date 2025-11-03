@@ -53,7 +53,7 @@ const BudgetList = () => {
   const fetchSummary = async () => {
     try {
       const response = await budgetService.getMonthlySummary(filters.month, filters.year);
-      setSummary(response.data);
+      setSummary(response.data.data);
     } catch (error) {
       console.error('Failed to load summary');
     }
@@ -102,28 +102,34 @@ const BudgetList = () => {
       </div>
 
       {summary && (
-        <div className="row mb-4">
-          <div className="col-md-3">
+        <div className="row g-3 mb-4">
+          <div className="col-sm-6 col-lg-3">
             <div className="stats-card">
-              <h6 className="text-muted mb-1">Total Budget</h6>
-              <div className="stats-number">{formatCurrency(summary.total_budget || 0)}</div>
+              <h6 className="text-muted mb-1 small">Total Budget</h6>
+              <div className="stats-number text-truncate" title={formatCurrency(summary.total_budget || 0)}>
+                {formatCurrency(summary.total_budget || 0)}
+              </div>
             </div>
           </div>
-          <div className="col-md-3">
+          <div className="col-sm-6 col-lg-3">
             <div className="stats-card">
-              <h6 className="text-muted mb-1">Total Spent</h6>
-              <div className="stats-number">{formatCurrency(summary.total_spent || 0)}</div>
+              <h6 className="text-muted mb-1 small">Total Spent</h6>
+              <div className="stats-number text-truncate" title={formatCurrency(summary.total_spent || 0)}>
+                {formatCurrency(summary.total_spent || 0)}
+              </div>
             </div>
           </div>
-          <div className="col-md-3">
+          <div className="col-sm-6 col-lg-3">
             <div className="stats-card">
-              <h6 className="text-muted mb-1">Remaining</h6>
-              <div className="stats-number">{formatCurrency(summary.remaining || 0)}</div>
+              <h6 className="text-muted mb-1 small">Remaining</h6>
+              <div className="stats-number text-truncate" title={formatCurrency(summary.remaining || 0)}>
+                {formatCurrency(summary.remaining || 0)}
+              </div>
             </div>
           </div>
-          <div className="col-md-3">
+          <div className="col-sm-6 col-lg-3">
             <div className="stats-card">
-              <h6 className="text-muted mb-1">Total Events</h6>
+              <h6 className="text-muted mb-1 small">Total Events</h6>
               <div className="stats-number">{summary.event_count || 0}</div>
             </div>
           </div>
@@ -142,7 +148,9 @@ const BudgetList = () => {
               >
                 <option value="">All Events</option>
                 {events.map(event => (
-                  <option key={event.id} value={event.id}>{event.event_name}</option>
+                  <option key={event.id} value={event.id}>
+                    {event.title} {event.school?.name ? `- ${event.school.name}` : ''}
+                  </option>
                 ))}
               </select>
             </div>
@@ -211,7 +219,17 @@ const BudgetList = () => {
 
                     return (
                       <tr key={budget.id}>
-                        <td>{budget.Event?.event_name || '-'}</td>
+                        <td>
+                          <div className="mb-1">
+                            <strong>{budget.event?.title || '-'}</strong>
+                          </div>
+                          {budget.event?.school?.name && (
+                            <small className="text-muted">
+                              <i className="bi bi-building me-1"></i>
+                              {budget.event.school.name}
+                            </small>
+                          )}
+                        </td>
                         <td>{budget.budget_date}</td>
                         <td>{formatCurrency(budget.budget_amount)}</td>
                         <td>{formatCurrency(budget.actual_spent)}</td>

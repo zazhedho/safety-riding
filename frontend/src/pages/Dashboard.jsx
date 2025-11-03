@@ -362,67 +362,67 @@ const Dashboard = () => {
       </div>
 
       {/* Statistics Cards */}
-      <div className="row g-4 mb-4">
-        <div className="col-md-3">
+      <div className="row g-3 mb-4">
+        <div className="col-sm-6 col-lg-3">
           <div className="stats-card">
             <div className="d-flex justify-content-between align-items-center">
-              <div>
-                <h6 className="text-muted mb-1">Total Schools</h6>
+              <div className="flex-grow-1 pe-2">
+                <h6 className="text-muted mb-1 small">Total Schools</h6>
                 <div className="stats-number">{stats.schools}</div>
-                <small className="text-success">
+                <small className="text-success d-block text-truncate">
                   <i className="bi bi-check-circle me-1"></i>
                   {additionalStats.activeSchools} active (6 months)
                 </small>
               </div>
-              <i className="bi bi-building fs-1 text-danger"></i>
+              <i className="bi bi-building fs-1 text-danger flex-shrink-0"></i>
             </div>
           </div>
         </div>
 
-        <div className="col-md-3">
+        <div className="col-sm-6 col-lg-3">
           <div className="stats-card">
             <div className="d-flex justify-content-between align-items-center">
-              <div>
-                <h6 className="text-muted mb-1">Total Events</h6>
+              <div className="flex-grow-1 pe-2">
+                <h6 className="text-muted mb-1 small">Total Events</h6>
                 <div className="stats-number">{stats.events}</div>
-                <small className="text-info">
+                <small className="text-info d-block text-truncate">
                   <i className="bi bi-people me-1"></i>
                   Avg {additionalStats.avgAttendeesPerEvent} attendees
                 </small>
               </div>
-              <i className="bi bi-calendar-event fs-1 text-danger"></i>
+              <i className="bi bi-calendar-event fs-1 text-danger flex-shrink-0"></i>
             </div>
           </div>
         </div>
 
-        <div className="col-md-3">
+        <div className="col-sm-6 col-lg-3">
           <div className="stats-card">
             <div className="d-flex justify-content-between align-items-center">
-              <div>
-                <h6 className="text-muted mb-1">Total Accidents</h6>
+              <div className="flex-grow-1 pe-2">
+                <h6 className="text-muted mb-1 small">Total Accidents</h6>
                 <div className="stats-number">{stats.accidents}</div>
-                <small className="text-danger">
+                <small className="text-danger d-block text-truncate">
                   <i className="bi bi-exclamation-triangle me-1"></i>
                   {additionalStats.totalDeaths} deaths, {additionalStats.totalInjured} injured
                 </small>
               </div>
-              <i className="bi bi-exclamation-triangle fs-1 text-danger"></i>
+              <i className="bi bi-exclamation-triangle fs-1 text-danger flex-shrink-0"></i>
             </div>
           </div>
         </div>
 
-        <div className="col-md-3">
+        <div className="col-sm-6 col-lg-3">
           <div className="stats-card">
             <div className="d-flex justify-content-between align-items-center">
-              <div>
-                <h6 className="text-muted mb-1">Budget Utilization</h6>
+              <div className="flex-grow-1 pe-2">
+                <h6 className="text-muted mb-1 small">Budget Utilization</h6>
                 <div className="stats-number">{additionalStats.budgetUtilizationRate}%</div>
-                <small className={additionalStats.budgetUtilizationRate > 100 ? 'text-danger' : 'text-success'}>
+                <small className={`${additionalStats.budgetUtilizationRate > 100 ? 'text-danger' : 'text-success'} d-block text-truncate`}>
                   <i className={`bi bi-${additionalStats.budgetUtilizationRate > 100 ? 'exclamation' : 'check'}-circle me-1`}></i>
                   {additionalStats.budgetUtilizationRate > 100 ? 'Over budget' : 'On track'}
                 </small>
               </div>
-              <i className="bi bi-cash-stack fs-1 text-danger"></i>
+              <i className="bi bi-cash-stack fs-1 text-danger flex-shrink-0"></i>
             </div>
           </div>
         </div>

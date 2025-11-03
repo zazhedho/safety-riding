@@ -25,7 +25,7 @@ func (r *repo) Create(budget domainbudget.EventBudget) error {
 
 func (r *repo) GetByID(id string) (domainbudget.EventBudget, error) {
 	var budget domainbudget.EventBudget
-	err := r.DB.Where("id = ?", id).First(&budget).Error
+	err := r.DB.Preload("Event.School").Where("id = ?", id).First(&budget).Error
 	return budget, err
 }
 
@@ -34,7 +34,7 @@ func (r *repo) Update(budget domainbudget.EventBudget) error {
 }
 
 func (r *repo) Fetch(params filter.BaseParams) (ret []domainbudget.EventBudget, totalData int64, err error) {
-	query := r.DB.Model(&domainbudget.EventBudget{}).Debug()
+	query := r.DB.Model(&domainbudget.EventBudget{}).Preload("Event.School").Debug()
 
 	if len(params.Columns) > 0 {
 		query = query.Select(params.Columns)
@@ -100,7 +100,7 @@ func (r *repo) Delete(id string) error {
 // Aggregation methods
 func (r *repo) GetByEventID(eventId string) ([]domainbudget.EventBudget, error) {
 	var budgets []domainbudget.EventBudget
-	err := r.DB.Where("event_id = ?", eventId).Order("budget_date DESC").Find(&budgets).Error
+	err := r.DB.Preload("Event.School").Where("event_id = ?", eventId).Order("budget_date DESC").Find(&budgets).Error
 	return budgets, err
 }
 
@@ -117,12 +117,12 @@ func (r *repo) GetSummaryByMonth(month, year int) (domainbudget.BudgetSummary, e
 
 	err := r.DB.Model(&domainbudget.EventBudget{}).
 		Select(`
-			CONCAT(budget_month, '/', budget_year) as period,
+			CAST(? AS TEXT) as period,
 			COALESCE(SUM(budget_amount), 0) as total_budget,
 			COALESCE(SUM(actual_spent), 0) as total_spent,
 			COALESCE(SUM(budget_amount - actual_spent), 0) as remaining,
 			COUNT(DISTINCT event_id) as event_count
-		`).
+		`, fmt.Sprintf("%d/%d", month, year)).
 		Where("budget_month = ? AND budget_year = ?", month, year).
 		Scan(&summary).Error
 
@@ -134,6 +134,8 @@ func (r *repo) GetSummaryByYear(year int) ([]domainbudget.BudgetSummary, error) 
 
 	err := r.DB.Model(&domainbudget.EventBudget{}).
 		Select(`
+			budget_month,
+			budget_year,
 			CONCAT(budget_month, '/', budget_year) as period,
 			COALESCE(SUM(budget_amount), 0) as total_budget,
 			COALESCE(SUM(actual_spent), 0) as total_spent,

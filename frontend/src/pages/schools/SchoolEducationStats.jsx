@@ -158,16 +158,16 @@ const SchoolEducationStats = () => {
 
       {/* Statistics Cards */}
       {stats && (
-        <div className="row mb-4">
-          <div className="col-md-3 mb-3">
-            <div className="card border-primary">
+        <div className="row g-3 mb-4">
+          <div className="col-sm-6 col-lg-3">
+            <div className="card border-primary h-100">
               <div className="card-body">
                 <div className="d-flex justify-content-between align-items-center">
-                  <div>
-                    <h6 className="text-muted mb-1">Total Schools</h6>
-                    <h3 className="mb-0">{stats.total_schools}</h3>
+                  <div className="flex-grow-1 pe-2">
+                    <h6 className="text-muted mb-1 small">Total Schools</h6>
+                    <h3 className="mb-0 text-truncate">{stats.total_schools}</h3>
                   </div>
-                  <div className="text-primary" style={{ fontSize: '2rem' }}>
+                  <div className="text-primary flex-shrink-0" style={{ fontSize: '2rem' }}>
                     <i className="bi bi-building"></i>
                   </div>
                 </div>
@@ -175,20 +175,20 @@ const SchoolEducationStats = () => {
             </div>
           </div>
 
-          <div className="col-md-3 mb-3">
-            <div className="card border-success">
+          <div className="col-sm-6 col-lg-3">
+            <div className="card border-success h-100">
               <div className="card-body">
                 <div className="d-flex justify-content-between align-items-center">
-                  <div>
-                    <h6 className="text-muted mb-1">Educated Schools</h6>
+                  <div className="flex-grow-1 pe-2">
+                    <h6 className="text-muted mb-1 small">Educated Schools</h6>
                     <div className="d-flex align-items-baseline">
-                      <h3 className="mb-0">{stats.total_educated_schools}</h3>
-                      <small className="text-success ms-2">
+                      <h3 className="mb-0 text-truncate">{stats.total_educated_schools}</h3>
+                      <small className="text-success ms-2 flex-shrink-0">
                         ({calculatePercentage(stats.total_educated_schools, stats.total_schools)}%)
                       </small>
                     </div>
                   </div>
-                  <div className="text-success" style={{ fontSize: '2rem' }}>
+                  <div className="text-success flex-shrink-0" style={{ fontSize: '2rem' }}>
                     <i className="bi bi-check-circle"></i>
                   </div>
                 </div>
@@ -196,15 +196,17 @@ const SchoolEducationStats = () => {
             </div>
           </div>
 
-          <div className="col-md-3 mb-3">
-            <div className="card border-info">
+          <div className="col-sm-6 col-lg-3">
+            <div className="card border-info h-100">
               <div className="card-body">
                 <div className="d-flex justify-content-between align-items-center">
-                  <div>
-                    <h6 className="text-muted mb-1">Total Students Educated</h6>
-                    <h3 className="mb-0">{stats.total_all_students.toLocaleString()}</h3>
+                  <div className="flex-grow-1 pe-2">
+                    <h6 className="text-muted mb-1 small">Total Students Educated</h6>
+                    <h3 className="mb-0 text-truncate" title={stats.total_all_students.toLocaleString()}>
+                      {stats.total_all_students.toLocaleString()}
+                    </h3>
                   </div>
-                  <div className="text-info" style={{ fontSize: '2rem' }}>
+                  <div className="text-info flex-shrink-0" style={{ fontSize: '2rem' }}>
                     <i className="bi bi-people"></i>
                   </div>
                 </div>
@@ -212,20 +214,20 @@ const SchoolEducationStats = () => {
             </div>
           </div>
 
-          <div className="col-md-3 mb-3">
-            <div className="card border-warning">
+          <div className="col-sm-6 col-lg-3">
+            <div className="card border-warning h-100">
               <div className="card-body">
                 <div className="d-flex justify-content-between align-items-center">
-                  <div>
-                    <h6 className="text-muted mb-1">Avg Students/School</h6>
-                    <h3 className="mb-0">
+                  <div className="flex-grow-1 pe-2">
+                    <h6 className="text-muted mb-1 small">Avg Students/School</h6>
+                    <h3 className="mb-0 text-truncate">
                       {stats.total_schools > 0
                         ? Math.round(stats.total_all_students / stats.total_schools).toLocaleString()
                         : 0
                       }
                     </h3>
                   </div>
-                  <div className="text-warning" style={{ fontSize: '2rem' }}>
+                  <div className="text-warning flex-shrink-0" style={{ fontSize: '2rem' }}>
                     <i className="bi bi-graph-up"></i>
                   </div>
                 </div>

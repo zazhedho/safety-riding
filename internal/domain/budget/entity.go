@@ -1,10 +1,15 @@
 package domainbudget
 
 import (
+	domainevent "safety-riding/internal/domain/event"
 	"time"
 
 	"gorm.io/gorm"
 )
+
+func (EventBudget) TableName() string {
+	return "event_budgets"
+}
 
 type EventBudget struct {
 	ID           string  `json:"id" gorm:"column:id;primaryKey"`
@@ -18,6 +23,8 @@ type EventBudget struct {
 	BudgetYear   int     `json:"budget_year" gorm:"column:budget_year"`
 	Status       string  `json:"status" gorm:"column:status"`
 	Notes        string  `json:"notes" gorm:"column:notes"`
+
+	Event domainevent.Event `json:"event,omitempty" gorm:"foreignKey:EventId;references:id"`
 
 	CreatedAt time.Time      `json:"created_at" gorm:"column:created_at"`
 	CreatedBy string         `json:"created_by" gorm:"column:created_by"`
