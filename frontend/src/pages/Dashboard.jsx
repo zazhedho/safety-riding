@@ -16,6 +16,7 @@ import AccidentTrendsChart from '../components/charts/AccidentTrendsChart';
 import EventTypeDistributionChart from '../components/charts/EventTypeDistributionChart';
 import BudgetUtilizationChart from '../components/charts/BudgetUtilizationChart';
 import SchoolsByProvinceChart from '../components/charts/SchoolsByProvinceChart';
+import DistrictRecommendation from '../components/recommendations/DistrictRecommendation';
 
 const Dashboard = () => {
   const { hasPermission } = useAuth();
@@ -342,6 +343,22 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* District Recommendations for Next Month */}
+      <div className="mb-4">
+        <div className="d-flex justify-content-between align-items-center mb-3">
+          <h4 className="mb-0">
+            <i className="bi bi-lightbulb-fill me-2 text-warning"></i>
+            Recommended Districts for Next Month
+          </h4>
+          <span className="badge bg-info">AI-Powered Insights</span>
+        </div>
+        <DistrictRecommendation
+          schools={allSchools}
+          events={allEvents}
+          accidents={allAccidents}
+        />
       </div>
 
       {/* Statistics Cards */}
