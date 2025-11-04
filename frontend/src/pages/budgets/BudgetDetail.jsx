@@ -94,8 +94,20 @@ const BudgetDetail = () => {
   const percentage = (budget.actual_spent / budget.budget_amount) * 100;
   const isOverBudget = remaining < 0;
 
+  // Check if budget is finalized
+  const finalStatuses = ['completed', 'cancelled'];
+  const isFinalized = finalStatuses.includes(budget.status?.toLowerCase());
+
   return (
     <DashboardLayout>
+      {/* Warning for finalized budgets */}
+      {isFinalized && (
+        <div className="alert alert-warning mb-4" role="alert">
+          <i className="bi bi-exclamation-triangle-fill me-2"></i>
+          <strong>Budget is Finalized!</strong> This budget has status "{budget.status}" and cannot be modified or deleted.
+        </div>
+      )}
+
       {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -110,12 +122,12 @@ const BudgetDetail = () => {
           </nav>
         </div>
         <div className="d-flex gap-2">
-          {hasPermission('update_budgets') && (
+          {hasPermission('update_budgets') && !isFinalized && (
             <Link to={`/budgets/${id}/edit`} className="btn btn-warning">
               <i className="bi bi-pencil me-2"></i>Edit
             </Link>
           )}
-          {hasPermission('delete_budgets') && (
+          {hasPermission('delete_budgets') && !isFinalized && (
             <button onClick={handleDeleteClick} className="btn btn-danger">
               <i className="bi bi-trash me-2"></i>Delete
             </button>

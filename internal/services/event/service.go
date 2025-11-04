@@ -108,6 +108,11 @@ func (s *EventService) UpdateEvent(id, username string, req dto.UpdateEvent) (do
 		return domainevent.Event{}, err
 	}
 
+	// Prevent update if event status is final (Completed or Cancelled)
+	if strings.EqualFold(event.Status, utils.StsCompleted) || strings.EqualFold(event.Status, utils.StsCancelled) {
+		return domainevent.Event{}, fmt.Errorf("cannot update event with status '%s'. Event is already finalized", event.Status)
+	}
+
 	// Update fields if provided
 	if req.SchoolId != "" {
 		event.SchoolId = req.SchoolId
@@ -197,6 +202,10 @@ func (s *EventService) DeleteEvent(id, username string) error {
 	event, err := s.EventRepo.GetByID(id)
 	if err != nil {
 		return err
+	}
+
+	if strings.EqualFold(event.Status, utils.StsCompleted) || strings.EqualFold(event.Status, utils.StsCancelled) {
+		return fmt.Errorf("cannot delete event with status '%s'. Event is already finalized", event.Status)
 	}
 
 	// Update deleted fields

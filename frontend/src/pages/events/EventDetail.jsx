@@ -257,8 +257,20 @@ const EventDetail = () => {
     return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
   };
 
+  // Check if event is finalized
+  const finalStatuses = ['completed', 'cancelled'];
+  const isFinalized = finalStatuses.includes(event.status?.toLowerCase());
+
   return (
     <DashboardLayout>
+      {/* Warning for finalized events */}
+      {isFinalized && (
+        <div className="alert alert-warning mb-4" role="alert">
+          <i className="bi bi-exclamation-triangle-fill me-2"></i>
+          <strong>Event is Finalized!</strong> This event has status "{event.status}" and cannot be modified or deleted.
+        </div>
+      )}
+
       {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -273,12 +285,12 @@ const EventDetail = () => {
           </nav>
         </div>
         <div className="d-flex gap-2">
-          {hasPermission('update_events') && (
+          {hasPermission('update_events') && !isFinalized && (
             <Link to={`/events/${id}/edit`} className="btn btn-warning">
               <i className="bi bi-pencil me-2"></i>Edit
             </Link>
           )}
-          {hasPermission('delete_events') && (
+          {hasPermission('delete_events') && !isFinalized && (
             <button onClick={handleDeleteClick} className="btn btn-danger">
               <i className="bi bi-trash me-2"></i>Delete
             </button>
@@ -564,7 +576,7 @@ const EventDetail = () => {
             {activeTab === 'photos' && (
               <div>
                 {/* Upload Form */}
-                {hasPermission('update_events') && (
+                {hasPermission('update_events') && !isFinalized && (
                   <div className="card mb-4 border-primary">
                     <div className="card-header bg-primary text-white">
                       <h5 className="mb-0"><i className="bi bi-cloud-upload me-2"></i>Upload Photos</h5>
@@ -650,7 +662,7 @@ const EventDetail = () => {
                           <img src={photo.photo_url} className="card-img-top" alt={photo.caption} style={{ height: '250px', objectFit: 'cover' }} />
                           <div className="card-body">
                             {photo.caption && <p className="card-text">{photo.caption}</p>}
-                            {hasPermission('delete_events') && (
+                            {hasPermission('delete_events') && !isFinalized && (
                               <button
                                 className="btn btn-danger btn-sm w-100"
                                 onClick={() => handlePhotoDeleteClick(photo)}

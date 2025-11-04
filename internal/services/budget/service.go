@@ -86,6 +86,11 @@ func (s *BudgetService) UpdateBudget(id, username string, req dto.UpdateEventBud
 		return domainbudget.EventBudget{}, err
 	}
 
+	// Prevent update if budget status is final (Completed or Cancelled)
+	if strings.EqualFold(budget.Status, utils.StsCompleted) || strings.EqualFold(budget.Status, utils.StsCancelled) {
+		return domainbudget.EventBudget{}, fmt.Errorf("cannot update budget with status '%s'. Budget is already finalized", budget.Status)
+	}
+
 	// Update fields if provided
 	if req.EventId != "" {
 		budget.EventId = req.EventId

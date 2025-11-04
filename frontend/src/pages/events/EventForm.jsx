@@ -33,6 +33,7 @@ const EventForm = () => {
   const [cities, setCities] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isFinalized, setIsFinalized] = useState(false);
 
   useEffect(() => {
     fetchSchools();
@@ -59,7 +60,12 @@ const EventForm = () => {
   const fetchEvent = async (eventId) => {
     try {
       const response = await eventService.getById(eventId);
-      setFormData(response.data.data);
+      const eventData = response.data.data;
+      setFormData(eventData);
+
+      // Check if event status is final (completed or cancelled)
+      const finalStatuses = ['completed', 'cancelled'];
+      setIsFinalized(finalStatuses.includes(eventData.status?.toLowerCase()));
     } catch (error) {
       toast.error('Failed to fetch event');
     } finally {
@@ -135,17 +141,27 @@ const EventForm = () => {
   return (
     <DashboardLayout>
       <h2>{id ? 'Edit Event' : 'Add Event'}</h2>
+
+      {/* Warning for finalized events */}
+      {isFinalized && (
+        <div className="alert alert-warning mb-4" role="alert">
+          <i className="bi bi-exclamation-triangle-fill me-2"></i>
+          <strong>Event is Finalized!</strong> This event has status "{formData.status}" and cannot be modified.
+          All fields are read-only.
+        </div>
+      )}
+
       <div className="card">
         <div className="card-body">
           <form onSubmit={handleSubmit}>
             <div className="row">
               <div className="col-md-6 mb-3">
                 <label className="form-label">Title</label>
-                <input type="text" className="form-control" name="title" value={formData.title} onChange={handleChange} placeholder="e.g., Safety Riding Seminar for Students" required />
+                <input type="text" className="form-control" name="title" value={formData.title} onChange={handleChange} placeholder="e.g., Safety Riding Seminar for Students" required disabled={isFinalized} />
               </div>
               <div className="col-md-6 mb-3">
                 <label className="form-label">School</label>
-                <select className="form-select" name="school_id" value={formData.school_id} onChange={handleChange} required>
+                <select className="form-select" name="school_id" value={formData.school_id} onChange={handleChange} required disabled={isFinalized}>
                   <option value="">Select School</option>
                   {schools.map(school => <option key={school.id} value={school.id}>{school.name}</option>)}
                 </select>
@@ -153,44 +169,44 @@ const EventForm = () => {
             </div>
             <div className="mb-3">
               <label className="form-label">Description</label>
-              <textarea className="form-control" name="description" value={formData.description} onChange={handleChange} placeholder="e.g., A seminar on the importance of safe driving for high school students" required />
+              <textarea className="form-control" name="description" value={formData.description} onChange={handleChange} placeholder="e.g., A seminar on the importance of safe driving for high school students" required disabled={isFinalized} />
             </div>
             <div className="row">
               <div className="col-md-4 mb-3">
                 <label className="form-label">Event Date</label>
-                <input type="date" className="form-control" name="event_date" value={formData.event_date} onChange={handleChange} required />
+                <input type="date" className="form-control" name="event_date" value={formData.event_date} onChange={handleChange} required disabled={isFinalized} />
               </div>
               <div className="col-md-4 mb-3">
                 <label className="form-label">Start Time</label>
-                <input type="time" className="form-control" name="start_time" value={formData.start_time} onChange={handleChange} required />
+                <input type="time" className="form-control" name="start_time" value={formData.start_time} onChange={handleChange} required disabled={isFinalized} />
               </div>
               <div className="col-md-4 mb-3">
                 <label className="form-label">End Time</label>
-                <input type="time" className="form-control" name="end_time" value={formData.end_time} onChange={handleChange} required />
+                <input type="time" className="form-control" name="end_time" value={formData.end_time} onChange={handleChange} required disabled={isFinalized} />
               </div>
             </div>
             <div className="mb-3">
               <label className="form-label">Location</label>
-              <input type="text" className="form-control" name="location" value={formData.location} onChange={handleChange} placeholder="e.g., School Auditorium" required />
+              <input type="text" className="form-control" name="location" value={formData.location} onChange={handleChange} placeholder="e.g., School Auditorium" required disabled={isFinalized} />
             </div>
             <div className="row">
               <div className="col-md-4 mb-3">
                 <label className="form-label">Province</label>
-                <select className="form-select" name="province_id" value={formData.province_id} onChange={handleChange} required>
+                <select className="form-select" name="province_id" value={formData.province_id} onChange={handleChange} required disabled={isFinalized}>
                   <option value="">Select Province</option>
                   {provinces.map(prov => <option key={prov.code} value={prov.code}>{prov.name}</option>)}
                 </select>
               </div>
               <div className="col-md-4 mb-3">
                 <label className="form-label">City</label>
-                <select className="form-select" name="city_id" value={formData.city_id} onChange={handleChange} required disabled={!formData.province_id}>
+                <select className="form-select" name="city_id" value={formData.city_id} onChange={handleChange} required disabled={!formData.province_id || isFinalized}>
                   <option value="">Select City</option>
                   {cities.map(city => <option key={city.code} value={city.code}>{city.name}</option>)}
                 </select>
               </div>
               <div className="col-md-4 mb-3">
                 <label className="form-label">District</label>
-                <select className="form-select" name="district_id" value={formData.district_id} onChange={handleChange} required disabled={!formData.city_id}>
+                <select className="form-select" name="district_id" value={formData.district_id} onChange={handleChange} required disabled={!formData.city_id || isFinalized}>
                   <option value="">Select District</option>
                   {districts.map(dist => <option key={dist.code} value={dist.code}>{dist.name}</option>)}
                 </select>
@@ -199,7 +215,7 @@ const EventForm = () => {
             <div className="row">
               <div className="col-md-6 mb-3">
                 <label className="form-label">Event Type</label>
-                <select className="form-select" name="event_type" value={formData.event_type} onChange={handleChange} required>
+                <select className="form-select" name="event_type" value={formData.event_type} onChange={handleChange} required disabled={isFinalized}>
                   <option value="seminar">Seminar</option>
                   <option value="workshop">Workshop</option>
                   <option value="training">Training</option>
@@ -208,27 +224,27 @@ const EventForm = () => {
               </div>
               <div className="col-md-6 mb-3">
                 <label className="form-label">Target Audience</label>
-                <input type="text" className="form-control" name="target_audience" value={formData.target_audience} onChange={handleChange} placeholder="e.g., High School Students, Grade 10-12" />
+                <input type="text" className="form-control" name="target_audience" value={formData.target_audience} onChange={handleChange} placeholder="e.g., High School Students, Grade 10-12" disabled={isFinalized} />
               </div>
             </div>
             <div className="row">
               <div className="col-md-4 mb-3">
                 <label className="form-label">Attendees Count</label>
-                <input type="number" className="form-control" name="attendees_count" value={formData.attendees_count} onChange={handleChange} placeholder="e.g., 150" />
+                <input type="number" className="form-control" name="attendees_count" value={formData.attendees_count} onChange={handleChange} placeholder="e.g., 150" disabled={isFinalized} />
               </div>
               <div className="col-md-4 mb-3">
                 <label className="form-label">Instructor Name</label>
-                <input type="text" className="form-control" name="instructor_name" value={formData.instructor_name} onChange={handleChange} placeholder="e.g., John Doe" />
+                <input type="text" className="form-control" name="instructor_name" value={formData.instructor_name} onChange={handleChange} placeholder="e.g., John Doe" disabled={isFinalized} />
               </div>
               <div className="col-md-4 mb-3">
                 <label className="form-label">Instructor Phone</label>
-                <input type="text" className="form-control" name="instructor_phone" value={formData.instructor_phone} onChange={handleChange} placeholder="e.g., 081234567890" />
+                <input type="text" className="form-control" name="instructor_phone" value={formData.instructor_phone} onChange={handleChange} placeholder="e.g., 081234567890" disabled={isFinalized} />
               </div>
             </div>
             <div className="row">
               <div className="col-md-6 mb-3">
                 <label className="form-label">Status</label>
-                <select className="form-select" name="status" value={formData.status} onChange={handleChange} required>
+                <select className="form-select" name="status" value={formData.status} onChange={handleChange} required disabled={isFinalized}>
                   <option value="planned">Planned</option>
                   <option value="ongoing">Ongoing</option>
                   <option value="completed">Completed</option>
@@ -238,9 +254,9 @@ const EventForm = () => {
             </div>
             <div className="mb-3">
               <label className="form-label">Notes</label>
-              <textarea className="form-control" name="notes" value={formData.notes} onChange={handleChange} placeholder="e.g., The event was a great success, with enthusiastic participation from students."/>
+              <textarea className="form-control" name="notes" value={formData.notes} onChange={handleChange} placeholder="e.g., The event was a great success, with enthusiastic participation from students." disabled={isFinalized} />
             </div>
-            <button type="submit" className="btn btn-primary">{id ? 'Update' : 'Create'}</button>
+            <button type="submit" className="btn btn-primary" disabled={isFinalized}>{id ? 'Update' : 'Create'}</button>
             <button type="button" className="btn btn-secondary ms-2" onClick={() => navigate('/events')}>Cancel</button>
           </form>
         </div>
