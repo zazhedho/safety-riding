@@ -303,9 +303,18 @@ const Dashboard = () => {
               <div className="flex-grow-1 pe-2">
                 <h6 className="text-muted mb-1 small">Total Schools</h6>
                 <div className="stats-number">{stats.schools}</div>
-                <small className="text-success d-block text-truncate">
+                <small className="text-success d-block">
                   <i className="bi bi-check-circle me-1"></i>
-                  {additionalStats.activeSchools} active (6 months)
+                  {additionalStats.activeSchools} of {stats.schools} trained (6M)
+                  <span className="stats-info-tooltip">
+                    <i
+                      className="bi bi-info-circle ms-1"
+                      style={{ cursor: 'help', fontSize: '0.85rem' }}
+                    ></i>
+                    <span className="tooltiptext">
+                      Schools that received safety riding training in the last 6 months
+                    </span>
+                  </span>
                 </small>
               </div>
               <i className="bi bi-building fs-1 text-danger flex-shrink-0"></i>

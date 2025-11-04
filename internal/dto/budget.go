@@ -12,6 +12,7 @@ type AddEventBudget struct {
 }
 
 type UpdateEventBudget struct {
+	EventId      string  `json:"event_id,omitempty"`
 	Category     string  `json:"category,omitempty"`
 	Description  string  `json:"description,omitempty"`
 	BudgetAmount float64 `json:"budget_amount,omitempty"`

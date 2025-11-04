@@ -33,6 +33,10 @@ func (r *repo) Update(event domainevent.Event) error {
 	return r.DB.Save(&event).Error
 }
 
+func (r *repo) UpdateById(id string, event domainevent.Event) error {
+	return r.DB.Model(&domainevent.Event{}).Where("id = ?", id).Updates(&event).Error
+}
+
 func (r *repo) Fetch(params filter.BaseParams) (ret []domainevent.Event, totalData int64, err error) {
 	query := r.DB.Model(&domainevent.Event{}).
 		Preload("Photos").

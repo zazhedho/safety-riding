@@ -33,6 +33,10 @@ func (r *repo) Update(budget domainbudget.EventBudget) error {
 	return r.DB.Save(&budget).Error
 }
 
+func (r *repo) UpdateById(id string, budget domainbudget.EventBudget) error {
+	return r.DB.Model(&domainbudget.EventBudget{}).Where("id = ?", id).Updates(&budget).Error
+}
+
 func (r *repo) Fetch(params filter.BaseParams) (ret []domainbudget.EventBudget, totalData int64, err error) {
 	query := r.DB.Model(&domainbudget.EventBudget{}).Preload("Event.School").Debug()
 

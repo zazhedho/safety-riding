@@ -165,7 +165,7 @@ func (s *EventService) UpdateEvent(id, username string, req dto.UpdateEvent) (do
 	event.UpdatedAt = time.Now()
 	event.UpdatedBy = username
 
-	if err := s.EventRepo.Update(event); err != nil {
+	if err := s.EventRepo.UpdateById(id, event); err != nil {
 		return domainevent.Event{}, err
 	}
 

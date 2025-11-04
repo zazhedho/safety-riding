@@ -9,6 +9,7 @@ type RepoEventInterface interface {
 	Create(event domainevent.Event) error
 	GetByID(id string) (domainevent.Event, error)
 	Update(event domainevent.Event) error
+	UpdateById(id string, event domainevent.Event) error
 	Fetch(params filter.BaseParams) ([]domainevent.Event, int64, error)
 	Delete(id string) error
 

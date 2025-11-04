@@ -9,6 +9,7 @@ type RepoBudgetInterface interface {
 	Create(budget domainbudget.EventBudget) error
 	GetByID(id string) (domainbudget.EventBudget, error)
 	Update(budget domainbudget.EventBudget) error
+	UpdateById(id string, budget domainbudget.EventBudget) error
 	Fetch(params filter.BaseParams) ([]domainbudget.EventBudget, int64, error)
 	Delete(id string) error
 

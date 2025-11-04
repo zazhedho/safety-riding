@@ -87,6 +87,9 @@ func (s *BudgetService) UpdateBudget(id, username string, req dto.UpdateEventBud
 	}
 
 	// Update fields if provided
+	if req.EventId != "" {
+		budget.EventId = req.EventId
+	}
 	if req.Category != "" {
 		budget.Category = req.Category
 	}
@@ -118,7 +121,7 @@ func (s *BudgetService) UpdateBudget(id, username string, req dto.UpdateEventBud
 	budget.UpdatedAt = time.Now()
 	budget.UpdatedBy = username
 
-	if err := s.BudgetRepo.Update(budget); err != nil {
+	if err := s.BudgetRepo.UpdateById(id, budget); err != nil {
 		return domainbudget.EventBudget{}, err
 	}
 
