@@ -52,6 +52,13 @@ func (s *BudgetService) AddBudget(username string, req dto.AddEventBudget) (doma
 		return domainbudget.EventBudget{}, err
 	}
 
+	if err := utils.ValidateNonNegativeBatch(map[string]interface{}{
+		"budget_amount": req.BudgetAmount,
+		"actual_spent":  req.ActualSpent,
+	}); err != nil {
+		return domainbudget.EventBudget{}, err
+	}
+
 	data := domainbudget.EventBudget{
 		ID:           utils.CreateUUID(),
 		EventId:      req.EventId,

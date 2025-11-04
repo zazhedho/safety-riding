@@ -22,7 +22,7 @@ const EventForm = () => {
     district_id: '',
     event_type: 'seminar',
     target_audience: '',
-    attendees_count: '',
+    attendees_count: 0,
     instructor_name: '',
     instructor_phone: '',
     status: 'planned',
@@ -230,7 +230,7 @@ const EventForm = () => {
             <div className="row">
               <div className="col-md-4 mb-3">
                 <label className="form-label">Attendees Count</label>
-                <input type="number" className="form-control" name="attendees_count" value={formData.attendees_count} onChange={handleChange} placeholder="e.g., 150" disabled={isFinalized} />
+                <input type="number" className="form-control" name="attendees_count" value={formData.attendees_count} onChange={handleChange} placeholder="e.g., 150" min="0" disabled={isFinalized} />
               </div>
               <div className="col-md-4 mb-3">
                 <label className="form-label">Instructor Name</label>

@@ -20,6 +20,15 @@ func NewAccidentService(accidentRepo interfaceaccident.RepoAccidentInterface) *A
 }
 
 func (s *AccidentService) AddAccident(username string, req dto.AddAccident) (domainaccident.Accident, error) {
+	if err := utils.ValidateNonNegativeBatch(map[string]interface{}{
+		"death_count":         req.DeathCount,
+		"injured_count":       req.InjuredCount,
+		"minor_injured_count": req.MinorInjuredCount,
+		"vehicle_count":       req.VehicleCount,
+	}); err != nil {
+		return domainaccident.Accident{}, err
+	}
+
 	data := domainaccident.Accident{
 		ID:                utils.CreateUUID(),
 		PoliceReportNo:    req.PoliceReportNo,
@@ -63,6 +72,15 @@ func (s *AccidentService) GetAccidentById(id string) (domainaccident.Accident, e
 }
 
 func (s *AccidentService) UpdateAccident(id, username string, req dto.UpdateAccident) (domainaccident.Accident, error) {
+	if err := utils.ValidateNonNegativeBatch(map[string]interface{}{
+		"death_count":         req.DeathCount,
+		"injured_count":       req.InjuredCount,
+		"minor_injured_count": req.MinorInjuredCount,
+		"vehicle_count":       req.VehicleCount,
+	}); err != nil {
+		return domainaccident.Accident{}, err
+	}
+
 	// Get existing accident
 	accident, err := s.AccidentRepo.GetByID(id)
 	if err != nil {

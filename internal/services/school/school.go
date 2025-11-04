@@ -22,6 +22,15 @@ func NewSchoolService(schoolRepo interfaceschool.RepoSchoolInterface) *SchoolSer
 
 func (s *SchoolService) AddSchool(username string, req dto.AddSchool) (domainschool.School, error) {
 	phone := utils.NormalizePhoneTo62(req.Phone)
+	if err := utils.ValidateNonNegativeBatch(map[string]interface{}{
+		"student_count": req.StudentCount,
+		"teacher_count": req.TeacherCount,
+		"major_count":   req.MajorCount,
+		"visit_count":   req.VisitCount,
+	}); err != nil {
+		return domainschool.School{}, err
+	}
+
 	data := domainschool.School{
 		ID:           utils.CreateUUID(),
 		Name:         strings.ToUpper(req.Name),
@@ -59,6 +68,15 @@ func (s *SchoolService) GetSchoolById(id string) (domainschool.School, error) {
 }
 
 func (s *SchoolService) UpdateSchool(id, username string, req dto.UpdateSchool) (domainschool.School, error) {
+	if err := utils.ValidateNonNegativeBatch(map[string]interface{}{
+		"student_count": req.StudentCount,
+		"teacher_count": req.TeacherCount,
+		"major_count":   req.MajorCount,
+		"visit_count":   req.VisitCount,
+	}); err != nil {
+		return domainschool.School{}, err
+	}
+
 	// Get existing school
 	school, err := s.SchoolRepo.GetByID(id)
 	if err != nil {

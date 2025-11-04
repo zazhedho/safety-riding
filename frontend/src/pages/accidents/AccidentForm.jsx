@@ -283,19 +283,19 @@ const AccidentForm = () => {
             <div className="row">
               <div className="col-md-3 mb-3">
                 <label className="form-label">Death Count</label>
-                <input type="number" className="form-control" name="death_count" value={formData.death_count} onChange={handleChange} placeholder="e.g., 1" />
+                <input type="number" className="form-control" name="death_count" value={formData.death_count} onChange={handleChange} placeholder="e.g., 1" min="0" />
               </div>
               <div className="col-md-3 mb-3">
                 <label className="form-label">Injured Count</label>
-                <input type="number" className="form-control" name="injured_count" value={formData.injured_count} onChange={handleChange} placeholder="e.g., 2" />
+                <input type="number" className="form-control" name="injured_count" value={formData.injured_count} onChange={handleChange} placeholder="e.g., 2" min="0" />
               </div>
               <div className="col-md-3 mb-3">
                 <label className="form-label">Minor Injured Count</label>
-                <input type="number" className="form-control" name="minor_injured_count" value={formData.minor_injured_count} onChange={handleChange} placeholder="e.g., 3" />
+                <input type="number" className="form-control" name="minor_injured_count" value={formData.minor_injured_count} onChange={handleChange} placeholder="e.g., 3" min="0" />
               </div>
               <div className="col-md-3 mb-3">
                 <label className="form-label">Vehicle Count</label>
-                <input type="number" className="form-control" name="vehicle_count" value={formData.vehicle_count} onChange={handleChange} placeholder="e.g., 2" />
+                <input type="number" className="form-control" name="vehicle_count" value={formData.vehicle_count} onChange={handleChange} placeholder="e.g., 2" min="0" />
               </div>
             </div>
             <div className="mb-3">

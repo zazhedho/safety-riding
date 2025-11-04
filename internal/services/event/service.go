@@ -33,6 +33,9 @@ func NewEventService(eventRepo interfaceevent.RepoEventInterface, schoolRepo int
 func (s *EventService) AddEvent(username string, req dto.AddEvent) (domainevent.Event, error) {
 	eventId := utils.CreateUUID()
 	phone := utils.NormalizePhoneTo62(req.InstructorPhone)
+	if err := utils.ValidateNonNegative(req.AttendeesCount, "attendees_count"); err != nil {
+		return domainevent.Event{}, err
+	}
 
 	data := domainevent.Event{
 		ID:              eventId,
@@ -102,6 +105,10 @@ func (s *EventService) GetEventById(id string) (domainevent.Event, error) {
 }
 
 func (s *EventService) UpdateEvent(id, username string, req dto.UpdateEvent) (domainevent.Event, error) {
+	if err := utils.ValidateNonNegative(req.AttendeesCount, "attendees_count"); err != nil {
+		return domainevent.Event{}, err
+	}
+
 	// Get existing event
 	event, err := s.EventRepo.GetByID(id)
 	if err != nil {

@@ -347,21 +347,21 @@ const SchoolForm = () => {
             <div className="row">
               <div className="col-md-4 mb-3">
                 <label className="form-label">Student Count</label>
-                <input type="number" className="form-control" name="student_count" value={formData.student_count} onChange={handleChange} placeholder="e.g., 1200" />
+                <input type="number" className="form-control" name="student_count" value={formData.student_count} onChange={handleChange} placeholder="e.g., 1200" min="0" />
               </div>
               <div className="col-md-4 mb-3">
                 <label className="form-label">Teacher Count</label>
-                <input type="number" className="form-control" name="teacher_count" value={formData.teacher_count} onChange={handleChange} placeholder="e.g., 75" />
+                <input type="number" className="form-control" name="teacher_count" value={formData.teacher_count} onChange={handleChange} placeholder="e.g., 75" min="0" />
               </div>
               <div className="col-md-4 mb-3">
                 <label className="form-label">Major Count</label>
-                <input type="number" className="form-control" name="major_count" value={formData.major_count} onChange={handleChange} placeholder="e.g., 3" />
+                <input type="number" className="form-control" name="major_count" value={formData.major_count} onChange={handleChange} placeholder="e.g., 3" min="0" />
               </div>
             </div>
             <div className="row">
               <div className="col-md-4 mb-3">
                 <label className="form-label">Visit Count</label>
-                <input type="number" className="form-control" name="visit_count" value={formData.visit_count} onChange={handleChange} placeholder="e.g., 2" />
+                <input type="number" className="form-control" name="visit_count" value={formData.visit_count} onChange={handleChange} placeholder="e.g., 2" min="0" />
               </div>
               <div className="col-md-4 mb-3">
                 <label className="form-label">Last Visit At</label>

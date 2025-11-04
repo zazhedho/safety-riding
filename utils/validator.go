@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"reflect"
 	"safety-riding/pkg/response"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -75,4 +76,56 @@ func ValidateUUID(ctx *gin.Context, logID uuid.UUID) (string, error) {
 	}
 
 	return id, nil
+}
+
+func ValidateNonNegative(value interface{}, fieldName string) error {
+	v := reflect.ValueOf(value)
+	switch v.Kind() {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		if v.Int() < 0 {
+			return fmt.Errorf("%s cannot be negative", fieldName)
+		}
+	case reflect.Float32, reflect.Float64:
+		if v.Float() < 0 {
+			return fmt.Errorf("%s cannot be negative", fieldName)
+		}
+	default:
+		return errors.New("ValidateNonNegative only supports numeric types")
+	}
+	return nil
+}
+
+func ValidateNonNegativeBatch(fields map[string]interface{}) error {
+	if len(fields) == 0 {
+		return nil
+	}
+	var msgs []string
+	for field, v := range fields {
+		if neg, ok := isNegative(v); !ok {
+			msgs = append(msgs, fmt.Sprintf("%s has unsupported type", field))
+		} else if neg {
+			msgs = append(msgs, fmt.Sprintf("%s cannot be negative", field))
+		}
+	}
+	if len(msgs) > 0 {
+		return errors.New(strings.Join(msgs, "; "))
+	}
+	return nil
+}
+
+func isNegative(v interface{}) (neg bool, supported bool) {
+	if v == nil {
+		return false, true
+	}
+	val := reflect.ValueOf(v)
+	switch val.Kind() {
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return val.Int() < 0, true
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+		return false, true // unsigned tidak bisa negatif
+	case reflect.Float32, reflect.Float64:
+		return val.Float() < 0, true
+	default:
+		return false, false
+	}
 }

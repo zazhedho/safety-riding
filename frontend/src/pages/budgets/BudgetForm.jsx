@@ -123,11 +123,11 @@ const BudgetForm = () => {
             <div className="row">
               <div className="col-md-6 mb-3">
                 <label className="form-label">Budget Amount</label>
-                <input type="number" className="form-control" name="budget_amount" value={formData.budget_amount} onChange={handleChange} placeholder="e.g., 5000000" required disabled={isFinalized} />
+                <input type="number" min="0" step="any" className="form-control" name="budget_amount" value={formData.budget_amount} onChange={handleChange} placeholder="e.g., 5000000" required disabled={isFinalized} />
               </div>
               <div className="col-md-6 mb-3">
                 <label className="form-label">Actual Spent</label>
-                <input type="number" className="form-control" name="actual_spent" value={formData.actual_spent} onChange={handleChange} placeholder="e.g., 4500000" disabled={isFinalized} />
+                <input type="number" min="0" step="any" className="form-control" name="actual_spent" value={formData.actual_spent} onChange={handleChange} placeholder="e.g., 4500000" disabled={isFinalized} />
               </div>
             </div>
             <div className="row">
