@@ -90,8 +90,15 @@ const BudgetDetail = () => {
     );
   }
 
-  const remaining = budget.budget_amount - budget.actual_spent;
-  const percentage = (budget.actual_spent / budget.budget_amount) * 100;
+  const budgetAmount = Number(budget.budget_amount) || 0;
+  const actualSpent = Number(budget.actual_spent) || 0;
+  const remaining = budgetAmount - actualSpent;
+  const percentageRaw = budgetAmount > 0
+    ? Number(((actualSpent / budgetAmount) * 100).toFixed(1))
+    : 0;
+  const percentage = Number.isFinite(percentageRaw) ? percentageRaw : 0;
+  const hasUtilization = percentage > 0;
+  const percentageDisplay = hasUtilization ? percentage.toFixed(1) : '0';
   const isOverBudget = remaining < 0;
 
   // Check if budget is finalized
@@ -151,7 +158,7 @@ const BudgetDetail = () => {
           <div className="card border-primary h-100">
             <div className="card-body">
               <h6 className="text-muted mb-2 small">Budget Amount</h6>
-              <h4 className="mb-0 text-primary">{formatCurrency(budget.budget_amount)}</h4>
+              <h4 className="mb-0 text-primary">{formatCurrency(budgetAmount)}</h4>
             </div>
           </div>
         </div>
@@ -159,7 +166,7 @@ const BudgetDetail = () => {
           <div className="card border-warning h-100">
             <div className="card-body">
               <h6 className="text-muted mb-2 small">Actual Spent</h6>
-              <h4 className="mb-0 text-warning">{formatCurrency(budget.actual_spent)}</h4>
+              <h4 className="mb-0 text-warning">{formatCurrency(actualSpent)}</h4>
             </div>
           </div>
         </div>
@@ -177,7 +184,7 @@ const BudgetDetail = () => {
           <div className="card border-info h-100">
             <div className="card-body">
               <h6 className="text-muted mb-2 small">Utilization</h6>
-              <h4 className="mb-0 text-info">{percentage.toFixed(1)}%</h4>
+              <h4 className="mb-0 text-info">{percentageDisplay}%</h4>
             </div>
           </div>
         </div>
@@ -189,21 +196,29 @@ const BudgetDetail = () => {
           <h5 className="mb-0">Budget Utilization</h5>
         </div>
         <div className="card-body">
-          <div className="progress" style={{ height: '30px' }}>
+          <div className="progress position-relative" style={{ height: '30px' }}>
             <div
               className={`progress-bar ${
                 percentage > 100 ? 'bg-danger' :
                 percentage > 80 ? 'bg-warning' :
                 'bg-success'
-              }`}
+              } d-flex align-items-center justify-content-center`}
               role="progressbar"
               style={{ width: `${Math.min(percentage, 100)}%` }}
               aria-valuenow={percentage}
               aria-valuemin="0"
               aria-valuemax="100"
             >
-              {percentage.toFixed(1)}%
+              {hasUtilization ? `${percentageDisplay}%` : ''}
             </div>
+            {!hasUtilization && (
+              <span
+                className="position-absolute top-50 start-50 translate-middle fw-semibold text-dark"
+                style={{ fontSize: '0.9rem' }}
+              >
+                {percentageDisplay}%
+              </span>
+            )}
           </div>
           {isOverBudget && (
             <div className="alert alert-danger mt-3 mb-0">

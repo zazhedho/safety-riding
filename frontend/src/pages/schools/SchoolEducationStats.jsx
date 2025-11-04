@@ -361,9 +361,14 @@ const SchoolEducationStats = () => {
                   </thead>
                   <tbody>
                     {stats.schools.map(school => {
-                      const coverage = school.student_count > 0
-                        ? ((school.total_student_educated / school.student_count) * 100).toFixed(1)
+                      const studentCount = Number(school.student_count) || 0;
+                      const educatedCount = Number(school.total_student_educated) || 0;
+                      const coverageRaw = studentCount > 0
+                        ? Number(((educatedCount / studentCount) * 100).toFixed(1))
                         : 0;
+                      const coverage = Number.isFinite(coverageRaw) ? coverageRaw : 0;
+                      const hasCoverage = coverage > 0;
+                      const coverageLabel = hasCoverage ? coverage.toFixed(1) : '0';
                       return (
                         <tr key={school.id}>
                           <td>
@@ -378,26 +383,34 @@ const SchoolEducationStats = () => {
                           </td>
                           <td>
                             <span className="badge bg-secondary">
-                              {school.student_count.toLocaleString()}
+                              {studentCount.toLocaleString()}
                             </span>
                           </td>
                           <td>
                             <span className="badge bg-info">
-                              {school.total_student_educated.toLocaleString()}
+                              {educatedCount.toLocaleString()}
                             </span>
                           </td>
                           <td>
-                            <div className="progress" style={{ height: '20px' }}>
+                            <div className="progress position-relative" style={{ height: '20px' }}>
                               <div
-                                className={`progress-bar ${coverage >= 100 ? 'bg-success' : coverage >= 50 ? 'bg-warning' : 'bg-danger'}`}
+                                className={`progress-bar d-flex align-items-center justify-content-center ${coverage >= 100 ? 'bg-success' : coverage >= 50 ? 'bg-warning' : 'bg-danger'}`}
                                 role="progressbar"
                                 style={{ width: `${Math.min(coverage, 100)}%` }}
                                 aria-valuenow={coverage}
                                 aria-valuemin="0"
                                 aria-valuemax="100"
                               >
-                                {coverage}%
+                                {hasCoverage ? `${coverageLabel}%` : ''}
                               </div>
+                              {!hasCoverage && (
+                                <span
+                                  className="position-absolute top-50 start-50 translate-middle fw-semibold text-dark"
+                                  style={{ fontSize: '0.75rem' }}
+                                >
+                                  {coverageLabel}%
+                                </span>
+                              )}
                             </div>
                           </td>
                           <td>

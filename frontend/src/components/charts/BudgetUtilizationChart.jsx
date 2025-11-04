@@ -19,6 +19,43 @@ ChartJS.register(
   Legend
 );
 
+const wrapLabel = (label, maxLength = 14) => {
+  if (!label) {
+    return [''];
+  }
+
+  const words = `${label}`.split(' ');
+  const lines = [];
+  let currentLine = '';
+
+  words.forEach(word => {
+    const tentativeLine = currentLine ? `${currentLine} ${word}` : word;
+    if (tentativeLine.length <= maxLength) {
+      currentLine = tentativeLine;
+    } else {
+      if (currentLine) {
+        lines.push(currentLine);
+      }
+
+      if (word.length > maxLength) {
+        const segments = word.match(new RegExp(`.{1,${maxLength}}`, 'g')) || [];
+        if (segments.length > 1) {
+          lines.push(...segments.slice(0, -1));
+        }
+        currentLine = segments[segments.length - 1] || '';
+      } else {
+        currentLine = word;
+      }
+    }
+  });
+
+  if (currentLine) {
+    lines.push(currentLine);
+  }
+
+  return lines.length > 0 ? lines : [''];
+};
+
 const BudgetUtilizationChart = ({ data }) => {
   // Group budgets by event and sum amounts
   const budgetByEvent = {};
@@ -67,6 +104,11 @@ const BudgetUtilizationChart = ({ data }) => {
   const options = {
     responsive: true,
     maintainAspectRatio: false,
+    layout: {
+      padding: {
+        bottom: 16,
+      },
+    },
     plugins: {
       legend: {
         position: 'top',
@@ -80,6 +122,9 @@ const BudgetUtilizationChart = ({ data }) => {
             const label = context.dataset.label || '';
             const value = context.parsed.y || 0;
             return `${label}: Rp ${value.toLocaleString('id-ID')}`;
+          },
+          title: function(context) {
+            return context[0]?.label || '';
           },
         },
       },
@@ -95,8 +140,10 @@ const BudgetUtilizationChart = ({ data }) => {
       },
       x: {
         ticks: {
-          maxRotation: 45,
-          minRotation: 45,
+          autoSkip: false,
+          maxRotation: 0,
+          minRotation: 0,
+          callback: (value) => wrapLabel(value),
         },
       },
     },

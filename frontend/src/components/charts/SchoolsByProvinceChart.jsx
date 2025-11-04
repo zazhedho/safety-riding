@@ -19,6 +19,43 @@ ChartJS.register(
   Legend
 );
 
+const wrapLabel = (label, maxLength = 14) => {
+  if (!label) {
+    return [''];
+  }
+
+  const words = `${label}`.split(' ');
+  const lines = [];
+  let currentLine = '';
+
+  words.forEach(word => {
+    const tentativeLine = currentLine ? `${currentLine} ${word}` : word;
+    if (tentativeLine.length <= maxLength) {
+      currentLine = tentativeLine;
+    } else {
+      if (currentLine) {
+        lines.push(currentLine);
+      }
+
+      if (word.length > maxLength) {
+        const segments = word.match(new RegExp(`.{1,${maxLength}}`, 'g')) || [];
+        if (segments.length > 1) {
+          lines.push(...segments.slice(0, -1));
+        }
+        currentLine = segments[segments.length - 1] || '';
+      } else {
+        currentLine = word;
+      }
+    }
+  });
+
+  if (currentLine) {
+    lines.push(currentLine);
+  }
+
+  return lines.length > 0 ? lines : [''];
+};
+
 const SchoolsByProvinceChart = ({ data }) => {
   // Group schools by province
   const schoolsByProvince = {};
@@ -39,14 +76,27 @@ const SchoolsByProvinceChart = ({ data }) => {
   const provinceNames = sortedProvinces.map(([name]) => name);
   const schoolCounts = sortedProvinces.map(([, count]) => count);
 
-  // Generate gradient colors (from red to lighter red)
+  // Generate distinct colors per province to visually separate bars
   const generateColors = (count) => {
+    const palette = [
+      { bg: 'rgba(220, 53, 69, 0.85)', border: 'rgba(220, 53, 69, 1)' },
+      { bg: 'rgba(13, 110, 253, 0.85)', border: 'rgba(13, 110, 253, 1)' },
+      { bg: 'rgba(25, 135, 84, 0.85)', border: 'rgba(25, 135, 84, 1)' },
+      { bg: 'rgba(255, 193, 7, 0.85)', border: 'rgba(255, 193, 7, 1)' },
+      { bg: 'rgba(32, 201, 151, 0.85)', border: 'rgba(32, 201, 151, 1)' },
+      { bg: 'rgba(111, 66, 193, 0.85)', border: 'rgba(111, 66, 193, 1)' },
+      { bg: 'rgba(255, 126, 0, 0.85)', border: 'rgba(255, 126, 0, 1)' },
+      { bg: 'rgba(102, 16, 242, 0.85)', border: 'rgba(102, 16, 242, 1)' },
+      { bg: 'rgba(253, 126, 20, 0.85)', border: 'rgba(253, 126, 20, 1)' },
+      { bg: 'rgba(214, 51, 132, 0.85)', border: 'rgba(214, 51, 132, 1)' },
+    ];
+
     const colors = [];
     const borderColors = [];
     for (let i = 0; i < count; i++) {
-      const intensity = 0.9 - (i * 0.05); // Gradually lighter
-      colors.push(`rgba(220, 53, 69, ${intensity})`);
-      borderColors.push('rgb(220, 53, 69)');
+      const paletteIndex = i % palette.length;
+      colors.push(palette[paletteIndex].bg);
+      borderColors.push(palette[paletteIndex].border);
     }
     return { colors, borderColors };
   };
@@ -69,6 +119,11 @@ const SchoolsByProvinceChart = ({ data }) => {
   const options = {
     responsive: true,
     maintainAspectRatio: false,
+    layout: {
+      padding: {
+        bottom: 16,
+      },
+    },
     plugins: {
       legend: {
         display: false,
@@ -82,6 +137,9 @@ const SchoolsByProvinceChart = ({ data }) => {
             const value = context.parsed.y || 0;
             return `Schools: ${value}`;
           },
+          title: function(context) {
+            return context[0]?.label || '';
+          },
         },
       },
     },
@@ -94,8 +152,13 @@ const SchoolsByProvinceChart = ({ data }) => {
       },
       x: {
         ticks: {
-          maxRotation: 45,
-          minRotation: 45,
+          autoSkip: false,
+          maxRotation: 0,
+          minRotation: 0,
+          callback: (value) => wrapLabel(value),
+        },
+        title: {
+          display: false,
         },
       },
     },

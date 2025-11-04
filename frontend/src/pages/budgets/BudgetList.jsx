@@ -12,14 +12,17 @@ const BudgetList = () => {
   const [budgets, setBudgets] = useState([]);
   const [events, setEvents] = useState([]);
   const [summary, setSummary] = useState(null);
+  const [yearSummary, setYearSummary] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [budgetToDelete, setBudgetToDelete] = useState(null);
   const [filters, setFilters] = useState({
     event_id: '',
-    month: new Date().getMonth() + 1,
+    month: '',
     year: new Date().getFullYear()
   });
+  const [summaryView, setSummaryView] = useState('yearly');
+  const [hasSearched, setHasSearched] = useState(false);
 
   useEffect(() => {
     fetchEvents();
@@ -41,8 +44,8 @@ const BudgetList = () => {
     try {
       const params = {};
       if (filters.event_id) params['filters[event_id]'] = filters.event_id;
-      if (filters.month) params['filters[month]'] = filters.month;
-      if (filters.year) params['filters[year]'] = filters.year;
+      if (filters.month) params['filters[budget_month]'] = filters.month;
+      if (filters.year) params['filters[budget_year]'] = filters.year;
 
       const response = await budgetService.getAll(params);
       setBudgets(response.data.data || []);
@@ -54,20 +57,86 @@ const BudgetList = () => {
   };
 
   const fetchSummary = async () => {
+    if (filters.month) {
+      try {
+        const response = await budgetService.getMonthlySummary(filters.month, filters.year);
+        setSummary(response.data.data);
+      } catch (error) {
+        setSummary(null);
+        console.error('Failed to load monthly summary');
+      }
+    } else {
+      setSummary(null);
+    }
+
     try {
-      const response = await budgetService.getMonthlySummary(filters.month, filters.year);
-      setSummary(response.data.data);
+      const yearlyResponse = await budgetService.getYearlySummary(filters.year);
+      const yearlyData = yearlyResponse.data.data;
+
+      if (Array.isArray(yearlyData) && yearlyData.length > 0) {
+        const aggregated = yearlyData.reduce((acc, item) => {
+          const totalBudget = Number(item.total_budget) || 0;
+          const totalSpent = Number(item.total_spent) || 0;
+          const remaining = Number(item.remaining) || 0;
+          const eventCount = Number(item.event_count) || 0;
+
+          return {
+            total_budget: acc.total_budget + totalBudget,
+            total_spent: acc.total_spent + totalSpent,
+            remaining: acc.remaining + remaining,
+            event_count: acc.event_count + eventCount,
+          };
+        }, { total_budget: 0, total_spent: 0, remaining: 0, event_count: 0 });
+
+        setYearSummary(aggregated);
+      } else if (yearlyData && typeof yearlyData === 'object') {
+        setYearSummary({
+          total_budget: Number(yearlyData.total_budget) || 0,
+          total_spent: Number(yearlyData.total_spent) || 0,
+          remaining: Number(yearlyData.remaining) || 0,
+          event_count: Number(yearlyData.event_count) || 0,
+        });
+      } else {
+        setYearSummary({
+          total_budget: 0,
+          total_spent: 0,
+          remaining: 0,
+          event_count: 0,
+        });
+      }
     } catch (error) {
-      console.error('Failed to load summary');
+      setYearSummary(null);
+      console.error('Failed to load yearly summary');
     }
   };
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
-    setFilters(prev => ({ ...prev, [name]: value }));
+    const updatedFilters = { ...filters, [name]: value };
+
+    setFilters(updatedFilters);
+    setHasSearched(false);
+
+    if (name === 'month') {
+      setSummary(null);
+      if (value === '') {
+        setSummaryView('yearly');
+      }
+      return;
+    }
+
+    if (name === 'year') {
+      setSummary(null);
+      setYearSummary(null);
+      if (!updatedFilters.month) {
+        setSummaryView('yearly');
+      }
+    }
   };
 
   const handleSearch = () => {
+    setHasSearched(true);
+    setSummaryView(filters.month ? 'monthly' : 'yearly');
     fetchBudgets();
     fetchSummary();
   };
@@ -122,6 +191,41 @@ const BudgetList = () => {
     return finalStatuses.includes(status?.toLowerCase());
   };
 
+  const renderSummaryCards = (data) => (
+    <div className="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-3">
+      <div className="col">
+        <div className="stats-card h-100">
+          <h6 className="text-muted mb-1 small">Total Budget</h6>
+          <div className="stats-number text-truncate" title={formatCurrency(data.total_budget || 0)}>
+            {formatCurrency(data.total_budget || 0)}
+          </div>
+        </div>
+      </div>
+      <div className="col">
+        <div className="stats-card h-100">
+          <h6 className="text-muted mb-1 small">Total Spent</h6>
+          <div className="stats-number text-truncate" title={formatCurrency(data.total_spent || 0)}>
+            {formatCurrency(data.total_spent || 0)}
+          </div>
+        </div>
+      </div>
+      <div className="col">
+        <div className="stats-card h-100">
+          <h6 className="text-muted mb-1 small">Remaining</h6>
+          <div className="stats-number text-truncate" title={formatCurrency(data.remaining || 0)}>
+            {formatCurrency(data.remaining || 0)}
+          </div>
+        </div>
+      </div>
+      <div className="col">
+        <div className="stats-card h-100">
+          <h6 className="text-muted mb-1 small">Total Events</h6>
+          <div className="stats-number">{data.event_count || 0}</div>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <DashboardLayout>
       <div className="d-flex justify-content-between align-items-center mb-4">
@@ -133,40 +237,62 @@ const BudgetList = () => {
         )}
       </div>
 
-      {summary && (
-        <div className="row g-3 mb-4">
-          <div className="col-sm-6 col-lg-3">
-            <div className="stats-card">
-              <h6 className="text-muted mb-1 small">Total Budget</h6>
-              <div className="stats-number text-truncate" title={formatCurrency(summary.total_budget || 0)}>
-                {formatCurrency(summary.total_budget || 0)}
-              </div>
+      <div className="card mb-4">
+        <div className="card-body">
+          <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3">
+            <div>
+              <h5 className="mb-1">Budget Summary</h5>
+              <small className="text-muted">
+                {summaryView === 'monthly' && filters.month && filters.year
+                  ? `${new Date(0, Number(filters.month) - 1).toLocaleString('en-US', { month: 'long' })} ${filters.year}`
+                  : summaryView === 'yearly' && filters.year
+                  ? `Year ${filters.year}`
+                  : 'Select filters to view summary'}
+              </small>
+            </div>
+            <div className="btn-group">
+              <button
+                type="button"
+                className={`btn btn-sm ${summaryView === 'monthly' ? 'btn-primary' : 'btn-outline-primary'}`}
+                onClick={() => setSummaryView('monthly')}
+                disabled={!filters.month}
+              >
+                Monthly
+              </button>
+              <button
+                type="button"
+                className={`btn btn-sm ${summaryView === 'yearly' ? 'btn-primary' : 'btn-outline-primary'}`}
+                onClick={() => setSummaryView('yearly')}
+                disabled={!yearSummary}
+              >
+                Yearly
+              </button>
             </div>
           </div>
-          <div className="col-sm-6 col-lg-3">
-            <div className="stats-card">
-              <h6 className="text-muted mb-1 small">Total Spent</h6>
-              <div className="stats-number text-truncate" title={formatCurrency(summary.total_spent || 0)}>
-                {formatCurrency(summary.total_spent || 0)}
-              </div>
-            </div>
-          </div>
-          <div className="col-sm-6 col-lg-3">
-            <div className="stats-card">
-              <h6 className="text-muted mb-1 small">Remaining</h6>
-              <div className="stats-number text-truncate" title={formatCurrency(summary.remaining || 0)}>
-                {formatCurrency(summary.remaining || 0)}
-              </div>
-            </div>
-          </div>
-          <div className="col-sm-6 col-lg-3">
-            <div className="stats-card">
-              <h6 className="text-muted mb-1 small">Total Events</h6>
-              <div className="stats-number">{summary.event_count || 0}</div>
-            </div>
-          </div>
+
+          {summaryView === 'monthly'
+            ? summary
+              ? renderSummaryCards(summary)
+              : (
+                <div className="alert alert-light border mb-0" role="alert">
+                  {filters.month
+                    ? hasSearched
+                      ? 'No monthly data available. Adjust your filters and search again.'
+                      : 'Press Search to load the monthly summary.'
+                    : 'Select a month and press Search to view the monthly summary.'}
+                </div>
+              )
+            : yearSummary
+              ? renderSummaryCards(yearSummary)
+              : (
+                <div className="alert alert-light border mb-0" role="alert">
+                  {hasSearched
+                    ? 'No yearly data available. Adjust your filters and search again.'
+                    : 'Press Search to load the yearly summary.'}
+                </div>
+              )}
         </div>
-      )}
+      </div>
 
       <div className="card mb-4">
         <div className="card-body">
@@ -193,6 +319,7 @@ const BudgetList = () => {
                 value={filters.month}
                 onChange={handleFilterChange}
               >
+                <option value="">All Months</option>
                 {Array.from({ length: 12 }, (_, i) => (
                   <option key={i + 1} value={i + 1}>
                     {new Date(2000, i, 1).toLocaleString('en-US', { month: 'long' })}
@@ -247,8 +374,15 @@ const BudgetList = () => {
                 </thead>
                 <tbody>
                   {budgets.map(budget => {
-                    const remaining = budget.budget_amount - budget.actual_spent;
-                    const percentage = (budget.actual_spent / budget.budget_amount) * 100;
+                    const budgetAmount = Number(budget.budget_amount) || 0;
+                    const actualSpent = Number(budget.actual_spent) || 0;
+                    const remaining = budgetAmount - actualSpent;
+                    const percentageRaw = budgetAmount > 0
+                      ? Number(((actualSpent / budgetAmount) * 100).toFixed(1))
+                      : 0;
+                    const percentage = Number.isFinite(percentageRaw) ? percentageRaw : 0;
+                    const hasUtilization = percentage > 0;
+                    const percentageLabel = hasUtilization ? Math.round(percentage).toString() : '0';
 
                     return (
                       <tr key={budget.id}>
@@ -264,8 +398,8 @@ const BudgetList = () => {
                           )}
                         </td>
                         <td>{budget.budget_date}</td>
-                        <td>{formatCurrency(budget.budget_amount)}</td>
-                        <td>{formatCurrency(budget.actual_spent)}</td>
+                        <td>{formatCurrency(budgetAmount)}</td>
+                        <td>{formatCurrency(actualSpent)}</td>
                         <td>
                           <span className={remaining < 0 ? 'text-danger' : 'text-success'}>
                             {formatCurrency(remaining)}
@@ -275,17 +409,25 @@ const BudgetList = () => {
                           {getStatusBadge(budget.status)}
                         </td>
                         <td>
-                          <div className="progress" style={{ width: '100px' }}>
+                          <div className="progress position-relative" style={{ width: '100px', height: '24px' }}>
                             <div
                               className={`progress-bar ${
                                 percentage > 100 ? 'bg-danger' :
                                 percentage > 80 ? 'bg-warning' :
                                 'bg-success'
-                              }`}
+                              } d-flex align-items-center justify-content-center`}
                               style={{ width: `${Math.min(percentage, 100)}%` }}
                             >
-                              {percentage.toFixed(0)}%
+                              {hasUtilization ? `${percentageLabel}%` : ''}
                             </div>
+                            {!hasUtilization && (
+                              <span
+                                className="position-absolute top-50 start-50 translate-middle fw-semibold text-dark"
+                                style={{ fontSize: '0.75rem' }}
+                              >
+                                {percentageLabel}%
+                              </span>
+                            )}
                           </div>
                         </td>
                         <td>
