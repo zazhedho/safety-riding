@@ -9,7 +9,7 @@ import { useAuth } from '../../contexts/AuthContext';
 const BudgetDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { hasPermission } = useAuth();
+  const { hasPermission, hasRole } = useAuth();
   const [budget, setBudget] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -97,14 +97,21 @@ const BudgetDetail = () => {
   // Check if budget is finalized
   const finalStatuses = ['completed', 'cancelled'];
   const isFinalized = finalStatuses.includes(budget.status?.toLowerCase());
+  const isAdmin = hasRole(['admin']);
 
   return (
     <DashboardLayout>
       {/* Warning for finalized budgets */}
-      {isFinalized && (
+      {isFinalized && !isAdmin && (
         <div className="alert alert-warning mb-4" role="alert">
           <i className="bi bi-exclamation-triangle-fill me-2"></i>
           <strong>Budget is Finalized!</strong> This budget has status "{budget.status}" and cannot be modified or deleted.
+        </div>
+      )}
+      {isFinalized && isAdmin && (
+        <div className="alert alert-info mb-4" role="alert">
+          <i className="bi bi-info-circle-fill me-2"></i>
+          <strong>Admin Access:</strong> This budget has status "{budget.status}" (finalized), but you can still modify it as an admin.
         </div>
       )}
 
@@ -122,12 +129,12 @@ const BudgetDetail = () => {
           </nav>
         </div>
         <div className="d-flex gap-2">
-          {hasPermission('update_budgets') && !isFinalized && (
+          {hasPermission('update_budgets') && !(isFinalized && !isAdmin) && (
             <Link to={`/budgets/${id}/edit`} className="btn btn-warning">
               <i className="bi bi-pencil me-2"></i>Edit
             </Link>
           )}
-          {hasPermission('delete_budgets') && !isFinalized && (
+          {hasPermission('delete_budgets') && !(isFinalized && !isAdmin) && (
             <button onClick={handleDeleteClick} className="btn btn-danger">
               <i className="bi bi-trash me-2"></i>Delete
             </button>

@@ -8,7 +8,7 @@ import { toast } from 'react-toastify';
 import { useAuth } from '../../contexts/AuthContext';
 
 const BudgetList = () => {
-  const { hasPermission } = useAuth();
+  const { hasPermission, hasRole } = useAuth();
   const [budgets, setBudgets] = useState([]);
   const [events, setEvents] = useState([]);
   const [summary, setSummary] = useState(null);
@@ -115,6 +115,11 @@ const BudgetList = () => {
     };
     const statusInfo = statusMap[status] || { class: 'bg-secondary', label: status };
     return <span className={`badge ${statusInfo.class}`}>{statusInfo.label}</span>;
+  };
+
+  const isFinalized = (status) => {
+    const finalStatuses = ['completed', 'cancelled'];
+    return finalStatuses.includes(status?.toLowerCase());
   };
 
   return (
@@ -293,7 +298,7 @@ const BudgetList = () => {
                                 <i className="bi bi-eye"></i>
                               </Link>
                             )}
-                            {hasPermission('update_budgets') && (
+                            {hasPermission('update_budgets') && !(isFinalized(budget.status) && !hasRole(['admin'])) && (
                               <Link
                                 to={`/budgets/${budget.id}/edit`}
                                 className="btn btn-sm btn-outline-warning"
@@ -301,7 +306,7 @@ const BudgetList = () => {
                                 <i className="bi bi-pencil"></i>
                               </Link>
                             )}
-                            {hasPermission('delete_budgets') && (
+                            {hasPermission('delete_budgets') && !(isFinalized(budget.status) && !hasRole(['admin'])) && (
                               <button
                                 onClick={() => handleDeleteClick(budget)}
                                 className="btn btn-sm btn-outline-danger"

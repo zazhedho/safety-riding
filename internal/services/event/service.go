@@ -87,11 +87,18 @@ func (s *EventService) AddEvent(username string, req dto.AddEvent) (domainevent.
 		if err == nil {
 			school.IsEducated = true
 			school.VisitCount++
-			now := time.Now()
-			school.LastVisitAt = &now
-			school.UpdatedBy = username
-			err := s.SchoolRepo.Update(school)
+
+			// Use event_date + end_time as lastVisitAt
+			eventDateTime, err := utils.ParseEventDateTime(req.EventDate, req.EndTime)
 			if err != nil {
+				now := time.Now()
+				school.LastVisitAt = &now
+			} else {
+				school.LastVisitAt = &eventDateTime
+			}
+
+			school.UpdatedBy = username
+			if err = s.SchoolRepo.Update(school); err != nil {
 				return domainevent.Event{}, err
 			}
 		}
@@ -104,7 +111,7 @@ func (s *EventService) GetEventById(id string) (domainevent.Event, error) {
 	return s.EventRepo.GetByID(id)
 }
 
-func (s *EventService) UpdateEvent(id, username string, req dto.UpdateEvent) (domainevent.Event, error) {
+func (s *EventService) UpdateEvent(id, username, role string, req dto.UpdateEvent) (domainevent.Event, error) {
 	if err := utils.ValidateNonNegative(req.AttendeesCount, "attendees_count"); err != nil {
 		return domainevent.Event{}, err
 	}
@@ -116,7 +123,11 @@ func (s *EventService) UpdateEvent(id, username string, req dto.UpdateEvent) (do
 	}
 
 	// Prevent update if event status is final (Completed or Cancelled)
-	if strings.EqualFold(event.Status, utils.StsCompleted) || strings.EqualFold(event.Status, utils.StsCancelled) {
+	// Exception: admin role can bypass this validation
+	isFinalized := strings.EqualFold(event.Status, utils.StsCompleted) || strings.EqualFold(event.Status, utils.StsCancelled)
+	isAdmin := strings.EqualFold(role, utils.RoleAdmin)
+
+	if isFinalized && !isAdmin {
 		return domainevent.Event{}, fmt.Errorf("cannot update event with status '%s'. Event is already finalized", event.Status)
 	}
 
@@ -187,11 +198,20 @@ func (s *EventService) UpdateEvent(id, username string, req dto.UpdateEvent) (do
 		if err == nil {
 			school.IsEducated = true
 			school.VisitCount++
-			now := time.Now()
-			school.LastVisitAt = &now
-			school.UpdatedBy = username
-			err := s.SchoolRepo.Update(school)
+
+			eventDate := event.EventDate
+			endTime := event.EndTime
+			eventDateTime, err := utils.ParseEventDateTime(eventDate, endTime)
 			if err != nil {
+				// Fallback to current time if parsing fails
+				now := time.Now()
+				school.LastVisitAt = &now
+			} else {
+				school.LastVisitAt = &eventDateTime
+			}
+
+			school.UpdatedBy = username
+			if err = s.SchoolRepo.Update(school); err != nil {
 				return domainevent.Event{}, err
 			}
 		}

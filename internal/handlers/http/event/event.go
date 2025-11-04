@@ -90,6 +90,7 @@ func (h *EventHandler) GetEventById(ctx *gin.Context) {
 func (h *EventHandler) UpdateEvent(ctx *gin.Context) {
 	authData := utils.GetAuthData(ctx)
 	username := utils.InterfaceString(authData["username"])
+	role := utils.InterfaceString(authData["role"])
 	logId := utils.GenerateLogId(ctx)
 	logPrefix := fmt.Sprintf("[%s][EventHandler][UpdateEvent]", logId)
 
@@ -108,7 +109,7 @@ func (h *EventHandler) UpdateEvent(ctx *gin.Context) {
 	}
 	logger.WriteLog(logger.LogLevelDebug, fmt.Sprintf("%s; Request: %+v;", logPrefix, utils.JsonEncode(req)))
 
-	data, err := h.Service.UpdateEvent(eventId, username, req)
+	data, err := h.Service.UpdateEvent(eventId, username, role, req)
 	if err != nil {
 		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; Service.UpdateEvent; Error: %+v", logPrefix, err))
 		res := response.Response(http.StatusInternalServerError, messages.MsgFail, logId, nil)

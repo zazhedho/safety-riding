@@ -86,7 +86,7 @@ func (s *BudgetService) GetBudgetById(id string) (domainbudget.EventBudget, erro
 	return s.BudgetRepo.GetByID(id)
 }
 
-func (s *BudgetService) UpdateBudget(id, username string, req dto.UpdateEventBudget) (domainbudget.EventBudget, error) {
+func (s *BudgetService) UpdateBudget(id, username, role string, req dto.UpdateEventBudget) (domainbudget.EventBudget, error) {
 	// Get existing budget
 	budget, err := s.BudgetRepo.GetByID(id)
 	if err != nil {
@@ -94,7 +94,11 @@ func (s *BudgetService) UpdateBudget(id, username string, req dto.UpdateEventBud
 	}
 
 	// Prevent update if budget status is final (Completed or Cancelled)
-	if strings.EqualFold(budget.Status, utils.StsCompleted) || strings.EqualFold(budget.Status, utils.StsCancelled) {
+	// Exception: admin role can bypass this validation
+	isFinalized := strings.EqualFold(budget.Status, utils.StsCompleted) || strings.EqualFold(budget.Status, utils.StsCancelled)
+	isAdmin := strings.EqualFold(role, utils.RoleAdmin)
+
+	if isFinalized && !isAdmin {
 		return domainbudget.EventBudget{}, fmt.Errorf("cannot update budget with status '%s'. Budget is already finalized", budget.Status)
 	}
 

@@ -91,6 +91,7 @@ func (h *BudgetHandler) GetBudgetById(ctx *gin.Context) {
 func (h *BudgetHandler) UpdateBudget(ctx *gin.Context) {
 	authData := utils.GetAuthData(ctx)
 	username := utils.InterfaceString(authData["username"])
+	role := utils.InterfaceString(authData["role"])
 	logId := utils.GenerateLogId(ctx)
 	logPrefix := fmt.Sprintf("[%s][BudgetHandler][UpdateBudget]", logId)
 
@@ -109,7 +110,7 @@ func (h *BudgetHandler) UpdateBudget(ctx *gin.Context) {
 	}
 	logger.WriteLog(logger.LogLevelDebug, fmt.Sprintf("%s; Request: %+v;", logPrefix, utils.JsonEncode(req)))
 
-	data, err := h.Service.UpdateBudget(budgetId, username, req)
+	data, err := h.Service.UpdateBudget(budgetId, username, role, req)
 	if err != nil {
 		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; Service.UpdateBudget; Error: %+v", logPrefix, err))
 		res := response.Response(http.StatusInternalServerError, messages.MsgFail, logId, nil)
