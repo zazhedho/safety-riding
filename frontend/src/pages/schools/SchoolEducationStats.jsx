@@ -160,7 +160,7 @@ const SchoolEducationStats = () => {
       {stats && (
         <div className="row g-3 mb-4">
           <div className="col-sm-6 col-lg-3">
-            <div className="card border-primary h-100">
+            <div className="card border-primary">
               <div className="card-body">
                 <div className="d-flex justify-content-between align-items-center">
                   <div className="flex-grow-1 pe-2">
@@ -176,7 +176,7 @@ const SchoolEducationStats = () => {
           </div>
 
           <div className="col-sm-6 col-lg-3">
-            <div className="card border-success h-100">
+            <div className="card border-success">
               <div className="card-body">
                 <div className="d-flex justify-content-between align-items-center">
                   <div className="flex-grow-1 pe-2">
@@ -197,7 +197,7 @@ const SchoolEducationStats = () => {
           </div>
 
           <div className="col-sm-6 col-lg-3">
-            <div className="card border-info h-100">
+            <div className="card border-info">
               <div className="card-body">
                 <div className="d-flex justify-content-between align-items-center">
                   <div className="flex-grow-1 pe-2">
@@ -215,7 +215,7 @@ const SchoolEducationStats = () => {
           </div>
 
           <div className="col-sm-6 col-lg-3">
-            <div className="card border-warning h-100">
+            <div className="card border-warning">
               <div className="card-body">
                 <div className="d-flex justify-content-between align-items-center">
                   <div className="flex-grow-1 pe-2">
