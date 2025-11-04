@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import DashboardLayout from '../../components/common/DashboardLayout';
+import ConfirmationModal from '../../components/common/ConfirmationModal';
 import roleService from '../../services/roleService';
 import { toast } from 'react-toastify';
 
@@ -8,6 +9,8 @@ const RoleList = () => {
   const navigate = useNavigate();
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [roleToDelete, setRoleToDelete] = useState(null);
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 10,
@@ -39,21 +42,32 @@ const RoleList = () => {
     }
   };
 
-  const handleDelete = async (id, name, isSystem) => {
-    if (isSystem) {
+  const handleDeleteClick = (role) => {
+    if (role.is_system) {
       toast.error('Cannot delete system roles');
       return;
     }
+    setRoleToDelete(role);
+    setShowDeleteModal(true);
+  };
 
-    if (window.confirm(`Are you sure you want to delete role "${name}"?`)) {
-      try {
-        await roleService.delete(id);
-        toast.success('Role deleted successfully');
-        fetchRoles();
-      } catch (error) {
-        toast.error(error.response?.data?.message || 'Failed to delete role');
-      }
+  const handleDeleteConfirm = async () => {
+    if (!roleToDelete) return;
+
+    try {
+      await roleService.delete(roleToDelete.id);
+      toast.success('Role deleted successfully');
+      fetchRoles();
+      setShowDeleteModal(false);
+      setRoleToDelete(null);
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to delete role');
     }
+  };
+
+  const handleDeleteCancel = () => {
+    setShowDeleteModal(false);
+    setRoleToDelete(null);
   };
 
   const handlePageChange = (newPage) => {
@@ -120,7 +134,7 @@ const RoleList = () => {
                             {!role.is_system && (
                               <button
                                 className="btn btn-sm btn-outline-danger"
-                                onClick={() => handleDelete(role.id, role.name, role.is_system)}
+                                onClick={() => handleDeleteClick(role)}
                                 title="Delete"
                               >
                                 <i className="bi bi-trash"></i>
@@ -166,6 +180,15 @@ const RoleList = () => {
           )}
         </div>
       </div>
+
+      <ConfirmationModal
+        show={showDeleteModal}
+        title="Delete Role"
+        message={`Are you sure you want to delete role "${roleToDelete?.name}"? This action cannot be undone.`}
+        confirmText="Delete"
+        onConfirm={handleDeleteConfirm}
+        onCancel={handleDeleteCancel}
+      />
     </DashboardLayout>
   );
 };

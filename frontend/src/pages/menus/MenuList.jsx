@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import DashboardLayout from '../../components/common/DashboardLayout';
+import ConfirmationModal from '../../components/common/ConfirmationModal';
 import menuService from '../../services/menuService';
 import { toast } from 'react-toastify';
 
@@ -8,6 +9,8 @@ const MenuList = () => {
   const navigate = useNavigate();
   const [menus, setMenus] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [menuToDelete, setMenuToDelete] = useState(null);
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 50,
@@ -39,16 +42,28 @@ const MenuList = () => {
     }
   };
 
-  const handleDelete = async (id, name) => {
-    if (window.confirm(`Are you sure you want to delete menu "${name}"?`)) {
-      try {
-        await menuService.delete(id);
-        toast.success('Menu deleted successfully');
-        fetchMenus();
-      } catch (error) {
-        toast.error(error.response?.data?.message || 'Failed to delete menu');
-      }
+  const handleDeleteClick = (menu) => {
+    setMenuToDelete(menu);
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!menuToDelete) return;
+
+    try {
+      await menuService.delete(menuToDelete.id);
+      toast.success('Menu deleted successfully');
+      fetchMenus();
+      setShowDeleteModal(false);
+      setMenuToDelete(null);
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to delete menu');
     }
+  };
+
+  const handleDeleteCancel = () => {
+    setShowDeleteModal(false);
+    setMenuToDelete(null);
   };
 
   const handleToggleActive = async (menu) => {
@@ -155,7 +170,7 @@ const MenuList = () => {
                             </Link>
                             <button
                               className="btn btn-sm btn-outline-danger"
-                              onClick={() => handleDelete(menu.id, menu.display_name)}
+                              onClick={() => handleDeleteClick(menu)}
                               title="Delete"
                             >
                               <i className="bi bi-trash"></i>
@@ -200,6 +215,15 @@ const MenuList = () => {
           )}
         </div>
       </div>
+
+      <ConfirmationModal
+        show={showDeleteModal}
+        title="Delete Menu"
+        message={`Are you sure you want to delete menu "${menuToDelete?.display_name}"? This action cannot be undone.`}
+        confirmText="Delete"
+        onConfirm={handleDeleteConfirm}
+        onCancel={handleDeleteCancel}
+      />
     </DashboardLayout>
   );
 };

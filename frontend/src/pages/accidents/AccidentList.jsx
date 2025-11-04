@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import DashboardLayout from '../../components/common/DashboardLayout';
+import ConfirmationModal from '../../components/common/ConfirmationModal';
 import accidentService from '../../services/accidentService';
 import locationService from '../../services/locationService';
 import { toast } from 'react-toastify';
@@ -13,6 +14,8 @@ const AccidentList = () => {
   const [cities, setCities] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [accidentToDelete, setAccidentToDelete] = useState(null);
   const [filters, setFilters] = useState({
     province_id: '',
     city_id: '',
@@ -107,16 +110,28 @@ const AccidentList = () => {
     fetchAccidents();
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this accident record?')) return;
+  const handleDeleteClick = (accident) => {
+    setAccidentToDelete(accident);
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!accidentToDelete) return;
 
     try {
-      await accidentService.delete(id);
+      await accidentService.delete(accidentToDelete.id);
       toast.success('Accident record deleted successfully');
       fetchAccidents();
+      setShowDeleteModal(false);
+      setAccidentToDelete(null);
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to delete accident');
     }
+  };
+
+  const handleDeleteCancel = () => {
+    setShowDeleteModal(false);
+    setAccidentToDelete(null);
   };
 
   const formatDate = (dateStr) => {
@@ -293,7 +308,7 @@ const AccidentList = () => {
                           )}
                           {hasPermission('delete_accidents') && (
                             <button
-                              onClick={() => handleDelete(accident.id)}
+                              onClick={() => handleDeleteClick(accident)}
                               className="btn btn-sm btn-outline-danger"
                             >
                               <i className="bi bi-trash"></i>
@@ -313,6 +328,15 @@ const AccidentList = () => {
           )}
         </div>
       </div>
+
+      <ConfirmationModal
+        show={showDeleteModal}
+        title="Delete Accident"
+        message={`Are you sure you want to delete accident report "${accidentToDelete?.police_report_no}"? This action cannot be undone.`}
+        confirmText="Delete"
+        onConfirm={handleDeleteConfirm}
+        onCancel={handleDeleteCancel}
+      />
     </DashboardLayout>
   );
 };

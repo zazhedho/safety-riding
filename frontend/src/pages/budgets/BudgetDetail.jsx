@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import DashboardLayout from '../../components/common/DashboardLayout';
+import ConfirmationModal from '../../components/common/ConfirmationModal';
 import budgetService from '../../services/budgetService';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../contexts/AuthContext';
@@ -11,6 +12,7 @@ const BudgetDetail = () => {
   const { hasPermission } = useAuth();
   const [budget, setBudget] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     fetchBudgetDetail();
@@ -29,16 +31,23 @@ const BudgetDetail = () => {
     }
   };
 
-  const handleDelete = async () => {
-    if (!window.confirm('Are you sure you want to delete this budget?')) return;
+  const handleDeleteClick = () => {
+    setShowDeleteModal(true);
+  };
 
+  const handleDeleteConfirm = async () => {
     try {
       await budgetService.delete(id);
       toast.success('Budget deleted successfully');
+      setShowDeleteModal(false);
       navigate('/budgets');
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to delete budget');
     }
+  };
+
+  const handleDeleteCancel = () => {
+    setShowDeleteModal(false);
   };
 
   const formatCurrency = (amount) => {
@@ -107,7 +116,7 @@ const BudgetDetail = () => {
             </Link>
           )}
           {hasPermission('delete_budgets') && (
-            <button onClick={handleDelete} className="btn btn-danger">
+            <button onClick={handleDeleteClick} className="btn btn-danger">
               <i className="bi bi-trash me-2"></i>Delete
             </button>
           )}
@@ -280,7 +289,7 @@ const BudgetDetail = () => {
                           <strong>Event Type</strong>
                         </td>
                         <td>
-                          <span className="badge bg-info">{budget.event.event_type}</span>
+                          <span className="badge bg-info">{budget.event.event_type.toUpperCase()}</span>
                         </td>
                       </tr>
                       {budget.event.school && (
@@ -351,6 +360,15 @@ const BudgetDetail = () => {
           </div>
         </div>
       </div>
+
+      <ConfirmationModal
+        show={showDeleteModal}
+        title="Delete Budget"
+        message="Are you sure you want to delete this budget? This action cannot be undone."
+        confirmText="Delete"
+        onConfirm={handleDeleteConfirm}
+        onCancel={handleDeleteCancel}
+      />
     </DashboardLayout>
   );
 };

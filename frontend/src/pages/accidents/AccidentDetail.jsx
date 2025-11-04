@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import DashboardLayout from '../../components/common/DashboardLayout';
+import ConfirmationModal from '../../components/common/ConfirmationModal';
 import accidentService from '../../services/accidentService';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../contexts/AuthContext';
@@ -11,6 +12,7 @@ const AccidentDetail = () => {
   const { hasPermission } = useAuth();
   const [accident, setAccident] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     fetchAccident();
@@ -29,16 +31,23 @@ const AccidentDetail = () => {
     }
   };
 
-  const handleDelete = async () => {
-    if (!window.confirm('Are you sure you want to delete this accident record?')) return;
+  const handleDeleteClick = () => {
+    setShowDeleteModal(true);
+  };
 
+  const handleDeleteConfirm = async () => {
     try {
       await accidentService.delete(id);
       toast.success('Accident record deleted successfully');
+      setShowDeleteModal(false);
       navigate('/accidents');
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to delete accident record');
     }
+  };
+
+  const handleDeleteCancel = () => {
+    setShowDeleteModal(false);
   };
 
   const formatDate = (dateStr) => {
@@ -101,7 +110,7 @@ const AccidentDetail = () => {
             </Link>
           )}
           {hasPermission('delete_accidents') && (
-            <button onClick={handleDelete} className="btn btn-danger">
+            <button onClick={handleDeleteClick} className="btn btn-danger">
               <i className="bi bi-trash me-2"></i>Delete
             </button>
           )}
@@ -414,6 +423,15 @@ const AccidentDetail = () => {
           </div>
         </div>
       </div>
+
+      <ConfirmationModal
+        show={showDeleteModal}
+        title="Delete Accident"
+        message={`Are you sure you want to delete accident report "${accident?.police_report_no}"? This action cannot be undone.`}
+        confirmText="Delete"
+        onConfirm={handleDeleteConfirm}
+        onCancel={handleDeleteCancel}
+      />
     </DashboardLayout>
   );
 };

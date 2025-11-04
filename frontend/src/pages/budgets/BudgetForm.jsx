@@ -92,7 +92,7 @@ const BudgetForm = () => {
                 <label className="form-label">Event</label>
                 <select className="form-select" name="event_id" value={formData.event_id} onChange={handleChange} required>
                   <option value="">Select Event</option>
-                  {events.map(event => <option key={event.id} value={event.id}>{event.title}</option>)}
+                  {events.map(event => <option key={event.id} value={event.id}>{event.title} - {event.school?.name}</option>)}
                 </select>
               </div>
               <div className="col-md-6 mb-3">
@@ -124,7 +124,8 @@ const BudgetForm = () => {
                 <select className="form-select" name="status" value={formData.status} onChange={handleChange} required>
                   <option value="planned">Planned</option>
                   <option value="approved">Approved</option>
-                  <option value="spent">Spent</option>
+                  <option value="in-progress">In Progress</option>
+                  <option value="completed">Completed</option>
                   <option value="cancelled">Cancelled</option>
                 </select>
               </div>

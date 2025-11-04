@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import DashboardLayout from '../../components/common/DashboardLayout';
+import ConfirmationModal from '../../components/common/ConfirmationModal';
 import budgetService from '../../services/budgetService';
 import eventService from '../../services/eventService';
 import { toast } from 'react-toastify';
@@ -12,6 +13,8 @@ const BudgetList = () => {
   const [events, setEvents] = useState([]);
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [budgetToDelete, setBudgetToDelete] = useState(null);
   const [filters, setFilters] = useState({
     event_id: '',
     month: new Date().getMonth() + 1,
@@ -69,17 +72,29 @@ const BudgetList = () => {
     fetchSummary();
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this budget?')) return;
+  const handleDeleteClick = (budget) => {
+    setBudgetToDelete(budget);
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!budgetToDelete) return;
 
     try {
-      await budgetService.delete(id);
+      await budgetService.delete(budgetToDelete.id);
       toast.success('Budget deleted successfully');
       fetchBudgets();
       fetchSummary();
+      setShowDeleteModal(false);
+      setBudgetToDelete(null);
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to delete budget');
     }
+  };
+
+  const handleDeleteCancel = () => {
+    setShowDeleteModal(false);
+    setBudgetToDelete(null);
   };
 
   const formatCurrency = (amount) => {
@@ -88,6 +103,18 @@ const BudgetList = () => {
       currency: 'IDR',
       minimumFractionDigits: 0
     }).format(amount);
+  };
+
+  const getStatusBadge = (status) => {
+    const statusMap = {
+      'planned': { class: 'bg-info', label: 'Planned' },
+      'approved': { class: 'bg-success', label: 'Approved' },
+      'in_progress': { class: 'bg-warning', label: 'In Progress' },
+      'completed': { class: 'bg-primary', label: 'Completed' },
+      'cancelled': { class: 'bg-danger', label: 'Cancelled' }
+    };
+    const statusInfo = statusMap[status] || { class: 'bg-secondary', label: status };
+    return <span className={`badge ${statusInfo.class}`}>{statusInfo.label}</span>;
   };
 
   return (
@@ -209,6 +236,7 @@ const BudgetList = () => {
                     <th>Actual Spent</th>
                     <th>Remaining</th>
                     <th>Status</th>
+                    <th>Utilization</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
@@ -237,6 +265,9 @@ const BudgetList = () => {
                           <span className={remaining < 0 ? 'text-danger' : 'text-success'}>
                             {formatCurrency(remaining)}
                           </span>
+                        </td>
+                        <td>
+                          {getStatusBadge(budget.status)}
                         </td>
                         <td>
                           <div className="progress" style={{ width: '100px' }}>
@@ -272,7 +303,7 @@ const BudgetList = () => {
                             )}
                             {hasPermission('delete_budgets') && (
                               <button
-                                onClick={() => handleDelete(budget.id)}
+                                onClick={() => handleDeleteClick(budget)}
                                 className="btn btn-sm btn-outline-danger"
                               >
                                 <i className="bi bi-trash"></i>
@@ -293,6 +324,15 @@ const BudgetList = () => {
           )}
         </div>
       </div>
+
+      <ConfirmationModal
+        show={showDeleteModal}
+        title="Delete Budget"
+        message={`Are you sure you want to delete this budget${budgetToDelete?.event?.title ? ` for "${budgetToDelete.event.title}"` : ''}? This action cannot be undone.`}
+        confirmText="Delete"
+        onConfirm={handleDeleteConfirm}
+        onCancel={handleDeleteCancel}
+      />
     </DashboardLayout>
   );
 };

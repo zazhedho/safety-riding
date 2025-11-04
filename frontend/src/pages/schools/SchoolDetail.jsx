@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import DashboardLayout from '../../components/common/DashboardLayout';
+import ConfirmationModal from '../../components/common/ConfirmationModal';
 import schoolService from '../../services/schoolService';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../contexts/AuthContext';
@@ -11,6 +12,7 @@ const SchoolDetail = () => {
   const { hasPermission } = useAuth();
   const [school, setSchool] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     fetchSchool();
@@ -29,16 +31,23 @@ const SchoolDetail = () => {
     }
   };
 
-  const handleDelete = async () => {
-    if (!window.confirm('Are you sure you want to delete this school?')) return;
+  const handleDeleteClick = () => {
+    setShowDeleteModal(true);
+  };
 
+  const handleDeleteConfirm = async () => {
     try {
       await schoolService.delete(id);
       toast.success('School deleted successfully');
+      setShowDeleteModal(false);
       navigate('/schools');
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to delete school');
     }
+  };
+
+  const handleDeleteCancel = () => {
+    setShowDeleteModal(false);
   };
 
   const formatDate = (dateString) => {
@@ -88,7 +97,7 @@ const SchoolDetail = () => {
             </Link>
           )}
           {hasPermission('delete_schools') && (
-            <button onClick={handleDelete} className="btn btn-danger">
+            <button onClick={handleDeleteClick} className="btn btn-danger">
               <i className="bi bi-trash me-2"></i>Delete
             </button>
           )}
@@ -336,6 +345,15 @@ const SchoolDetail = () => {
           </div>
         </div>
       </div>
+
+      <ConfirmationModal
+        show={showDeleteModal}
+        title="Delete School"
+        message={`Are you sure you want to delete school "${school?.name}"? This action cannot be undone.`}
+        confirmText="Delete"
+        onConfirm={handleDeleteConfirm}
+        onCancel={handleDeleteCancel}
+      />
     </DashboardLayout>
   );
 };

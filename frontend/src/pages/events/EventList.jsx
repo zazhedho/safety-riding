@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import DashboardLayout from '../../components/common/DashboardLayout';
+import ConfirmationModal from '../../components/common/ConfirmationModal';
 import eventService from '../../services/eventService';
 import schoolService from '../../services/schoolService';
 import { toast } from 'react-toastify';
@@ -11,6 +12,8 @@ const EventList = () => {
   const [events, setEvents] = useState([]);
   const [schools, setSchools] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [eventToDelete, setEventToDelete] = useState(null);
   const [filters, setFilters] = useState({
     school_id: '',
     search: ''
@@ -81,16 +84,28 @@ const EventList = () => {
       : <i className="bi bi-arrow-down ms-1"></i>;
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this event?')) return;
+  const handleDeleteClick = (event) => {
+    setEventToDelete(event);
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!eventToDelete) return;
 
     try {
-      await eventService.delete(id);
+      await eventService.delete(eventToDelete.id);
       toast.success('Event deleted successfully');
       fetchEvents();
+      setShowDeleteModal(false);
+      setEventToDelete(null);
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to delete event');
     }
+  };
+
+  const handleDeleteCancel = () => {
+    setShowDeleteModal(false);
+    setEventToDelete(null);
   };
 
   const formatDate = (dateStr) => {
@@ -217,7 +232,7 @@ const EventList = () => {
                           )}
                           {hasPermission('delete_events') && (
                             <button
-                              onClick={() => handleDelete(event.id)}
+                              onClick={() => handleDeleteClick(event)}
                               className="btn btn-sm btn-outline-danger"
                               disabled={event.status === 'completed'}
                             >
@@ -238,6 +253,15 @@ const EventList = () => {
           )}
         </div>
       </div>
+
+      <ConfirmationModal
+        show={showDeleteModal}
+        title="Delete Event"
+        message={`Are you sure you want to delete the event "${eventToDelete?.title}"? This action cannot be undone.`}
+        confirmText="Delete"
+        onConfirm={handleDeleteConfirm}
+        onCancel={handleDeleteCancel}
+      />
     </DashboardLayout>
   );
 };

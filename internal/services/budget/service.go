@@ -55,7 +55,7 @@ func (s *BudgetService) AddBudget(username string, req dto.AddEventBudget) (doma
 	data := domainbudget.EventBudget{
 		ID:           utils.CreateUUID(),
 		EventId:      req.EventId,
-		Category:     req.Category,
+		Category:     utils.TitleCase(req.Category),
 		Description:  req.Description,
 		BudgetAmount: req.BudgetAmount,
 		ActualSpent:  req.ActualSpent,

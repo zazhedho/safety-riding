@@ -24,6 +24,9 @@ const EventDetail = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [photoToDelete, setPhotoToDelete] = useState(null);
 
+  // Event delete states
+  const [showDeleteEventModal, setShowDeleteEventModal] = useState(false);
+
   useEffect(() => {
     fetchEvent();
   }, [id]);
@@ -50,16 +53,23 @@ const EventDetail = () => {
     }
   };
 
-  const handleDelete = async () => {
-    if (!window.confirm('Are you sure you want to delete this event?')) return;
+  const handleDeleteClick = () => {
+    setShowDeleteEventModal(true);
+  };
 
+  const handleDeleteConfirm = async () => {
     try {
       await eventService.delete(id);
       toast.success('Event deleted successfully');
+      setShowDeleteEventModal(false);
       navigate('/events');
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to delete event');
     }
+  };
+
+  const handleDeleteCancel = () => {
+    setShowDeleteEventModal(false);
   };
 
   const formatDate = (dateString) => {
@@ -169,14 +179,14 @@ const EventDetail = () => {
     }
   };
 
-  // Handle delete click
-  const handleDeleteClick = (photo) => {
+  // Handle photo delete click
+  const handlePhotoDeleteClick = (photo) => {
     setPhotoToDelete(photo);
     setShowDeleteModal(true);
   };
 
-  // Handle delete confirm
-  const handleDeleteConfirm = async () => {
+  // Handle photo delete confirm
+  const handlePhotoDeleteConfirm = async () => {
     if (!photoToDelete) return;
 
     try {
@@ -192,8 +202,8 @@ const EventDetail = () => {
     }
   };
 
-  // Handle delete cancel
-  const handleDeleteCancel = () => {
+  // Handle photo delete cancel
+  const handlePhotoDeleteCancel = () => {
     setShowDeleteModal(false);
     setPhotoToDelete(null);
   };
@@ -269,7 +279,7 @@ const EventDetail = () => {
             </Link>
           )}
           {hasPermission('delete_events') && (
-            <button onClick={handleDelete} className="btn btn-danger">
+            <button onClick={handleDeleteClick} className="btn btn-danger">
               <i className="bi bi-trash me-2"></i>Delete
             </button>
           )}
@@ -391,7 +401,7 @@ const EventDetail = () => {
                               <strong>Event Type</strong>
                             </td>
                             <td>
-                              <span className="badge bg-primary">{event.event_type}</span>
+                              <span className="badge bg-primary">{event.event_type.toUpperCase()}</span>
                             </td>
                           </tr>
                           <tr>
@@ -643,7 +653,7 @@ const EventDetail = () => {
                             {hasPermission('delete_events') && (
                               <button
                                 className="btn btn-danger btn-sm w-100"
-                                onClick={() => handleDeleteClick(photo)}
+                                onClick={() => handlePhotoDeleteClick(photo)}
                               >
                                 <i className="bi bi-trash me-2"></i>Delete Photo
                               </button>
@@ -696,11 +706,21 @@ const EventDetail = () => {
         </div>
       </div>
 
-      {/* Delete Confirmation Modal */}
+      {/* Delete Photo Confirmation Modal */}
       <ConfirmationModal
         show={showDeleteModal}
         title="Delete Photo"
         message={`Are you sure you want to delete this photo? This action cannot be undone.`}
+        confirmText="Delete"
+        onConfirm={handlePhotoDeleteConfirm}
+        onCancel={handlePhotoDeleteCancel}
+      />
+
+      {/* Delete Event Confirmation Modal */}
+      <ConfirmationModal
+        show={showDeleteEventModal}
+        title="Delete Event"
+        message={`Are you sure you want to delete the event "${event?.title}"? This action cannot be undone.`}
         confirmText="Delete"
         onConfirm={handleDeleteConfirm}
         onCancel={handleDeleteCancel}
