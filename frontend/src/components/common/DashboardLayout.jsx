@@ -196,6 +196,7 @@ const DashboardLayout = ({ children }) => {
           {children}
         </div>
       </div>
+      <div id="root-portal"></div>
     </div>
   );
 };

@@ -267,82 +267,16 @@ const Dashboard = () => {
 
   return (
     <DashboardLayout>
+      <style>{`
+        .react-datepicker-popper {
+          z-index: 1050; 
+        }
+      `}</style>
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2>Dashboard Overview</h2>
         <button className="btn btn-outline-primary" onClick={handleRefresh}>
           <i className="bi bi-arrow-clockwise me-2"></i>Refresh
         </button>
-      </div>
-
-      {/* Filters */}
-      <div className="card mb-4">
-        <div className="card-header">
-          <h5 className="mb-0">
-            <i className="bi bi-funnel me-2"></i>Filters
-          </h5>
-        </div>
-        <div className="card-body">
-          <div className="row g-3">
-            <div className="col-md-4">
-              <label className="form-label small">Date Range</label>
-              <div className="d-flex gap-2">
-                <DatePicker
-                  selected={dateRange.startDate}
-                  onChange={(date) => setDateRange(prev => ({ ...prev, startDate: date }))}
-                  selectsStart
-                  startDate={dateRange.startDate}
-                  endDate={dateRange.endDate}
-                  className="form-control form-control-sm"
-                  dateFormat="dd/MM/yyyy"
-                  placeholderText="Start Date"
-                />
-                <DatePicker
-                  selected={dateRange.endDate}
-                  onChange={(date) => setDateRange(prev => ({ ...prev, endDate: date }))}
-                  selectsEnd
-                  startDate={dateRange.startDate}
-                  endDate={dateRange.endDate}
-                  minDate={dateRange.startDate}
-                  className="form-control form-control-sm"
-                  dateFormat="dd/MM/yyyy"
-                  placeholderText="End Date"
-                />
-              </div>
-            </div>
-            <div className="col-md-3">
-              <label className="form-label small">Province</label>
-              <select
-                className="form-select form-select-sm"
-                value={selectedProvince}
-                onChange={(e) => setSelectedProvince(e.target.value)}
-              >
-                <option value="">All Provinces</option>
-                {provinces.map(prov => (
-                  <option key={prov.code} value={prov.code}>{prov.name}</option>
-                ))}
-              </select>
-            </div>
-            <div className="col-md-3">
-              <label className="form-label small">City</label>
-              <select
-                className="form-select form-select-sm"
-                value={selectedCity}
-                onChange={(e) => setSelectedCity(e.target.value)}
-                disabled={!selectedProvince}
-              >
-                <option value="">All Cities</option>
-                {cities.map(city => (
-                  <option key={city.code} value={city.code}>{city.name}</option>
-                ))}
-              </select>
-            </div>
-            <div className="col-md-2 d-flex align-items-end">
-              <button className="btn btn-sm btn-outline-secondary w-100" onClick={handleResetFilters}>
-                <i className="bi bi-x-circle me-1"></i>Reset
-              </button>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* District Recommendations for Next Month */}
@@ -423,6 +357,79 @@ const Dashboard = () => {
                 </small>
               </div>
               <i className="bi bi-cash-stack fs-1 text-danger flex-shrink-0"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="card mb-4">
+        <div className="card-header">
+          <h5 className="mb-0">
+            <i className="bi bi-funnel me-2"></i>Filters
+          </h5>
+        </div>
+        <div className="card-body">
+          <div className="row g-3">
+            <div className="col-md-4">
+              <label className="form-label small">Date Range</label>
+              <div className="d-flex gap-2">
+                <DatePicker
+                  selected={dateRange.startDate}
+                  onChange={(date) => setDateRange(prev => ({ ...prev, startDate: date }))}
+                  selectsStart
+                  startDate={dateRange.startDate}
+                  endDate={dateRange.endDate}
+                  className="form-control form-control-sm"
+                  dateFormat="dd/MM/yyyy"
+                  placeholderText="Start Date"
+                  portalId="root-portal"
+                />
+                <DatePicker
+                  selected={dateRange.endDate}
+                  onChange={(date) => setDateRange(prev => ({ ...prev, endDate: date }))}
+                  selectsEnd
+                  startDate={dateRange.startDate}
+                  endDate={dateRange.endDate}
+                  minDate={dateRange.startDate}
+                  className="form-control form-control-sm"
+                  dateFormat="dd/MM/yyyy"
+                  placeholderText="End Date"
+                  portalId="root-portal"
+                />
+              </div>
+            </div>
+            <div className="col-md-3">
+              <label className="form-label small">Province</label>
+              <select
+                className="form-select form-select-sm"
+                value={selectedProvince}
+                onChange={(e) => setSelectedProvince(e.target.value)}
+              >
+                <option value="">All Provinces</option>
+                {provinces.map(prov => (
+                  <option key={prov.code} value={prov.code}>{prov.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="col-md-3">
+              <label className="form-label small">City</label>
+              <select
+                className="form-select form-select-sm"
+                value={selectedCity}
+                onChange={(e) => setSelectedCity(e.target.value)}
+                disabled={!selectedProvince}
+              >
+                <option value="">All Cities</option>
+                {cities.map(city => (
+                  <option key={city.code} value={city.code}>{city.name}</option>
+                ))}
+              </select>
+            </div>
+            <div className="col-md-2 d-flex align-items-end">
+              <button className="btn btn-sm btn-outline-secondary w-100" onClick={handleResetFilters}>
+                <i className="bi bi-x-circle me-1"></i>Reset
+              </button>
             </div>
           </div>
         </div>
@@ -540,7 +547,7 @@ const Dashboard = () => {
                   ))}
                 </div>
               ) : (
-                <p className="text-muted text-center py-4">No recent events</p>
+                <p className="text-muted text-center py-4">No recent accidents</p>
               )}
             </div>
           </div>
