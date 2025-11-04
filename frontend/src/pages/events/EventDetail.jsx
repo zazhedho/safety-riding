@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import DashboardLayout from '../../components/common/DashboardLayout';
 import ConfirmationModal from '../../components/common/ConfirmationModal';
 import eventService from '../../services/eventService';
@@ -8,6 +8,7 @@ import { useAuth } from '../../contexts/AuthContext';
 
 const EventDetail = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const { hasPermission } = useAuth();
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -42,9 +43,22 @@ const EventDetail = () => {
       const response = await eventService.getById(id);
       setEvent(response.data.data);
     } catch (error) {
-      toast.error('Failed to load event details');
+      toast.error(error.response?.data?.message || 'Failed to load event details');
+      navigate('/events');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!window.confirm('Are you sure you want to delete this event?')) return;
+
+    try {
+      await eventService.delete(id);
+      toast.success('Event deleted successfully');
+      navigate('/events');
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to delete event');
     }
   };
 
@@ -206,32 +220,142 @@ const EventDetail = () => {
   if (!event) {
     return (
       <DashboardLayout>
-        <div className="text-center py-5">
-          <h2>Event not found</h2>
-          <Link to="/events" className="btn btn-primary">Back to list</Link>
-        </div>
+        <div className="alert alert-danger">Event not found</div>
       </DashboardLayout>
     );
   }
 
   const renderStatusBadge = (status) => {
-    let color = 'warning';
-    if (status === 'completed') color = 'success';
-    if (status === 'ongoing') color = 'primary';
-    if (status === 'cancelled') color = 'danger';
-    return <span className={`badge bg-${color}`}>{status.toUpperCase()}</span>;
+    const statusMap = {
+      'planned': { class: 'bg-info', label: 'Planned' },
+      'ongoing': { class: 'bg-primary', label: 'Ongoing' },
+      'completed': { class: 'bg-success', label: 'Completed' },
+      'cancelled': { class: 'bg-danger', label: 'Cancelled' }
+    };
+    const statusInfo = statusMap[status] || { class: 'bg-secondary', label: status };
+    return <span className={`badge ${statusInfo.class}`}>{statusInfo.label}</span>;
+  };
+
+  // Calculate event duration
+  const calculateDuration = () => {
+    if (!event.start_time || !event.end_time) return '-';
+    const [startHour, startMin] = event.start_time.split(':').map(Number);
+    const [endHour, endMin] = event.end_time.split(':').map(Number);
+    const durationMin = (endHour * 60 + endMin) - (startHour * 60 + startMin);
+    const hours = Math.floor(durationMin / 60);
+    const mins = durationMin % 60;
+    return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
   };
 
   return (
     <DashboardLayout>
+      {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
-          <h2 className="mb-0">{event.title}</h2>
-          <p className="text-muted">Organized for {event.school?.name || 'N/A'}</p>
+          <h2>Event Detail</h2>
+          <nav aria-label="breadcrumb">
+            <ol className="breadcrumb mb-0">
+              <li className="breadcrumb-item">
+                <Link to="/events">Events</Link>
+              </li>
+              <li className="breadcrumb-item active">Detail</li>
+            </ol>
+          </nav>
         </div>
-        <Link to="/events" className="btn btn-outline-secondary">
-          <i className="bi bi-arrow-left me-2"></i>Back to List
-        </Link>
+        <div className="d-flex gap-2">
+          {hasPermission('update_events') && (
+            <Link to={`/events/${id}/edit`} className="btn btn-warning">
+              <i className="bi bi-pencil me-2"></i>Edit
+            </Link>
+          )}
+          {hasPermission('delete_events') && (
+            <button onClick={handleDelete} className="btn btn-danger">
+              <i className="bi bi-trash me-2"></i>Delete
+            </button>
+          )}
+          <Link to="/events" className="btn btn-secondary">
+            <i className="bi bi-arrow-left me-2"></i>Back
+          </Link>
+        </div>
+      </div>
+
+      {/* Event Title Banner */}
+      <div className="alert alert-primary mb-4">
+        <h4 className="alert-heading mb-1">
+          <i className="bi bi-calendar-event me-2"></i>{event.title}
+        </h4>
+        <p className="mb-0">
+          <i className="bi bi-building me-2"></i>
+          {event.school?.name ? (
+            <Link to={`/schools/${event.school.id}`} className="text-decoration-none">
+              {event.school.name}
+            </Link>
+          ) : 'N/A'}
+        </p>
+      </div>
+
+      {/* Overview Cards */}
+      <div className="row g-3 mb-4">
+        <div className="col-sm-6 col-lg-3">
+          <div className="card border-primary h-100">
+            <div className="card-body">
+              <div className="d-flex justify-content-between align-items-center">
+                <div className="flex-grow-1 pe-2">
+                  <h6 className="text-muted mb-1 small">Attendees</h6>
+                  <h4 className="mb-0 text-primary text-truncate">{event.attendees_count.toLocaleString()}</h4>
+                </div>
+                <div className="text-primary flex-shrink-0" style={{ fontSize: '2rem' }}>
+                  <i className="bi bi-people-fill"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="col-sm-6 col-lg-3">
+          <div className="card border-success h-100">
+            <div className="card-body">
+              <div className="d-flex justify-content-between align-items-center">
+                <div className="flex-grow-1 pe-2">
+                  <h6 className="text-muted mb-1 small">Photos</h6>
+                  <h4 className="mb-0 text-success text-truncate">{event.photos?.length || 0}</h4>
+                </div>
+                <div className="text-success flex-shrink-0" style={{ fontSize: '2rem' }}>
+                  <i className="bi bi-images"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="col-sm-6 col-lg-3">
+          <div className="card border-info h-100">
+            <div className="card-body">
+              <div className="d-flex justify-content-between align-items-center">
+                <div className="flex-grow-1 pe-2">
+                  <h6 className="text-muted mb-1 small">Duration</h6>
+                  <h4 className="mb-0 text-info text-truncate">{calculateDuration()}</h4>
+                </div>
+                <div className="text-info flex-shrink-0" style={{ fontSize: '2rem' }}>
+                  <i className="bi bi-clock-fill"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="col-sm-6 col-lg-3">
+          <div className="card border-warning h-100">
+            <div className="card-body">
+              <div className="d-flex justify-content-between align-items-center">
+                <div className="flex-grow-1 pe-2">
+                  <h6 className="text-muted mb-1 small">Status</h6>
+                  <div>{renderStatusBadge(event.status)}</div>
+                </div>
+                <div className="text-warning flex-shrink-0" style={{ fontSize: '2rem' }}>
+                  <i className="bi bi-flag-fill"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="card">
@@ -249,46 +373,181 @@ const EventDetail = () => {
           </ul>
         </div>
         <div className="card-body">
-          <div className="tab-content p-3">
+          <div className="tab-content">
             {activeTab === 'details' && (
-              <div>
-                <dl className="row">
-                  <dt className="col-sm-3">Event Type</dt>
-                  <dd className="col-sm-9">{event.event_type}</dd>
-
-                  <dt className="col-sm-3">Event Date</dt>
-                  <dd className="col-sm-9">{formatDate(event.event_date)}</dd>
-
-                  <dt className="col-sm-3">Time</dt>
-                  <dd className="col-sm-9">{formatTime(event.start_time)} - {formatTime(event.end_time)}</dd>
-
-                  <dt className="col-sm-3">Location</dt>
-                  <dd className="col-sm-9">{event.school?.name} - {event.location}</dd>
-
-                  <dt className="col-sm-3">Status</dt>
-                  <dd className="col-sm-9">{renderStatusBadge(event.status)}</dd>
-
-                  <dt className="col-sm-3">Description</dt>
-                  <dd className="col-sm-9">{event.description}</dd>
-                </dl>
+              <div className="row">
+                <div className="col-lg-6 mb-4">
+                  <div className="card h-100">
+                    <div className="card-header">
+                      <h5 className="mb-0">
+                        <i className="bi bi-info-circle me-2"></i>Event Information
+                      </h5>
+                    </div>
+                    <div className="card-body">
+                      <table className="table table-borderless">
+                        <tbody>
+                          <tr>
+                            <td className="text-muted" style={{ width: '40%' }}>
+                              <strong>Event Type</strong>
+                            </td>
+                            <td>
+                              <span className="badge bg-primary">{event.event_type}</span>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="text-muted">
+                              <strong>Event Date</strong>
+                            </td>
+                            <td>{formatDate(event.event_date)}</td>
+                          </tr>
+                          <tr>
+                            <td className="text-muted">
+                              <strong>Time</strong>
+                            </td>
+                            <td>
+                              <i className="bi bi-clock me-1"></i>
+                              {formatTime(event.start_time)} - {formatTime(event.end_time)}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="text-muted">
+                              <strong>Status</strong>
+                            </td>
+                            <td>{renderStatusBadge(event.status)}</td>
+                          </tr>
+                          <tr>
+                            <td className="text-muted">
+                              <strong>Description</strong>
+                            </td>
+                            <td>{event.description}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+                <div className="col-lg-6 mb-4">
+                  <div className="card h-100">
+                    <div className="card-header">
+                      <h5 className="mb-0">
+                        <i className="bi bi-geo-alt me-2"></i>Location Information
+                      </h5>
+                    </div>
+                    <div className="card-body">
+                      <table className="table table-borderless">
+                        <tbody>
+                          <tr>
+                            <td className="text-muted" style={{ width: '40%' }}>
+                              <strong>School</strong>
+                            </td>
+                            <td>
+                              {event.school?.name ? (
+                                <Link to={`/schools/${event.school.id}`} className="text-decoration-none">
+                                  <i className="bi bi-building me-1"></i>{event.school.name}
+                                </Link>
+                              ) : '-'}
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="text-muted">
+                              <strong>Venue</strong>
+                            </td>
+                            <td>{event.location}</td>
+                          </tr>
+                          <tr>
+                            <td className="text-muted">
+                              <strong>Province</strong>
+                            </td>
+                            <td>{event.school?.province_name || '-'}</td>
+                          </tr>
+                          <tr>
+                            <td className="text-muted">
+                              <strong>City/Regency</strong>
+                            </td>
+                            <td>{event.school?.city_name || '-'}</td>
+                          </tr>
+                          <tr>
+                            <td className="text-muted">
+                              <strong>District</strong>
+                            </td>
+                            <td>{event.school?.district_name || '-'}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
 
             {activeTab === 'participants' && (
-              <div>
-                <dl className="row">
-                  <dt className="col-sm-3">Instructor</dt>
-                  <dd className="col-sm-9">{event.instructor_name} ({event.instructor_phone})</dd>
-
-                  <dt className="col-sm-3">Target Audience</dt>
-                  <dd className="col-sm-9">{event.target_audience}</dd>
-
-                  <dt className="col-sm-3">Participants</dt>
-                  <dd className="col-sm-9">{event.attendees_count}</dd>
-
-                  <dt className="col-sm-3">Notes</dt>
-                  <dd className="col-sm-9">{event.notes || '-'}</dd>
-                </dl>
+              <div className="row">
+                <div className="col-lg-6 mb-4">
+                  <div className="card h-100">
+                    <div className="card-header">
+                      <h5 className="mb-0">
+                        <i className="bi bi-person-badge me-2"></i>Instructor Information
+                      </h5>
+                    </div>
+                    <div className="card-body">
+                      <table className="table table-borderless">
+                        <tbody>
+                          <tr>
+                            <td className="text-muted" style={{ width: '40%' }}>
+                              <strong>Instructor Name</strong>
+                            </td>
+                            <td><strong>{event.instructor_name}</strong></td>
+                          </tr>
+                          <tr>
+                            <td className="text-muted">
+                              <strong>Phone</strong>
+                            </td>
+                            <td>
+                              {event.instructor_phone ? (
+                                <a href={`tel:${event.instructor_phone}`} className="text-decoration-none">
+                                  <i className="bi bi-telephone me-1"></i>{event.instructor_phone}
+                                </a>
+                              ) : '-'}
+                            </td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+                <div className="col-lg-6 mb-4">
+                  <div className="card h-100">
+                    <div className="card-header">
+                      <h5 className="mb-0">
+                        <i className="bi bi-people me-2"></i>Participants Information
+                      </h5>
+                    </div>
+                    <div className="card-body">
+                      <table className="table table-borderless">
+                        <tbody>
+                          <tr>
+                            <td className="text-muted" style={{ width: '40%' }}>
+                              <strong>Target Audience</strong>
+                            </td>
+                            <td><span className="badge bg-info">{event.target_audience}</span></td>
+                          </tr>
+                          <tr>
+                            <td className="text-muted">
+                              <strong>Total Attendees</strong>
+                            </td>
+                            <td><strong>{event.attendees_count.toLocaleString()}</strong> participants</td>
+                          </tr>
+                          <tr>
+                            <td className="text-muted">
+                              <strong>Notes</strong>
+                            </td>
+                            <td>{event.notes || '-'}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
 
@@ -404,8 +663,36 @@ const EventDetail = () => {
             )}
           </div>
         </div>
-        <div className="card-footer text-muted">
-          Created on {new Date(event.created_at).toLocaleString()} | Last updated on {new Date(event.updated_at).toLocaleString()}
+      </div>
+
+      {/* Audit Information */}
+      <div className="card mt-4">
+        <div className="card-header">
+          <h5 className="mb-0">
+            <i className="bi bi-clock-history me-2"></i>Audit Information
+          </h5>
+        </div>
+        <div className="card-body">
+          <div className="row">
+            <div className="col-md-6">
+              <p className="mb-2">
+                <strong className="text-muted">Created At:</strong>{' '}
+                {new Date(event.created_at).toLocaleString()}
+              </p>
+              <p className="mb-0">
+                <strong className="text-muted">Created By:</strong> {event.created_by || '-'}
+              </p>
+            </div>
+            <div className="col-md-6">
+              <p className="mb-2">
+                <strong className="text-muted">Updated At:</strong>{' '}
+                {new Date(event.updated_at).toLocaleString()}
+              </p>
+              <p className="mb-0">
+                <strong className="text-muted">Updated By:</strong> {event.updated_by || '-'}
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 

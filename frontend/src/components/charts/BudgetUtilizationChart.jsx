@@ -24,7 +24,7 @@ const BudgetUtilizationChart = ({ data }) => {
   const budgetByEvent = {};
 
   data.forEach(budget => {
-    const eventName = budget.Event?.event_name || 'Unknown Event';
+    const eventName = budget.event?.title || 'Unknown Event';
     if (!budgetByEvent[eventName]) {
       budgetByEvent[eventName] = {
         budgetAmount: 0,

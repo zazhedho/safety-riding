@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import DashboardLayout from '../../components/common/DashboardLayout';
 import { useAuth } from '../../contexts/AuthContext';
 import { toast } from 'react-toastify';
-import { useNavigate } from 'react-router-dom';
 import ConfirmationModal from '../../components/common/ConfirmationModal';
 
 const Profile = () => {
@@ -82,44 +82,130 @@ const Profile = () => {
     return <span className={`badge ${variants[role] || 'bg-secondary'}`}>{role?.toUpperCase()}</span>;
   };
 
+  const formatDate = (dateString) => {
+    if (!dateString) return '-';
+    return new Date(dateString).toLocaleString();
+  };
+
   return (
     <DashboardLayout>
-      <h2>My Profile</h2>
-      
+      {/* Header */}
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <div>
+          <h2>My Profile</h2>
+          <nav aria-label="breadcrumb">
+            <ol className="breadcrumb mb-0">
+              <li className="breadcrumb-item">
+                <Link to="/dashboard">Dashboard</Link>
+              </li>
+              <li className="breadcrumb-item active">Profile</li>
+            </ol>
+          </nav>
+        </div>
+      </div>
+
+      {/* Profile Info Banner */}
+      <div className="alert alert-primary mb-4">
+        <div className="d-flex align-items-center">
+          <div className="flex-shrink-0 me-3">
+            <div className="bg-white rounded-circle d-flex align-items-center justify-content-center"
+                 style={{ width: '60px', height: '60px' }}>
+              <i className="bi bi-person-circle" style={{ fontSize: '3rem', color: 'var(--primary-color)' }}></i>
+            </div>
+          </div>
+          <div className="flex-grow-1">
+            <h4 className="alert-heading mb-1">
+              {user?.name}
+            </h4>
+            <p className="mb-0">
+              <i className="bi bi-envelope me-2"></i>{user?.email}
+              {user?.phone && (
+                <span className="ms-3">
+                  <i className="bi bi-telephone me-2"></i>{user.phone}
+                </span>
+              )}
+              <span className="ms-3">{getRoleBadge(user?.role)}</span>
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Current Information Card */}
       <div className="card mb-4">
+        <div className="card-header">
+          <h5 className="mb-0">
+            <i className="bi bi-info-circle me-2"></i>Account Information
+          </h5>
+        </div>
         <div className="card-body">
-          <h5 className="card-title">Current Information</h5>
-          <table className="table table-borderless">
-            <tbody>
-              <tr>
-                <td style={{ width: '150px' }}><strong>Name</strong></td>
-                <td>: {user?.name}</td>
-              </tr>
-              <tr>
-                <td><strong>Email</strong></td>
-                <td>: {user?.email}</td>
-              </tr>
-              <tr>
-                <td><strong>Phone</strong></td>
-                <td>: {user?.phone || '-'}</td>
-              </tr>
-              <tr>
-                <td><strong>Role</strong></td>
-                <td>: {getRoleBadge(user?.role)}</td>
-              </tr>
-            </tbody>
-          </table>
+          <div className="row">
+            <div className="col-lg-6">
+              <table className="table table-borderless">
+                <tbody>
+                  <tr>
+                    <td className="text-muted" style={{ width: '40%' }}>
+                      <strong><i className="bi bi-person me-2"></i>Name</strong>
+                    </td>
+                    <td>{user?.name}</td>
+                  </tr>
+                  <tr>
+                    <td className="text-muted">
+                      <strong><i className="bi bi-envelope me-2"></i>Email</strong>
+                    </td>
+                    <td>{user?.email}</td>
+                  </tr>
+                  <tr>
+                    <td className="text-muted">
+                      <strong><i className="bi bi-telephone me-2"></i>Phone</strong>
+                    </td>
+                    <td>{user?.phone || '-'}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div className="col-lg-6">
+              <table className="table table-borderless">
+                <tbody>
+                  <tr>
+                    <td className="text-muted" style={{ width: '40%' }}>
+                      <strong><i className="bi bi-shield-check me-2"></i>Role</strong>
+                    </td>
+                    <td>{getRoleBadge(user?.role)}</td>
+                  </tr>
+                  <tr>
+                    <td className="text-muted">
+                      <strong><i className="bi bi-clock-history me-2"></i>Created At</strong>
+                    </td>
+                    <td>{formatDate(user?.created_at)}</td>
+                  </tr>
+                  <tr>
+                    <td className="text-muted">
+                      <strong><i className="bi bi-arrow-repeat me-2"></i>Updated At</strong>
+                    </td>
+                    <td>{formatDate(user?.updated_at)}</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </div>
 
       <div className="row">
-        <div className="col-lg-6">
-          <div className="card">
+        {/* Update Profile */}
+        <div className="col-lg-6 mb-4">
+          <div className="card h-100 border-primary">
+            <div className="card-header bg-primary bg-opacity-10">
+              <h5 className="mb-0">
+                <i className="bi bi-pencil-square me-2"></i>Update Profile
+              </h5>
+            </div>
             <div className="card-body">
-              <h5 className="card-title">Update Profile</h5>
               <form onSubmit={handleProfileSubmit}>
                 <div className="mb-3">
-                  <label className="form-label">Name</label>
+                  <label className="form-label">
+                    <i className="bi bi-person me-2"></i>Name
+                  </label>
                   <input
                     type="text"
                     className="form-control"
@@ -127,10 +213,13 @@ const Profile = () => {
                     value={profileData.name}
                     onChange={handleProfileChange}
                     required
+                    placeholder="Enter your name"
                   />
                 </div>
                 <div className="mb-3">
-                  <label className="form-label">Email</label>
+                  <label className="form-label">
+                    <i className="bi bi-envelope me-2"></i>Email
+                  </label>
                   <input
                     type="email"
                     className="form-control"
@@ -138,30 +227,44 @@ const Profile = () => {
                     value={profileData.email}
                     onChange={handleProfileChange}
                     required
+                    placeholder="Enter your email"
                   />
                 </div>
                 <div className="mb-3">
-                  <label className="form-label">Phone</label>
+                  <label className="form-label">
+                    <i className="bi bi-telephone me-2"></i>Phone
+                  </label>
                   <input
                     type="text"
                     className="form-control"
                     name="phone"
                     value={profileData.phone}
                     onChange={handleProfileChange}
+                    placeholder="Enter your phone number"
                   />
                 </div>
-                <button type="submit" className="btn btn-primary">Save Changes</button>
+                <button type="submit" className="btn btn-primary w-100">
+                  <i className="bi bi-check-circle me-2"></i>Save Changes
+                </button>
               </form>
             </div>
           </div>
         </div>
+
+        {/* Change Password & Danger Zone */}
         <div className="col-lg-6">
-          <div className="card">
+          <div className="card mb-4 border-warning">
+            <div className="card-header bg-warning bg-opacity-10">
+              <h5 className="mb-0">
+                <i className="bi bi-key me-2"></i>Change Password
+              </h5>
+            </div>
             <div className="card-body">
-              <h5 className="card-title">Change Password</h5>
               <form onSubmit={handlePasswordSubmit}>
                 <div className="mb-3">
-                  <label className="form-label">Current Password</label>
+                  <label className="form-label">
+                    <i className="bi bi-lock me-2"></i>Current Password
+                  </label>
                   <input
                     type="password"
                     className="form-control"
@@ -169,10 +272,13 @@ const Profile = () => {
                     value={passwordData.currentPassword}
                     onChange={handlePasswordChange}
                     required
+                    placeholder="Enter current password"
                   />
                 </div>
                 <div className="mb-3">
-                  <label className="form-label">New Password</label>
+                  <label className="form-label">
+                    <i className="bi bi-lock-fill me-2"></i>New Password
+                  </label>
                   <input
                     type="password"
                     className="form-control"
@@ -180,10 +286,13 @@ const Profile = () => {
                     value={passwordData.newPassword}
                     onChange={handlePasswordChange}
                     required
+                    placeholder="Enter new password"
                   />
                 </div>
                 <div className="mb-3">
-                  <label className="form-label">Confirm New Password</label>
+                  <label className="form-label">
+                    <i className="bi bi-shield-lock me-2"></i>Confirm New Password
+                  </label>
                   <input
                     type="password"
                     className="form-control"
@@ -191,18 +300,33 @@ const Profile = () => {
                     value={passwordData.confirmPassword}
                     onChange={handlePasswordChange}
                     required
+                    placeholder="Confirm new password"
                   />
                 </div>
-                <button type="submit" className="btn btn-primary">Update Password</button>
+                <button type="submit" className="btn btn-warning w-100">
+                  <i className="bi bi-shield-check me-2"></i>Update Password
+                </button>
               </form>
             </div>
           </div>
-          <div className="card mt-4">
+
+          {/* Danger Zone */}
+          <div className="card border-danger">
+            <div className="card-header bg-danger text-white">
+              <h5 className="mb-0">
+                <i className="bi bi-exclamation-triangle me-2"></i>Danger Zone
+              </h5>
+            </div>
             <div className="card-body">
-              <h5 className="card-title text-danger">Danger Zone</h5>
-              <p>Permanently delete your account and all of your content.</p>
-              <button onClick={handleDeleteAccount} className="btn btn-danger">
-                Delete Account
+              <p className="text-muted mb-3">
+                <i className="bi bi-info-circle me-2"></i>
+                Once you delete your account, there is no going back. Please be certain.
+              </p>
+              <button
+                className="btn btn-danger w-100"
+                onClick={handleDeleteAccount}
+              >
+                <i className="bi bi-trash me-2"></i>Delete My Account
               </button>
             </div>
           </div>

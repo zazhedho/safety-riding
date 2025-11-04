@@ -25,9 +25,7 @@ func (r *repo) Create(event domainevent.Event) error {
 
 func (r *repo) GetByID(id string) (domainevent.Event, error) {
 	var event domainevent.Event
-	err := r.DB.Preload("Photos").Preload("School", func(db *gorm.DB) *gorm.DB {
-		return db.Select("id", "name")
-	}).Where("id = ?", id).First(&event).Error
+	err := r.DB.Preload("Photos").Preload("School").Where("id = ?", id).First(&event).Error
 	return event, err
 }
 
@@ -38,9 +36,7 @@ func (r *repo) Update(event domainevent.Event) error {
 func (r *repo) Fetch(params filter.BaseParams) (ret []domainevent.Event, totalData int64, err error) {
 	query := r.DB.Model(&domainevent.Event{}).
 		Preload("Photos").
-		Preload("School", func(db *gorm.DB) *gorm.DB {
-			return db.Select("id", "name")
-		}).Debug()
+		Preload("School").Debug()
 
 	if len(params.Columns) > 0 {
 		query = query.Select(params.Columns)

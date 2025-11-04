@@ -16,6 +16,7 @@ import AccidentForm from './pages/accidents/AccidentForm';
 import AccidentDetail from './pages/accidents/AccidentDetail';
 import BudgetList from './pages/budgets/BudgetList';
 import BudgetForm from './pages/budgets/BudgetForm';
+import BudgetDetail from './pages/budgets/BudgetDetail';
 import UserList from './pages/users/UserList';
 import UserForm from './pages/users/UserForm';
 import Profile from './pages/users/Profile';
@@ -180,6 +181,15 @@ function App() {
             element={
               <ProtectedRoute>
                 <BudgetForm />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/budgets/:id"
+            element={
+              <ProtectedRoute>
+                <BudgetDetail />
               </ProtectedRoute>
             }
           />
