@@ -24,8 +24,8 @@ const EventForm = () => {
     district_id: '',
     event_type: 'seminar',
     target_audience: '',
-    target_attendees: 0,
-    attendees_count: 0,
+    target_attendees: '',
+    attendees_count: '',
     instructor_name: '',
     instructor_phone: '',
     status: 'planned',
@@ -139,27 +139,40 @@ const EventForm = () => {
         setFormData(prev => ({ ...prev, [name]: value }));
       }
     } else if (name === 'attendees_count' || name === 'target_attendees') {
-      setFormData(prev => ({ ...prev, [name]: parseInt(value) || 0}));
+      // Allow empty string or valid number
+      setFormData(prev => ({ ...prev, [name]: value === '' ? '' : value }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
   };
 
+  // Handler to select all text on focus for number fields
+  const handleNumberFocus = (e) => {
+    e.target.select();
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    // Convert empty string to 0 for number fields before submitting
+    const submitData = {
+      ...formData,
+      target_attendees: formData.target_attendees === '' ? 0 : parseInt(formData.target_attendees) || 0,
+      attendees_count: formData.attendees_count === '' ? 0 : parseInt(formData.attendees_count) || 0
+    };
+
     // Validate: if status is "completed", attendees_count must be filled
-    if (formData.status === 'completed' && formData.attendees_count === 0) {
+    if (submitData.status === 'completed' && submitData.attendees_count === 0) {
       toast.error('Attendees Count must be greater than 0 when event status is Completed');
       return;
     }
 
     try {
       if (id) {
-        await eventService.update(id, formData);
+        await eventService.update(id, submitData);
         toast.success('Event updated successfully');
       } else {
-        await eventService.create(formData);
+        await eventService.create(submitData);
         toast.success('Event created successfully');
       }
       navigate('/events');
@@ -177,8 +190,10 @@ const EventForm = () => {
 
   // Calculate achievement percentage
   const calculateAchievement = () => {
-    if (!formData.target_attendees || formData.target_attendees === 0) return 0;
-    return Math.round((formData.attendees_count / formData.target_attendees) * 100);
+    const target = parseInt(formData.target_attendees) || 0;
+    const actual = parseInt(formData.attendees_count) || 0;
+    if (!target || target === 0) return 0;
+    return Math.round((actual / target) * 100);
   };
 
   // Get badge color based on achievement
@@ -295,7 +310,7 @@ const EventForm = () => {
             <div className="row">
               <div className="col-md-4 mb-3">
                 <label className="form-label">Target Attendees</label>
-                <input type="number" className="form-control" name="target_attendees" value={formData.target_attendees} onChange={handleChange} placeholder="e.g., 200" min="0" disabled={shouldDisable} />
+                <input type="number" className="form-control" name="target_attendees" value={formData.target_attendees} onChange={handleChange} onFocus={handleNumberFocus} placeholder="e.g., 200" min="0" disabled={shouldDisable} />
                 <small className="text-muted">
                   <i className="bi bi-info-circle me-1"></i>
                   Planned number of attendees for this event
@@ -306,7 +321,7 @@ const EventForm = () => {
                   Actual Attendees
                   {formData.status === 'completed' && <span className="text-danger"> *</span>}
                 </label>
-                <input type="number" className="form-control" name="attendees_count" value={formData.attendees_count} onChange={handleChange} placeholder="e.g., 150" min="0" disabled={shouldDisable} required={formData.status === 'completed'} />
+                <input type="number" className="form-control" name="attendees_count" value={formData.attendees_count} onChange={handleChange} onFocus={handleNumberFocus} placeholder="e.g., 150" min="0" disabled={shouldDisable} required={formData.status === 'completed'} />
                 <small className="text-muted">
                   <i className="bi bi-info-circle me-1"></i>
                   Actual number who attended (required when status is Completed)
