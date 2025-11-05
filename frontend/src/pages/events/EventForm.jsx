@@ -139,8 +139,10 @@ const EventForm = () => {
         setFormData(prev => ({ ...prev, [name]: value }));
       }
     } else if (name === 'attendees_count' || name === 'target_attendees') {
-      // Allow empty string or valid number
-      setFormData(prev => ({ ...prev, [name]: value === '' ? '' : value }));
+      // Allow empty string or valid positive number only
+      if (value === '' || (value >= 0 && !value.includes('-'))) {
+        setFormData(prev => ({ ...prev, [name]: value }));
+      }
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
@@ -149,6 +151,14 @@ const EventForm = () => {
   // Handler to select all text on focus for number fields
   const handleNumberFocus = (e) => {
     e.target.select();
+  };
+
+  // Handler to prevent negative number input (block minus/dash key)
+  const handleNumberKeyDown = (e) => {
+    // Block minus/dash (-), plus (+), and 'e' keys for number inputs
+    if (e.key === '-' || e.key === '+' || e.key === 'e' || e.key === 'E') {
+      e.preventDefault();
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -310,7 +320,7 @@ const EventForm = () => {
             <div className="row">
               <div className="col-md-4 mb-3">
                 <label className="form-label">Target Attendees</label>
-                <input type="number" className="form-control" name="target_attendees" value={formData.target_attendees} onChange={handleChange} onFocus={handleNumberFocus} placeholder="e.g., 200" min="0" disabled={shouldDisable} />
+                <input type="number" className="form-control" name="target_attendees" value={formData.target_attendees} onChange={handleChange} onFocus={handleNumberFocus} onKeyDown={handleNumberKeyDown} placeholder="e.g., 200" min="0" disabled={shouldDisable} />
                 <small className="text-muted">
                   <i className="bi bi-info-circle me-1"></i>
                   Planned number of attendees for this event
@@ -321,7 +331,7 @@ const EventForm = () => {
                   Actual Attendees
                   {formData.status === 'completed' && <span className="text-danger"> *</span>}
                 </label>
-                <input type="number" className="form-control" name="attendees_count" value={formData.attendees_count} onChange={handleChange} onFocus={handleNumberFocus} placeholder="e.g., 150" min="0" disabled={shouldDisable} required={formData.status === 'completed'} />
+                <input type="number" className="form-control" name="attendees_count" value={formData.attendees_count} onChange={handleChange} onFocus={handleNumberFocus} onKeyDown={handleNumberKeyDown} placeholder="e.g., 150" min="0" disabled={shouldDisable} required={formData.status === 'completed'} />
                 <small className="text-muted">
                   <i className="bi bi-info-circle me-1"></i>
                   Actual number who attended (required when status is Completed)
