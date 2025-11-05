@@ -1,18 +1,20 @@
 const DistrictRecommendation = ({ schools, events, accidents }) => {
   // Calculate recommendation based on uneducated schools
   const getUneducatedSchoolsRecommendation = () => {
-    // Get school IDs that have events
-    const educatedSchoolIds = new Set(events.map(evt => evt.school_id));
-
     // Group uneducated schools by district
     const uneducatedByDistrict = {};
 
     schools.forEach(school => {
-      if (!educatedSchoolIds.has(school.id)) {
-        const districtKey = `${school.district_id || 'unknown'}`;
+      // Use the is_educated field from the school data (calculated by backend)
+      const isEducated = school.is_educated === true;
+
+      if (!isEducated) {
+        // Use composite key: district_name + city_name for more accurate grouping
+        // This prevents schools in the same district from being split due to missing/inconsistent district_id
         const districtName = school.district_name || 'Unknown District';
         const cityName = school.city_name || 'Unknown City';
         const provinceName = school.province_name || 'Unknown Province';
+        const districtKey = `${districtName}|${cityName}|${provinceName}`;
 
         if (!uneducatedByDistrict[districtKey]) {
           uneducatedByDistrict[districtKey] = {
@@ -26,13 +28,14 @@ const DistrictRecommendation = ({ schools, events, accidents }) => {
         }
 
         uneducatedByDistrict[districtKey].count++;
-        uneducatedByDistrict[districtKey].schools.push(school.name);
+        uneducatedByDistrict[districtKey].schools.push(school.name || 'Unnamed School');
       }
     });
 
     // Sort by count and get top recommendation
+    // Filter out only if district_name is truly unknown
     const sorted = Object.values(uneducatedByDistrict)
-      .filter(d => d.district_id && d.district_id !== 'unknown')
+      .filter(d => d.district_name && d.district_name !== 'Unknown District')
       .sort((a, b) => b.count - a.count);
 
     return sorted.length > 0 ? sorted[0] : null;
@@ -44,10 +47,11 @@ const DistrictRecommendation = ({ schools, events, accidents }) => {
     const accidentsByDistrict = {};
 
     accidents.forEach(accident => {
-      const districtKey = `${accident.district_id || 'unknown'}`;
+      // Use composite key: district_name + city_name for more accurate grouping
       const districtName = accident.district_name || 'Unknown District';
       const cityName = accident.city_name || 'Unknown City';
       const provinceName = accident.province_name || 'Unknown Province';
+      const districtKey = `${districtName}|${cityName}|${provinceName}`;
 
       if (!accidentsByDistrict[districtKey]) {
         accidentsByDistrict[districtKey] = {
@@ -67,8 +71,9 @@ const DistrictRecommendation = ({ schools, events, accidents }) => {
     });
 
     // Sort by count and get top recommendation
+    // Filter out only if district_name is truly unknown
     const sorted = Object.values(accidentsByDistrict)
-      .filter(d => d.district_id && d.district_id !== 'unknown')
+      .filter(d => d.district_name && d.district_name !== 'Unknown District')
       .sort((a, b) => b.count - a.count);
 
     return sorted.length > 0 ? sorted[0] : null;
@@ -120,6 +125,23 @@ const DistrictRecommendation = ({ schools, events, accidents }) => {
                   This district has <strong>{uneducatedRec.count} schools</strong> that have never received safety riding education.
                   Organizing an event here would maximize impact.
                 </p>
+              </div>
+
+              <div className="recommendation-details mb-3">
+                <h6 className="text-muted mb-2">
+                  <i className="bi bi-building me-2"></i>Uneducated Schools:
+                </h6>
+                <div className="alert alert-light mb-0 small">
+                  {uneducatedRec.schools && uneducatedRec.schools.length > 0 ? (
+                    <ol className="mb-0 ps-3">
+                      {uneducatedRec.schools.map((schoolName, idx) => (
+                        <li key={`school-${idx}-${schoolName}`}>{schoolName}</li>
+                      ))}
+                    </ol>
+                  ) : (
+                    <p className="mb-0 text-muted">No schools listed</p>
+                  )}
+                </div>
               </div>
 
               <div className="recommendation-details">

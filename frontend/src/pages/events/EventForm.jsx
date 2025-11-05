@@ -36,6 +36,7 @@ const EventForm = () => {
   const [districts, setDistricts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isFinalized, setIsFinalized] = useState(false);
+  const [showOtherEventType, setShowOtherEventType] = useState(false);
 
   useEffect(() => {
     fetchSchools();
@@ -68,6 +69,12 @@ const EventForm = () => {
       // Check if event status is final (completed or cancelled)
       const finalStatuses = ['completed', 'cancelled'];
       setIsFinalized(finalStatuses.includes(eventData.status?.toLowerCase()));
+
+      // Check if event_type is a custom value (not one of the predefined options)
+      const predefinedTypes = ['seminar', 'workshop', 'training'];
+      if (eventData.event_type && !predefinedTypes.includes(eventData.event_type.toLowerCase())) {
+        setShowOtherEventType(true);
+      }
     } catch (error) {
       toast.error('Failed to fetch event');
     } finally {
@@ -112,8 +119,25 @@ const EventForm = () => {
   };
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    if (name === 'attendees_count') {
+    const { name, value, tagName } = e.target;
+
+    // Handle event_type field with "other" option
+    if (name === 'event_type') {
+      // If it's a SELECT element (dropdown)
+      if (tagName === 'SELECT') {
+        if (value === 'other') {
+          setShowOtherEventType(true);
+          setFormData(prev => ({ ...prev, [name]: '' }));
+        } else {
+          setShowOtherEventType(false);
+          setFormData(prev => ({ ...prev, [name]: value }));
+        }
+      }
+      // If it's an INPUT element (text field for "other")
+      else {
+        setFormData(prev => ({ ...prev, [name]: value }));
+      }
+    } else if (name === 'attendees_count') {
       setFormData(prev => ({ ...prev, [name]: parseInt(value)}));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
@@ -226,12 +250,15 @@ const EventForm = () => {
             <div className="row">
               <div className="col-md-6 mb-3">
                 <label className="form-label">Event Type</label>
-                <select className="form-select" name="event_type" value={formData.event_type} onChange={handleChange} required disabled={shouldDisable}>
+                <select className="form-select" name="event_type" value={showOtherEventType ? 'other' : formData.event_type} onChange={handleChange} required disabled={shouldDisable}>
                   <option value="seminar">Seminar</option>
                   <option value="workshop">Workshop</option>
                   <option value="training">Training</option>
                   <option value="other">Other</option>
                 </select>
+                {showOtherEventType && (
+                  <input type="text" className="form-control mt-2" name="event_type" value={formData.event_type} onChange={handleChange} placeholder="Enter event type" required disabled={shouldDisable} />
+                )}
               </div>
               <div className="col-md-6 mb-3">
                 <label className="form-label">Target Audience</label>

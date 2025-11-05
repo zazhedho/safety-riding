@@ -108,19 +108,28 @@ const AccidentForm = () => {
   };
 
   const handleChange = (e) => {
-    const { name, value, type } = e.target;
+    const { name, value, type, tagName } = e.target;
+
+    // Check if this is one of the fields with "other" option
     if (['road_type', 'weather_condition', 'road_condition', 'vehicle_type', 'accident_type'].includes(name)) {
-      if (value === 'other') {
-        setOtherState(prev => ({ ...prev, [name]: true }));
-        setFormData(prev => ({ ...prev, [name]: '' }));
-      } else {
-        setOtherState(prev => ({ ...prev, [name]: false }));
+      // If it's a SELECT element (dropdown)
+      if (tagName === 'SELECT') {
+        if (value === 'other') {
+          setOtherState(prev => ({ ...prev, [name]: true }));
+          setFormData(prev => ({ ...prev, [name]: '' }));
+        } else {
+          setOtherState(prev => ({ ...prev, [name]: false }));
+          setFormData(prev => ({ ...prev, [name]: value }));
+        }
+      }
+      // If it's an INPUT element (text field for "other")
+      else {
         setFormData(prev => ({ ...prev, [name]: value }));
       }
     } else {
-      setFormData(prev => ({ 
-        ...prev, 
-        [name]: type === 'number' ? parseInt(value, 10) : value 
+      setFormData(prev => ({
+        ...prev,
+        [name]: type === 'number' ? parseInt(value, 10) : value
       }));
     }
   };
