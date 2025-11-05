@@ -17,6 +17,13 @@ const Register = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [focusedInput, setFocusedInput] = useState(null);
   const [passwordStrength, setPasswordStrength] = useState(0);
+  const [passwordValidation, setPasswordValidation] = useState({
+    minLength: false,
+    hasLowercase: false,
+    hasUppercase: false,
+    hasNumber: false,
+    hasSymbol: false
+  });
   const { register } = useAuth();
   const navigate = useNavigate();
 
@@ -24,13 +31,22 @@ const Register = () => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
 
-    // Calculate password strength
+    // Calculate password strength and validation
     if (name === 'password') {
+      const validation = {
+        minLength: value.length >= 8,
+        hasLowercase: /[a-z]/.test(value),
+        hasUppercase: /[A-Z]/.test(value),
+        hasNumber: /[0-9]/.test(value),
+        hasSymbol: /[^a-zA-Z0-9]/.test(value)
+      };
+      setPasswordValidation(validation);
+
       let strength = 0;
-      if (value.length >= 8) strength++;
-      if (/[a-z]/.test(value) && /[A-Z]/.test(value)) strength++;
-      if (/[0-9]/.test(value)) strength++;
-      if (/[^a-zA-Z0-9]/.test(value)) strength++;
+      if (validation.minLength) strength++;
+      if (validation.hasLowercase && validation.hasUppercase) strength++;
+      if (validation.hasNumber) strength++;
+      if (validation.hasSymbol) strength++;
       setPasswordStrength(strength);
     }
   };
@@ -41,6 +57,14 @@ const Register = () => {
       toast.error('Passwords do not match');
       return;
     }
+
+    // Validate password requirements
+    const allRequirementsMet = Object.values(passwordValidation).every(val => val === true);
+    if (!allRequirementsMet) {
+      toast.error('Password does not meet all requirements');
+      return;
+    }
+
     setLoading(true);
 
     const result = await register({
@@ -400,9 +424,32 @@ const Register = () => {
                       }}
                     ></div>
                   </div>
-                  <small style={{ color: getStrengthColor(), fontSize: '0.8rem' }}>
-                    {getStrengthText()}
-                  </small>
+                  <div className="mt-2">
+                    <small className="d-block fw-bold mb-1" style={{ color: '#495057' }}>Password Requirements:</small>
+                    <small className={`d-block ${passwordValidation.minLength ? 'text-success' : 'text-danger'}`} style={{ fontSize: '0.75rem' }}>
+                      <i className={`bi bi-${passwordValidation.minLength ? 'check-circle-fill' : 'x-circle-fill'} me-1`}></i>
+                      Minimum 8 characters
+                    </small>
+                    <small className={`d-block ${passwordValidation.hasLowercase ? 'text-success' : 'text-danger'}`} style={{ fontSize: '0.75rem' }}>
+                      <i className={`bi bi-${passwordValidation.hasLowercase ? 'check-circle-fill' : 'x-circle-fill'} me-1`}></i>
+                      At least 1 lowercase letter (a-z)
+                    </small>
+                    <small className={`d-block ${passwordValidation.hasUppercase ? 'text-success' : 'text-danger'}`} style={{ fontSize: '0.75rem' }}>
+                      <i className={`bi bi-${passwordValidation.hasUppercase ? 'check-circle-fill' : 'x-circle-fill'} me-1`}></i>
+                      At least 1 uppercase letter (A-Z)
+                    </small>
+                    <small className={`d-block ${passwordValidation.hasNumber ? 'text-success' : 'text-danger'}`} style={{ fontSize: '0.75rem' }}>
+                      <i className={`bi bi-${passwordValidation.hasNumber ? 'check-circle-fill' : 'x-circle-fill'} me-1`}></i>
+                      At least 1 number (0-9)
+                    </small>
+                    <small className={`d-block ${passwordValidation.hasSymbol ? 'text-success' : 'text-danger'}`} style={{ fontSize: '0.75rem' }}>
+                      <i className={`bi bi-${passwordValidation.hasSymbol ? 'check-circle-fill' : 'x-circle-fill'} me-1`}></i>
+                      At least 1 symbol (!@#$%^&*...)
+                    </small>
+                    <small className="d-block mt-1" style={{ color: getStrengthColor(), fontSize: '0.8rem', fontWeight: '600' }}>
+                      Strength: {getStrengthText()}
+                    </small>
+                  </div>
                 </div>
               )}
             </div>
