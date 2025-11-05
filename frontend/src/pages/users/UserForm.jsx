@@ -24,6 +24,8 @@ const UserForm = () => {
   const [loading, setLoading] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [roles, setRoles] = useState([]);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordValidation, setPasswordValidation] = useState({
     minLength: false,
     hasLowercase: false,
@@ -210,15 +212,27 @@ const UserForm = () => {
             <h5>{id ? 'Change Password (Optional)' : 'Password'}</h5>
             <div className="mb-3">
               <label className="form-label">Password</label>
-              <input
-                type="password"
-                className="form-control"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder={id ? 'Leave blank to keep current password' : 'Enter a strong password'}
-                required={!id}
-              />
+              <div className="position-relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  className="form-control"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder={id ? 'Leave blank to keep current password' : 'Enter a strong password'}
+                  style={{ paddingRight: '2.5rem' }}
+                  required={!id}
+                />
+                <button
+                  type="button"
+                  className="btn btn-link position-absolute end-0 top-50 translate-middle-y"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{ textDecoration: 'none', color: '#6c757d' }}
+                  tabIndex={-1}
+                >
+                  <i className={`bi bi-eye${showPassword ? '-slash' : ''}`}></i>
+                </button>
+              </div>
               {formData.password && (
                 <div className="mt-2 p-3 bg-light rounded">
                   <small className="d-block fw-bold mb-2 text-secondary">Password Requirements:</small>
@@ -255,15 +269,27 @@ const UserForm = () => {
             </div>
             <div className="mb-3">
               <label className="form-label">Confirm Password</label>
-              <input
-                type="password"
-                className="form-control"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                placeholder={id ? 'Confirm new password' : 'Confirm your password'}
-                required={!id}
-              />
+              <div className="position-relative">
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  className="form-control"
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  placeholder={id ? 'Confirm new password' : 'Confirm your password'}
+                  style={{ paddingRight: '2.5rem' }}
+                  required={!id}
+                />
+                <button
+                  type="button"
+                  className="btn btn-link position-absolute end-0 top-50 translate-middle-y"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  style={{ textDecoration: 'none', color: '#6c757d' }}
+                  tabIndex={-1}
+                >
+                  <i className={`bi bi-eye${showConfirmPassword ? '-slash' : ''}`}></i>
+                </button>
+              </div>
               {formData.confirmPassword && formData.password !== formData.confirmPassword && (
                 <small className="text-danger d-block mt-1">
                   <i className="bi bi-exclamation-circle me-1"></i>
