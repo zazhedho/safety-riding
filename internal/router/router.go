@@ -8,6 +8,7 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"gorm.io/gorm"
 
+	"safety-riding/infrastructure/database"
 	"safety-riding/infrastructure/media"
 	accidentHandler "safety-riding/internal/handlers/http/accident"
 	budgetHandler "safety-riding/internal/handlers/http/budget"
@@ -20,6 +21,7 @@ import (
 	provinceHandler "safety-riding/internal/handlers/http/province"
 	roleHandler "safety-riding/internal/handlers/http/role"
 	schoolHandler "safety-riding/internal/handlers/http/school"
+	sessionHandler "safety-riding/internal/handlers/http/session"
 	userHandler "safety-riding/internal/handlers/http/user"
 	accidentRepo "safety-riding/internal/repositories/accident"
 	authRepo "safety-riding/internal/repositories/auth"
@@ -30,6 +32,7 @@ import (
 	permissionRepo "safety-riding/internal/repositories/permission"
 	roleRepo "safety-riding/internal/repositories/role"
 	schoolRepo "safety-riding/internal/repositories/school"
+	sessionRepo "safety-riding/internal/repositories/session"
 	userRepo "safety-riding/internal/repositories/user"
 	accidentSvc "safety-riding/internal/services/accident"
 	budgetSvc "safety-riding/internal/services/budget"
@@ -42,6 +45,7 @@ import (
 	provinsiSvc "safety-riding/internal/services/province"
 	roleSvc "safety-riding/internal/services/role"
 	schoolSvc "safety-riding/internal/services/school"
+	sessionSvc "safety-riding/internal/services/session"
 	userSvc "safety-riding/internal/services/user"
 	"safety-riding/middlewares"
 	"safety-riding/pkg/logger"
@@ -314,4 +318,28 @@ func (r *Routes) MenuRoutes() {
 		menu.PUT("/:id", h.Update)
 		menu.DELETE("/:id", h.Delete)
 	}
+}
+
+func (r *Routes) SessionRoutes() {
+	// Check if Redis is available
+	redisClient := database.GetRedisClient()
+	if redisClient == nil {
+		logger.WriteLog(logger.LogLevelWarning, "Redis not available, session routes will not be registered")
+		return
+	}
+
+	repo := sessionRepo.NewSessionRepository(redisClient)
+	svc := sessionSvc.NewSessionService(repo)
+	h := sessionHandler.NewSessionHandler(svc)
+	mdw := middlewares.NewMiddleware(authRepo.NewBlacklistRepo(r.DB))
+
+	// Session management endpoints (authenticated users only)
+	sessionGroup := r.App.Group("/api/user").Use(mdw.AuthMiddleware())
+	{
+		sessionGroup.GET("/sessions", h.GetActiveSessions)
+		sessionGroup.DELETE("/session/:session_id", h.RevokeSession)
+		sessionGroup.POST("/sessions/revoke-others", h.RevokeAllOtherSessions)
+	}
+
+	logger.WriteLog(logger.LogLevelInfo, "Session management routes registered")
 }

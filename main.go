@@ -89,12 +89,23 @@ func main() {
 	logger.WriteLog(logger.LogLevelDebug, fmt.Sprintf("ConfigID: %s", confID))
 
 	runMigration()
+
+	// Initialize Redis for session management
+	redisClient, err := database.InitRedis()
+	if err != nil {
+		logger.WriteLog(logger.LogLevelWarning, "Redis not available, session management will be disabled")
+	} else {
+		defer database.CloseRedis()
+		logger.WriteLog(logger.LogLevelInfo, "✓ Redis initialized, session management enabled")
+	}
+
 	routes := router.NewRoutes()
 
 	routes.DB, sqlDb, err = database.ConnDb()
 	FailOnError(err, "Failed to open db")
 	defer sqlDb.Close()
 
+	// Register all routes
 	routes.UserRoutes()
 	routes.SchoolRoutes()
 	routes.ProvinceRoutes()
@@ -107,6 +118,13 @@ func main() {
 	routes.RoleRoutes()
 	routes.PermissionRoutes()
 	routes.MenuRoutes()
+
+	// Register session routes if Redis is available
+	if redisClient != nil {
+		routes.SessionRoutes()
+	}
+
+	logger.WriteLog(logger.LogLevelInfo, "✓ All routes registered successfully")
 
 	err = routes.App.Run(fmt.Sprintf(":%s", port))
 	FailOnError(err, "Failed run service")
