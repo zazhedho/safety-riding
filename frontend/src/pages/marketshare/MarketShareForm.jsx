@@ -196,40 +196,60 @@ const MarketShareForm = () => {
             <h5 className="mt-3">Company Sales</h5>
             <div className="row">
               <div className="col-md-3 mb-3">
-                <label>Monthly Sales</label>
-                <input type="number" step="0.01" className="form-control" name="monthly_sales" value={formData.monthly_sales} onChange={handleChange} onFocus={handleNumberFocus} onKeyDown={handleNumberKeyDown} placeholder="e.g., 50000000" min="0" required />
+                <label>
+                  Monthly Sales
+                  <i className="bi bi-info-circle-fill ms-1 text-info" title="Number of units sold (not currency)" style={{ fontSize: '0.9rem', cursor: 'help' }}></i>
+                </label>
+                <input type="number" step="0.01" className="form-control" name="monthly_sales" value={formData.monthly_sales} onChange={handleChange} onFocus={handleNumberFocus} onKeyDown={handleNumberKeyDown} placeholder="e.g., 150 units" min="0" required />
+                <small className="text-muted">Units sold in the month</small>
               </div>
               <div className="col-md-3 mb-3">
                 <label>Monthly %</label>
                 <input type="number" step="0.01" className="form-control" name="monthly_sales_percentage" value={formData.monthly_sales_percentage} onChange={handleChange} onFocus={handleNumberFocus} onKeyDown={handleNumberKeyDown} placeholder="e.g., 45.5" min="0" max="100" required />
+                <small className="text-muted">Market share percentage</small>
               </div>
               <div className="col-md-3 mb-3">
-                <label>Yearly Sales</label>
-                <input type="number" step="0.01" className="form-control" name="yearly_sales" value={formData.yearly_sales} onChange={handleChange} onFocus={handleNumberFocus} onKeyDown={handleNumberKeyDown} placeholder="e.g., 600000000" min="0" required />
+                <label>
+                  Yearly Sales
+                  <i className="bi bi-info-circle-fill ms-1 text-info" title="Number of units sold (not currency)" style={{ fontSize: '0.9rem', cursor: 'help' }}></i>
+                </label>
+                <input type="number" step="0.01" className="form-control" name="yearly_sales" value={formData.yearly_sales} onChange={handleChange} onFocus={handleNumberFocus} onKeyDown={handleNumberKeyDown} placeholder="e.g., 1800 units" min="0" required />
+                <small className="text-muted">Units sold in the year</small>
               </div>
               <div className="col-md-3 mb-3">
                 <label>Yearly %</label>
                 <input type="number" step="0.01" className="form-control" name="yearly_sales_percentage" value={formData.yearly_sales_percentage} onChange={handleChange} onFocus={handleNumberFocus} onKeyDown={handleNumberKeyDown} placeholder="e.g., 42.3" min="0" max="100" required />
+                <small className="text-muted">Market share percentage</small>
               </div>
             </div>
 
             <h5 className="mt-3">Competitor Sales</h5>
             <div className="row">
               <div className="col-md-3 mb-3">
-                <label>Monthly Sales</label>
-                <input type="number" step="0.01" className="form-control" name="monthly_competitor_sales" value={formData.monthly_competitor_sales} onChange={handleChange} onFocus={handleNumberFocus} onKeyDown={handleNumberKeyDown} placeholder="e.g., 60000000" min="0" required />
+                <label>
+                  Monthly Sales
+                  <i className="bi bi-info-circle-fill ms-1 text-info" title="Number of units sold (not currency)" style={{ fontSize: '0.9rem', cursor: 'help' }}></i>
+                </label>
+                <input type="number" step="0.01" className="form-control" name="monthly_competitor_sales" value={formData.monthly_competitor_sales} onChange={handleChange} onFocus={handleNumberFocus} onKeyDown={handleNumberKeyDown} placeholder="e.g., 180 units" min="0" required />
+                <small className="text-muted">Competitor units sold in the month</small>
               </div>
               <div className="col-md-3 mb-3">
                 <label>Monthly %</label>
                 <input type="number" step="0.01" className="form-control" name="monthly_competitor_percentage" value={formData.monthly_competitor_percentage} onChange={handleChange} onFocus={handleNumberFocus} onKeyDown={handleNumberKeyDown} placeholder="e.g., 54.5" min="0" max="100" required />
+                <small className="text-muted">Competitor market share percentage</small>
               </div>
               <div className="col-md-3 mb-3">
-                <label>Yearly Sales</label>
-                <input type="number" step="0.01" className="form-control" name="yearly_competitor_sales" value={formData.yearly_competitor_sales} onChange={handleChange} onFocus={handleNumberFocus} onKeyDown={handleNumberKeyDown} placeholder="e.g., 820000000" min="0" required />
+                <label>
+                  Yearly Sales
+                  <i className="bi bi-info-circle-fill ms-1 text-info" title="Number of units sold (not currency)" style={{ fontSize: '0.9rem', cursor: 'help' }}></i>
+                </label>
+                <input type="number" step="0.01" className="form-control" name="yearly_competitor_sales" value={formData.yearly_competitor_sales} onChange={handleChange} onFocus={handleNumberFocus} onKeyDown={handleNumberKeyDown} placeholder="e.g., 2450 units" min="0" required />
+                <small className="text-muted">Competitor units sold in the year</small>
               </div>
               <div className="col-md-3 mb-3">
                 <label>Yearly %</label>
                 <input type="number" step="0.01" className="form-control" name="yearly_competitor_percentage" value={formData.yearly_competitor_percentage} onChange={handleChange} onFocus={handleNumberFocus} onKeyDown={handleNumberKeyDown} placeholder="e.g., 57.7" min="0" max="100" required />
+                <small className="text-muted">Competitor market share percentage</small>
               </div>
             </div>
 
