@@ -24,7 +24,8 @@ const EventForm = () => {
     district_id: '',
     event_type: 'seminar',
     target_audience: '',
-    attendees_count: 0,
+    target_attendees: '',
+    attendees_count: '',
     instructor_name: '',
     instructor_phone: '',
     status: 'planned',
@@ -137,21 +138,51 @@ const EventForm = () => {
       else {
         setFormData(prev => ({ ...prev, [name]: value }));
       }
-    } else if (name === 'attendees_count') {
-      setFormData(prev => ({ ...prev, [name]: parseInt(value)}));
+    } else if (name === 'attendees_count' || name === 'target_attendees') {
+      // Allow empty string or valid positive number only
+      if (value === '' || (value >= 0 && !value.includes('-'))) {
+        setFormData(prev => ({ ...prev, [name]: value }));
+      }
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
   };
 
+  // Handler to select all text on focus for number fields
+  const handleNumberFocus = (e) => {
+    e.target.select();
+  };
+
+  // Handler to prevent negative number input (block minus/dash key)
+  const handleNumberKeyDown = (e) => {
+    // Block minus/dash (-), plus (+), and 'e' keys for number inputs
+    if (e.key === '-' || e.key === '+' || e.key === 'e' || e.key === 'E') {
+      e.preventDefault();
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Convert empty string to 0 for number fields before submitting
+    const submitData = {
+      ...formData,
+      target_attendees: formData.target_attendees === '' ? 0 : parseInt(formData.target_attendees) || 0,
+      attendees_count: formData.attendees_count === '' ? 0 : parseInt(formData.attendees_count) || 0
+    };
+
+    // Validate: if status is "completed", attendees_count must be filled
+    if (submitData.status === 'completed' && submitData.attendees_count === 0) {
+      toast.error('Attendees Count must be greater than 0 when event status is Completed');
+      return;
+    }
+
     try {
       if (id) {
-        await eventService.update(id, formData);
+        await eventService.update(id, submitData);
         toast.success('Event updated successfully');
       } else {
-        await eventService.create(formData);
+        await eventService.create(submitData);
         toast.success('Event created successfully');
       }
       navigate('/events');
@@ -166,6 +197,27 @@ const EventForm = () => {
 
   const isAdmin = hasRole(['admin']);
   const shouldDisable = isFinalized && !isAdmin;
+
+  // Calculate achievement percentage
+  const calculateAchievement = () => {
+    const target = parseInt(formData.target_attendees) || 0;
+    const actual = parseInt(formData.attendees_count) || 0;
+    if (!target || target === 0) return 0;
+    return Math.round((actual / target) * 100);
+  };
+
+  // Get badge color based on achievement
+  const getAchievementBadge = () => {
+    const achievement = calculateAchievement();
+    if (achievement === 0) return { color: 'secondary', text: 'No Data' };
+    if (achievement < 50) return { color: 'danger', text: `${achievement}% - Poor` };
+    if (achievement < 75) return { color: 'warning', text: `${achievement}% - Below Target` };
+    if (achievement < 100) return { color: 'info', text: `${achievement}% - Good` };
+    if (achievement === 100) return { color: 'success', text: `${achievement}% - Perfect!` };
+    return { color: 'primary', text: `${achievement}% - Exceeded!` };
+  };
+
+  const achievementBadge = getAchievementBadge();
 
   return (
     <DashboardLayout>
@@ -267,14 +319,45 @@ const EventForm = () => {
             </div>
             <div className="row">
               <div className="col-md-4 mb-3">
-                <label className="form-label">Attendees Count</label>
-                <input type="number" className="form-control" name="attendees_count" value={formData.attendees_count} onChange={handleChange} placeholder="e.g., 150" min="0" disabled={shouldDisable} />
+                <label className="form-label">Target Attendees</label>
+                <input type="number" className="form-control" name="target_attendees" value={formData.target_attendees} onChange={handleChange} onFocus={handleNumberFocus} onKeyDown={handleNumberKeyDown} placeholder="e.g., 200" min="0" disabled={shouldDisable} />
+                <small className="text-muted">
+                  <i className="bi bi-info-circle me-1"></i>
+                  Planned number of attendees for this event
+                </small>
               </div>
               <div className="col-md-4 mb-3">
+                <label className="form-label">
+                  Actual Attendees
+                  {formData.status === 'completed' && <span className="text-danger"> *</span>}
+                </label>
+                <input type="number" className="form-control" name="attendees_count" value={formData.attendees_count} onChange={handleChange} onFocus={handleNumberFocus} onKeyDown={handleNumberKeyDown} placeholder="e.g., 150" min="0" disabled={shouldDisable} required={formData.status === 'completed'} />
+                <small className="text-muted">
+                  <i className="bi bi-info-circle me-1"></i>
+                  Actual number who attended (required when status is Completed)
+                </small>
+              </div>
+              <div className="col-md-4 mb-3">
+                <label className="form-label">Achievement</label>
+                <div className="d-flex align-items-center" style={{ height: '38px' }}>
+                  <span className={`badge bg-${achievementBadge.color} fs-6 px-3 py-2`}>
+                    <i className="bi bi-graph-up-arrow me-2"></i>
+                    {achievementBadge.text}
+                  </span>
+                </div>
+                {formData.target_attendees > 0 && formData.attendees_count > 0 && (
+                  <small className="text-muted d-block mt-1">
+                    {formData.attendees_count} of {formData.target_attendees} attendees
+                  </small>
+                )}
+              </div>
+            </div>
+            <div className="row">
+              <div className="col-md-6 mb-3">
                 <label className="form-label">Instructor Name</label>
                 <input type="text" className="form-control" name="instructor_name" value={formData.instructor_name} onChange={handleChange} placeholder="e.g., John Doe" disabled={shouldDisable} />
               </div>
-              <div className="col-md-4 mb-3">
+              <div className="col-md-6 mb-3">
                 <label className="form-label">Instructor Phone</label>
                 <input type="text" className="form-control" name="instructor_phone" value={formData.instructor_phone} onChange={handleChange} placeholder="e.g., 081234567890" disabled={shouldDisable} />
               </div>

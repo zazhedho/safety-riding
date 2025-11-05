@@ -2,6 +2,7 @@ package user
 
 import (
 	"errors"
+	"regexp"
 	"safety-riding/internal/domain/auth"
 	"safety-riding/internal/domain/user"
 	"safety-riding/internal/dto"
@@ -33,11 +34,52 @@ func NewUserService(userRepo interfaceuser.RepoUserInterface, blacklistRepo inte
 	}
 }
 
+// ValidatePasswordStrength validates password strength requirements
+// Password must contain:
+// - At least 8 characters
+// - At least 1 lowercase letter (a-z)
+// - At least 1 uppercase letter (A-Z)
+// - At least 1 number (0-9)
+// - At least 1 special character/symbol
+func ValidatePasswordStrength(password string) error {
+	if len(password) < 8 {
+		return errors.New("password must be at least 8 characters long")
+	}
+
+	hasLower := regexp.MustCompile(`[a-z]`).MatchString(password)
+	if !hasLower {
+		return errors.New("password must contain at least 1 lowercase letter (a-z)")
+	}
+
+	hasUpper := regexp.MustCompile(`[A-Z]`).MatchString(password)
+	if !hasUpper {
+		return errors.New("password must contain at least 1 uppercase letter (A-Z)")
+	}
+
+	hasNumber := regexp.MustCompile(`[0-9]`).MatchString(password)
+	if !hasNumber {
+		return errors.New("password must contain at least 1 number (0-9)")
+	}
+
+	hasSymbol := regexp.MustCompile(`[^a-zA-Z0-9]`).MatchString(password)
+	if !hasSymbol {
+		return errors.New("password must contain at least 1 symbol (!@#$%^&*...)")
+	}
+
+	return nil
+}
+
 func (s *ServiceUser) RegisterUser(req dto.UserRegister) (domainuser.Users, error) {
 	data, _ := s.UserRepo.GetByEmail(req.Email)
 	if data.Id != "" || data.Email == req.Email || data.Phone == req.Phone {
 		return domainuser.Users{}, errors.New("email or phone already exists")
 	}
+
+	// Validate password strength
+	if err := ValidatePasswordStrength(req.Password); err != nil {
+		return domainuser.Users{}, err
+	}
+
 	hashedPwd, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return domainuser.Users{}, err
@@ -194,6 +236,11 @@ func (s *ServiceUser) Update(id, role string, req dto.UserUpdate) (domainuser.Us
 func (s *ServiceUser) ChangePassword(id string, req dto.ChangePassword) (domainuser.Users, error) {
 	if req.CurrentPassword == req.NewPassword {
 		return domainuser.Users{}, errors.New("new password must be different from current password")
+	}
+
+	// Validate new password strength
+	if err := ValidatePasswordStrength(req.NewPassword); err != nil {
+		return domainuser.Users{}, err
 	}
 
 	data, err := s.UserRepo.GetByID(id)

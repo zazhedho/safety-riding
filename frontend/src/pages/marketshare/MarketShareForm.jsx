@@ -11,9 +11,9 @@ const MarketShareForm = () => {
   const [formData, setFormData] = useState({
     province_id: '', province_name: '', city_id: '', city_name: '', district_id: '', district_name: '',
     month: new Date().getMonth() + 1, year: new Date().getFullYear(),
-    monthly_sales: 0, yearly_sales: 0, monthly_sales_percentage: 0, yearly_sales_percentage: 0,
-    monthly_competitor_sales: 0, yearly_competitor_sales: 0,
-    monthly_competitor_percentage: 0, yearly_competitor_percentage: 0, notes: ''
+    monthly_sales: '', yearly_sales: '', monthly_sales_percentage: '', yearly_sales_percentage: '',
+    monthly_competitor_sales: '', yearly_competitor_sales: '',
+    monthly_competitor_percentage: '', yearly_competitor_percentage: '', notes: ''
   });
   const [provinces, setProvinces] = useState([]);
   const [cities, setCities] = useState([]);
@@ -78,25 +78,29 @@ const MarketShareForm = () => {
       'yearly_competitor_percentage'
     ];
 
-    setFormData(prev => {
-      if (intFields.includes(name)) {
-        if (value === '') {
-          return { ...prev, [name]: '' };
-        }
-        const parsed = parseInt(value, 10);
-        return { ...prev, [name]: Number.isNaN(parsed) ? prev[name] : parsed };
+    // Validate positive numbers for numeric fields
+    if ([...intFields, ...floatFields].includes(name)) {
+      // Allow empty string or valid positive number only
+      if (value === '' || (value >= 0 && !value.includes('-'))) {
+        setFormData(prev => ({ ...prev, [name]: value }));
       }
+      return;
+    }
 
-      if (floatFields.includes(name)) {
-        if (value === '') {
-          return { ...prev, [name]: '' };
-        }
-        const parsed = parseFloat(value);
-        return { ...prev, [name]: Number.isNaN(parsed) ? prev[name] : parsed };
-      }
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
 
-      return { ...prev, [name]: value };
-    });
+  // Handler to select all text on focus for number fields
+  const handleNumberFocus = (e) => {
+    e.target.select();
+  };
+
+  // Handler to prevent negative number input (block minus/dash key)
+  const handleNumberKeyDown = (e) => {
+    // Block minus/dash (-), plus (+), and 'e' keys for number inputs
+    if (e.key === '-' || e.key === '+' || e.key === 'e' || e.key === 'E') {
+      e.preventDefault();
+    }
   };
 
   const handleLocationChange = (e) => {
@@ -119,16 +123,16 @@ const MarketShareForm = () => {
     try {
       const payload = {
         ...formData,
-        month: Number(formData.month) || 0,
-        year: Number(formData.year) || 0,
-        monthly_sales: parseFloat(formData.monthly_sales) || 0,
-        yearly_sales: parseFloat(formData.yearly_sales) || 0,
-        monthly_sales_percentage: parseFloat(formData.monthly_sales_percentage) || 0,
-        yearly_sales_percentage: parseFloat(formData.yearly_sales_percentage) || 0,
-        monthly_competitor_sales: parseFloat(formData.monthly_competitor_sales) || 0,
-        yearly_competitor_sales: parseFloat(formData.yearly_competitor_sales) || 0,
-        monthly_competitor_percentage: parseFloat(formData.monthly_competitor_percentage) || 0,
-        yearly_competitor_percentage: parseFloat(formData.yearly_competitor_percentage) || 0,
+        month: formData.month === '' ? 0 : Number(formData.month) || 0,
+        year: formData.year === '' ? 0 : Number(formData.year) || 0,
+        monthly_sales: formData.monthly_sales === '' ? 0 : parseFloat(formData.monthly_sales) || 0,
+        yearly_sales: formData.yearly_sales === '' ? 0 : parseFloat(formData.yearly_sales) || 0,
+        monthly_sales_percentage: formData.monthly_sales_percentage === '' ? 0 : parseFloat(formData.monthly_sales_percentage) || 0,
+        yearly_sales_percentage: formData.yearly_sales_percentage === '' ? 0 : parseFloat(formData.yearly_sales_percentage) || 0,
+        monthly_competitor_sales: formData.monthly_competitor_sales === '' ? 0 : parseFloat(formData.monthly_competitor_sales) || 0,
+        yearly_competitor_sales: formData.yearly_competitor_sales === '' ? 0 : parseFloat(formData.yearly_competitor_sales) || 0,
+        monthly_competitor_percentage: formData.monthly_competitor_percentage === '' ? 0 : parseFloat(formData.monthly_competitor_percentage) || 0,
+        yearly_competitor_percentage: formData.yearly_competitor_percentage === '' ? 0 : parseFloat(formData.yearly_competitor_percentage) || 0,
       };
 
       if (id) {
@@ -185,53 +189,73 @@ const MarketShareForm = () => {
               </div>
               <div className="col-md-6 mb-3">
                 <label>Year</label>
-                <input type="number" className="form-control" name="year" value={formData.year} onChange={handleChange} min="2000" required />
+                <input type="number" className="form-control" name="year" value={formData.year} onChange={handleChange} onFocus={handleNumberFocus} onKeyDown={handleNumberKeyDown} placeholder="e.g., 2024" min="2000" required />
               </div>
             </div>
 
             <h5 className="mt-3">Company Sales</h5>
             <div className="row">
               <div className="col-md-3 mb-3">
-                <label>Monthly Sales</label>
-                <input type="number" step="0.01" className="form-control" name="monthly_sales" value={formData.monthly_sales} onChange={handleChange} min="0" required />
+                <label>
+                  Monthly Sales
+                  <i className="bi bi-info-circle-fill ms-1 text-info" title="Number of units sold (not currency)" style={{ fontSize: '0.9rem', cursor: 'help' }}></i>
+                </label>
+                <input type="number" step="0.01" className="form-control" name="monthly_sales" value={formData.monthly_sales} onChange={handleChange} onFocus={handleNumberFocus} onKeyDown={handleNumberKeyDown} placeholder="e.g., 150 units" min="0" required />
+                <small className="text-muted">Units sold in the month</small>
               </div>
               <div className="col-md-3 mb-3">
                 <label>Monthly %</label>
-                <input type="number" step="0.01" className="form-control" name="monthly_sales_percentage" value={formData.monthly_sales_percentage} onChange={handleChange} min="0" max="100" required />
+                <input type="number" step="0.01" className="form-control" name="monthly_sales_percentage" value={formData.monthly_sales_percentage} onChange={handleChange} onFocus={handleNumberFocus} onKeyDown={handleNumberKeyDown} placeholder="e.g., 45.5" min="0" max="100" required />
+                <small className="text-muted">Market share percentage</small>
               </div>
               <div className="col-md-3 mb-3">
-                <label>Yearly Sales</label>
-                <input type="number" step="0.01" className="form-control" name="yearly_sales" value={formData.yearly_sales} onChange={handleChange} min="0" required />
+                <label>
+                  Yearly Sales
+                  <i className="bi bi-info-circle-fill ms-1 text-info" title="Number of units sold (not currency)" style={{ fontSize: '0.9rem', cursor: 'help' }}></i>
+                </label>
+                <input type="number" step="0.01" className="form-control" name="yearly_sales" value={formData.yearly_sales} onChange={handleChange} onFocus={handleNumberFocus} onKeyDown={handleNumberKeyDown} placeholder="e.g., 1800 units" min="0" required />
+                <small className="text-muted">Units sold in the year</small>
               </div>
               <div className="col-md-3 mb-3">
                 <label>Yearly %</label>
-                <input type="number" step="0.01" className="form-control" name="yearly_sales_percentage" value={formData.yearly_sales_percentage} onChange={handleChange} min="0" max="100" required />
+                <input type="number" step="0.01" className="form-control" name="yearly_sales_percentage" value={formData.yearly_sales_percentage} onChange={handleChange} onFocus={handleNumberFocus} onKeyDown={handleNumberKeyDown} placeholder="e.g., 42.3" min="0" max="100" required />
+                <small className="text-muted">Market share percentage</small>
               </div>
             </div>
 
             <h5 className="mt-3">Competitor Sales</h5>
             <div className="row">
               <div className="col-md-3 mb-3">
-                <label>Monthly Sales</label>
-                <input type="number" step="0.01" className="form-control" name="monthly_competitor_sales" value={formData.monthly_competitor_sales} onChange={handleChange} min="0" required />
+                <label>
+                  Monthly Sales
+                  <i className="bi bi-info-circle-fill ms-1 text-info" title="Number of units sold (not currency)" style={{ fontSize: '0.9rem', cursor: 'help' }}></i>
+                </label>
+                <input type="number" step="0.01" className="form-control" name="monthly_competitor_sales" value={formData.monthly_competitor_sales} onChange={handleChange} onFocus={handleNumberFocus} onKeyDown={handleNumberKeyDown} placeholder="e.g., 180 units" min="0" required />
+                <small className="text-muted">Competitor units sold in the month</small>
               </div>
               <div className="col-md-3 mb-3">
                 <label>Monthly %</label>
-                <input type="number" step="0.01" className="form-control" name="monthly_competitor_percentage" value={formData.monthly_competitor_percentage} onChange={handleChange} min="0" max="100" required />
+                <input type="number" step="0.01" className="form-control" name="monthly_competitor_percentage" value={formData.monthly_competitor_percentage} onChange={handleChange} onFocus={handleNumberFocus} onKeyDown={handleNumberKeyDown} placeholder="e.g., 54.5" min="0" max="100" required />
+                <small className="text-muted">Competitor market share percentage</small>
               </div>
               <div className="col-md-3 mb-3">
-                <label>Yearly Sales</label>
-                <input type="number" step="0.01" className="form-control" name="yearly_competitor_sales" value={formData.yearly_competitor_sales} onChange={handleChange} min="0" required />
+                <label>
+                  Yearly Sales
+                  <i className="bi bi-info-circle-fill ms-1 text-info" title="Number of units sold (not currency)" style={{ fontSize: '0.9rem', cursor: 'help' }}></i>
+                </label>
+                <input type="number" step="0.01" className="form-control" name="yearly_competitor_sales" value={formData.yearly_competitor_sales} onChange={handleChange} onFocus={handleNumberFocus} onKeyDown={handleNumberKeyDown} placeholder="e.g., 2450 units" min="0" required />
+                <small className="text-muted">Competitor units sold in the year</small>
               </div>
               <div className="col-md-3 mb-3">
                 <label>Yearly %</label>
-                <input type="number" step="0.01" className="form-control" name="yearly_competitor_percentage" value={formData.yearly_competitor_percentage} onChange={handleChange} min="0" max="100" required />
+                <input type="number" step="0.01" className="form-control" name="yearly_competitor_percentage" value={formData.yearly_competitor_percentage} onChange={handleChange} onFocus={handleNumberFocus} onKeyDown={handleNumberKeyDown} placeholder="e.g., 57.7" min="0" max="100" required />
+                <small className="text-muted">Competitor market share percentage</small>
               </div>
             </div>
 
             <div className="mb-3">
               <label>Notes</label>
-              <textarea className="form-control" name="notes" value={formData.notes} onChange={handleChange}></textarea>
+              <textarea className="form-control" name="notes" value={formData.notes} onChange={handleChange} placeholder="e.g., Market share increased due to successful promotional campaign" rows="3"></textarea>
             </div>
 
             <button type="submit" className="btn btn-primary" disabled={loading}>

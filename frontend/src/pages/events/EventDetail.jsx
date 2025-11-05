@@ -262,6 +262,25 @@ const EventDetail = () => {
   const isFinalized = finalStatuses.includes(event.status?.toLowerCase());
   const isAdmin = hasRole(['admin']);
 
+  // Calculate achievement percentage
+  const calculateAchievement = () => {
+    if (!event.target_attendees || event.target_attendees === 0) return 0;
+    return Math.round((event.attendees_count / event.target_attendees) * 100);
+  };
+
+  // Get badge color based on achievement
+  const getAchievementBadge = () => {
+    const achievement = calculateAchievement();
+    if (achievement === 0) return { color: 'secondary', text: 'No Data' };
+    if (achievement < 50) return { color: 'danger', text: `${achievement}% - Poor` };
+    if (achievement < 75) return { color: 'warning', text: `${achievement}% - Below Target` };
+    if (achievement < 100) return { color: 'info', text: `${achievement}% - Good` };
+    if (achievement === 100) return { color: 'success', text: `${achievement}% - Perfect!` };
+    return { color: 'primary', text: `${achievement}% - Exceeded!` };
+  };
+
+  const achievementBadge = getAchievementBadge();
+
   return (
     <DashboardLayout>
       {/* Warning for finalized events */}
@@ -562,9 +581,37 @@ const EventDetail = () => {
                           </tr>
                           <tr>
                             <td className="text-muted">
-                              <strong>Total Attendees</strong>
+                              <strong>Target Attendees</strong>
                             </td>
-                            <td><strong>{event.attendees_count.toLocaleString()}</strong> participants</td>
+                            <td>
+                              <i className="bi bi-bullseye me-1"></i>
+                              <strong>{event.target_attendees?.toLocaleString() || 0}</strong> participants (planned)
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="text-muted">
+                              <strong>Actual Attendees</strong>
+                            </td>
+                            <td>
+                              <i className="bi bi-people-fill me-1"></i>
+                              <strong>{event.attendees_count.toLocaleString()}</strong> participants
+                            </td>
+                          </tr>
+                          <tr>
+                            <td className="text-muted">
+                              <strong>Achievement</strong>
+                            </td>
+                            <td>
+                              <span className={`badge bg-${achievementBadge.color} fs-6 px-3 py-2`}>
+                                <i className="bi bi-graph-up-arrow me-2"></i>
+                                {achievementBadge.text}
+                              </span>
+                              {event.target_attendees > 0 && event.attendees_count > 0 && (
+                                <div className="text-muted small mt-1">
+                                  {event.attendees_count} of {event.target_attendees} attendees
+                                </div>
+                              )}
+                            </td>
                           </tr>
                           <tr>
                             <td className="text-muted">

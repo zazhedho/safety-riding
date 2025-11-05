@@ -6,6 +6,7 @@ import roleService from '../../services/roleService';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../contexts/AuthContext';
 import ConfirmationModal from '../../components/common/ConfirmationModal';
+import 'bootstrap-icons/font/bootstrap-icons.css';
 
 const UserForm = () => {
   const { id } = useParams();
@@ -23,6 +24,15 @@ const UserForm = () => {
   const [loading, setLoading] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [roles, setRoles] = useState([]);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordValidation, setPasswordValidation] = useState({
+    minLength: false,
+    hasLowercase: false,
+    hasUppercase: false,
+    hasNumber: false,
+    hasSymbol: false
+  });
 
   useEffect(() => {
     if (!id && user?.role !== 'admin') {
@@ -64,6 +74,17 @@ const UserForm = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+
+    // Validate password when it changes
+    if (name === 'password') {
+      setPasswordValidation({
+        minLength: value.length >= 8,
+        hasLowercase: /[a-z]/.test(value),
+        hasUppercase: /[A-Z]/.test(value),
+        hasNumber: /[0-9]/.test(value),
+        hasSymbol: /[^a-zA-Z0-9]/.test(value)
+      });
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -71,6 +92,15 @@ const UserForm = () => {
     if (formData.password && formData.password !== formData.confirmPassword) {
       toast.error('Passwords do not match');
       return;
+    }
+
+    // Validate password requirements for new users or when changing password
+    if (formData.password && (!id || formData.password)) {
+      const allRequirementsMet = Object.values(passwordValidation).every(val => val === true);
+      if (!allRequirementsMet) {
+        toast.error('Password does not meet all requirements');
+        return;
+      }
     }
 
     const userData = { ...formData };
@@ -182,27 +212,96 @@ const UserForm = () => {
             <h5>{id ? 'Change Password (Optional)' : 'Password'}</h5>
             <div className="mb-3">
               <label className="form-label">Password</label>
-              <input
-                type="password"
-                className="form-control"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder={id ? 'Leave blank to keep current password' : 'Enter a strong password'}
-                required={!id}
-              />
+              <div className="position-relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  className="form-control"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder={id ? 'Leave blank to keep current password' : 'Enter a strong password'}
+                  style={{ paddingRight: '2.5rem' }}
+                  required={!id}
+                />
+                <button
+                  type="button"
+                  className="btn btn-link position-absolute end-0 top-50 translate-middle-y"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={{ textDecoration: 'none', color: '#6c757d' }}
+                  tabIndex={-1}
+                >
+                  <i className={`bi bi-eye${showPassword ? '-slash' : ''}`}></i>
+                </button>
+              </div>
+              {formData.password && (
+                <div className="mt-2 p-3 bg-light rounded">
+                  <small className="d-block fw-bold mb-2 text-secondary">Password Requirements:</small>
+                  <div className="d-flex flex-column gap-1">
+                    <small className={passwordValidation.minLength ? 'text-success' : 'text-danger'}>
+                      <i className={`bi bi-${passwordValidation.minLength ? 'check-circle-fill' : 'x-circle-fill'} me-1`}></i>
+                      Minimum 8 characters
+                    </small>
+                    <small className={passwordValidation.hasLowercase ? 'text-success' : 'text-danger'}>
+                      <i className={`bi bi-${passwordValidation.hasLowercase ? 'check-circle-fill' : 'x-circle-fill'} me-1`}></i>
+                      At least 1 lowercase letter (a-z)
+                    </small>
+                    <small className={passwordValidation.hasUppercase ? 'text-success' : 'text-danger'}>
+                      <i className={`bi bi-${passwordValidation.hasUppercase ? 'check-circle-fill' : 'x-circle-fill'} me-1`}></i>
+                      At least 1 uppercase letter (A-Z)
+                    </small>
+                    <small className={passwordValidation.hasNumber ? 'text-success' : 'text-danger'}>
+                      <i className={`bi bi-${passwordValidation.hasNumber ? 'check-circle-fill' : 'x-circle-fill'} me-1`}></i>
+                      At least 1 number (0-9)
+                    </small>
+                    <small className={passwordValidation.hasSymbol ? 'text-success' : 'text-danger'}>
+                      <i className={`bi bi-${passwordValidation.hasSymbol ? 'check-circle-fill' : 'x-circle-fill'} me-1`}></i>
+                      At least 1 symbol (!@#$%^&*...)
+                    </small>
+                  </div>
+                </div>
+              )}
+              {!formData.password && !id && (
+                <small className="text-muted d-block mt-1">
+                  <i className="bi bi-info-circle me-1"></i>
+                  Password must contain: minimum 8 characters, 1 lowercase, 1 uppercase, 1 number, and 1 symbol
+                </small>
+              )}
             </div>
             <div className="mb-3">
               <label className="form-label">Confirm Password</label>
-              <input
-                type="password"
-                className="form-control"
-                name="confirmPassword"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                placeholder={id ? 'Confirm new password' : 'Confirm your password'}
-                required={!id}
-              />
+              <div className="position-relative">
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  className="form-control"
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  placeholder={id ? 'Confirm new password' : 'Confirm your password'}
+                  style={{ paddingRight: '2.5rem' }}
+                  required={!id}
+                />
+                <button
+                  type="button"
+                  className="btn btn-link position-absolute end-0 top-50 translate-middle-y"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  style={{ textDecoration: 'none', color: '#6c757d' }}
+                  tabIndex={-1}
+                >
+                  <i className={`bi bi-eye${showConfirmPassword ? '-slash' : ''}`}></i>
+                </button>
+              </div>
+              {formData.confirmPassword && formData.password !== formData.confirmPassword && (
+                <small className="text-danger d-block mt-1">
+                  <i className="bi bi-exclamation-circle me-1"></i>
+                  Passwords do not match
+                </small>
+              )}
+              {formData.confirmPassword && formData.password === formData.confirmPassword && (
+                <small className="text-success d-block mt-1">
+                  <i className="bi bi-check-circle me-1"></i>
+                  Passwords match
+                </small>
+              )}
             </div>
             <button type="submit" className="btn btn-primary">Save</button>
             <button type="button" className="btn btn-secondary ms-2" onClick={() => navigate('/users')}>Cancel</button>

@@ -25,6 +25,7 @@ type Event struct {
 	ProvinceId      string `json:"province_id" gorm:"column:province_id"`
 	EventType       string `json:"event_type" gorm:"column:event_type"`
 	TargetAudience  string `json:"target_audience" gorm:"column:target_audience"`
+	TargetAttendees int    `json:"target_attendees" gorm:"column:target_attendees"`
 	AttendeesCount  int    `json:"attendees_count" gorm:"column:attendees_count"`
 	InstructorName  string `json:"instructor_name" gorm:"column:instructor_name"`
 	InstructorPhone string `json:"instructor_phone" gorm:"column:instructor_phone"`

@@ -170,14 +170,6 @@ const TopNav = () => {
             <i className="bi bi-search"></i>
           </button>
 
-          {/* Notifications */}
-          <div className="topnav-notifications">
-            <button className="topnav-icon-btn" title="Notifications">
-              <i className="bi bi-bell"></i>
-              <span className="notification-badge">3</span>
-            </button>
-          </div>
-
           {/* User Profile */}
           <div className="topnav-user">
             <div className="user-info">

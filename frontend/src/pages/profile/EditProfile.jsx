@@ -2,11 +2,22 @@ import { useState, useEffect } from 'react';
 import DashboardLayout from '../../components/common/DashboardLayout';
 import { useAuth } from '../../contexts/AuthContext';
 import { toast } from 'react-toastify';
+import 'bootstrap-icons/font/bootstrap-icons.css';
 
 const EditProfile = () => {
   const { user, updateProfile, updatePassword } = useAuth();
   const [profileData, setProfileData] = useState({ name: '', email: '', phone: '' });
   const [passwordData, setPasswordData] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordValidation, setPasswordValidation] = useState({
+    minLength: false,
+    hasLowercase: false,
+    hasUppercase: false,
+    hasNumber: false,
+    hasSymbol: false
+  });
 
   useEffect(() => {
     if (user) {
@@ -22,6 +33,17 @@ const EditProfile = () => {
   const handlePasswordChange = (e) => {
     const { name, value } = e.target;
     setPasswordData(prev => ({ ...prev, [name]: value }));
+
+    // Validate new password when it changes
+    if (name === 'newPassword') {
+      setPasswordValidation({
+        minLength: value.length >= 8,
+        hasLowercase: /[a-z]/.test(value),
+        hasUppercase: /[A-Z]/.test(value),
+        hasNumber: /[0-9]/.test(value),
+        hasSymbol: /[^a-zA-Z0-9]/.test(value)
+      });
+    }
   };
 
   const handleProfileSubmit = async (e) => {
@@ -40,10 +62,26 @@ const EditProfile = () => {
       toast.error('New passwords do not match');
       return;
     }
+
+    // Validate password requirements
+    const allRequirementsMet = Object.values(passwordValidation).every(val => val === true);
+    if (!allRequirementsMet) {
+      toast.error('New password does not meet all requirements');
+      return;
+    }
+
     const result = await updatePassword(passwordData);
     if (result.success) {
       toast.success('Password updated successfully');
       setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
+      // Reset password validation
+      setPasswordValidation({
+        minLength: false,
+        hasLowercase: false,
+        hasUppercase: false,
+        hasNumber: false,
+        hasSymbol: false
+      });
     } else {
       toast.error(result.error || 'Failed to update password');
     }
@@ -113,36 +151,111 @@ const EditProfile = () => {
               <form onSubmit={handlePasswordSubmit}>
                 <div className="mb-3">
                   <label className="form-label">Current Password</label>
-                  <input
-                    type="password"
-                    className="form-control"
-                    name="currentPassword"
-                    value={passwordData.currentPassword}
-                    onChange={handlePasswordChange}
-                    required
-                  />
+                  <div className="position-relative">
+                    <input
+                      type={showCurrentPassword ? "text" : "password"}
+                      className="form-control"
+                      name="currentPassword"
+                      value={passwordData.currentPassword}
+                      onChange={handlePasswordChange}
+                      style={{ paddingRight: '2.5rem' }}
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="btn btn-link position-absolute end-0 top-50 translate-middle-y"
+                      onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                      style={{ textDecoration: 'none', color: '#6c757d' }}
+                      tabIndex={-1}
+                    >
+                      <i className={`bi bi-eye${showCurrentPassword ? '-slash' : ''}`}></i>
+                    </button>
+                  </div>
                 </div>
                 <div className="mb-3">
                   <label className="form-label">New Password</label>
-                  <input
-                    type="password"
-                    className="form-control"
-                    name="newPassword"
-                    value={passwordData.newPassword}
-                    onChange={handlePasswordChange}
-                    required
-                  />
+                  <div className="position-relative">
+                    <input
+                      type={showNewPassword ? "text" : "password"}
+                      className="form-control"
+                      name="newPassword"
+                      value={passwordData.newPassword}
+                      onChange={handlePasswordChange}
+                      style={{ paddingRight: '2.5rem' }}
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="btn btn-link position-absolute end-0 top-50 translate-middle-y"
+                      onClick={() => setShowNewPassword(!showNewPassword)}
+                      style={{ textDecoration: 'none', color: '#6c757d' }}
+                      tabIndex={-1}
+                    >
+                      <i className={`bi bi-eye${showNewPassword ? '-slash' : ''}`}></i>
+                    </button>
+                  </div>
+                  {passwordData.newPassword && (
+                    <div className="mt-2 p-3 bg-light rounded">
+                      <small className="d-block fw-bold mb-2 text-secondary">Password Requirements:</small>
+                      <div className="d-flex flex-column gap-1">
+                        <small className={passwordValidation.minLength ? 'text-success' : 'text-danger'}>
+                          <i className={`bi bi-${passwordValidation.minLength ? 'check-circle-fill' : 'x-circle-fill'} me-1`}></i>
+                          Minimum 8 characters
+                        </small>
+                        <small className={passwordValidation.hasLowercase ? 'text-success' : 'text-danger'}>
+                          <i className={`bi bi-${passwordValidation.hasLowercase ? 'check-circle-fill' : 'x-circle-fill'} me-1`}></i>
+                          At least 1 lowercase letter (a-z)
+                        </small>
+                        <small className={passwordValidation.hasUppercase ? 'text-success' : 'text-danger'}>
+                          <i className={`bi bi-${passwordValidation.hasUppercase ? 'check-circle-fill' : 'x-circle-fill'} me-1`}></i>
+                          At least 1 uppercase letter (A-Z)
+                        </small>
+                        <small className={passwordValidation.hasNumber ? 'text-success' : 'text-danger'}>
+                          <i className={`bi bi-${passwordValidation.hasNumber ? 'check-circle-fill' : 'x-circle-fill'} me-1`}></i>
+                          At least 1 number (0-9)
+                        </small>
+                        <small className={passwordValidation.hasSymbol ? 'text-success' : 'text-danger'}>
+                          <i className={`bi bi-${passwordValidation.hasSymbol ? 'check-circle-fill' : 'x-circle-fill'} me-1`}></i>
+                          At least 1 symbol (!@#$%^&*...)
+                        </small>
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <div className="mb-3">
                   <label className="form-label">Confirm New Password</label>
-                  <input
-                    type="password"
-                    className="form-control"
-                    name="confirmPassword"
-                    value={passwordData.confirmPassword}
-                    onChange={handlePasswordChange}
-                    required
-                  />
+                  <div className="position-relative">
+                    <input
+                      type={showConfirmPassword ? "text" : "password"}
+                      className="form-control"
+                      name="confirmPassword"
+                      value={passwordData.confirmPassword}
+                      onChange={handlePasswordChange}
+                      style={{ paddingRight: '2.5rem' }}
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="btn btn-link position-absolute end-0 top-50 translate-middle-y"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      style={{ textDecoration: 'none', color: '#6c757d' }}
+                      tabIndex={-1}
+                    >
+                      <i className={`bi bi-eye${showConfirmPassword ? '-slash' : ''}`}></i>
+                    </button>
+                  </div>
+                  {passwordData.confirmPassword && passwordData.newPassword !== passwordData.confirmPassword && (
+                    <small className="text-danger d-block mt-1">
+                      <i className="bi bi-exclamation-circle me-1"></i>
+                      Passwords do not match
+                    </small>
+                  )}
+                  {passwordData.confirmPassword && passwordData.newPassword === passwordData.confirmPassword && (
+                    <small className="text-success d-block mt-1">
+                      <i className="bi bi-check-circle me-1"></i>
+                      Passwords match
+                    </small>
+                  )}
                 </div>
                 <button type="submit" className="btn btn-primary">Change Password</button>
               </form>
