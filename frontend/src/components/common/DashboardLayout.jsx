@@ -102,6 +102,7 @@ const DashboardLayout = ({ children }) => {
       { path: '/events', label: 'Events', icon: 'bi-calendar-event', name: 'events' },
       { path: '/accidents', label: 'Accidents', icon: 'bi-exclamation-triangle', name: 'accidents' },
       { path: '/budgets', label: 'Budgets', icon: 'bi-cash-stack', name: 'budgets' },
+      { path: '/marketshare', label: 'Market Share', icon: 'bi-graph-up-arrow', name: 'market_shares' },
     ];
 
     if (role === 'admin') {

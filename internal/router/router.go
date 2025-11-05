@@ -14,6 +14,7 @@ import (
 	cityHandler "safety-riding/internal/handlers/http/city"
 	districtHandler "safety-riding/internal/handlers/http/district"
 	eventHandler "safety-riding/internal/handlers/http/event"
+	marketshareHandler "safety-riding/internal/handlers/http/marketshare"
 	menuHandler "safety-riding/internal/handlers/http/menu"
 	permissionHandler "safety-riding/internal/handlers/http/permission"
 	provinceHandler "safety-riding/internal/handlers/http/province"
@@ -24,6 +25,7 @@ import (
 	authRepo "safety-riding/internal/repositories/auth"
 	budgetRepo "safety-riding/internal/repositories/budget"
 	eventRepo "safety-riding/internal/repositories/event"
+	marketshareRepo "safety-riding/internal/repositories/marketshare"
 	menuRepo "safety-riding/internal/repositories/menu"
 	permissionRepo "safety-riding/internal/repositories/permission"
 	roleRepo "safety-riding/internal/repositories/role"
@@ -34,6 +36,7 @@ import (
 	kabupatenSvc "safety-riding/internal/services/city"
 	kecamatanSvc "safety-riding/internal/services/district"
 	eventSvc "safety-riding/internal/services/event"
+	marketshareSvc "safety-riding/internal/services/marketshare"
 	menuSvc "safety-riding/internal/services/menu"
 	permissionSvc "safety-riding/internal/services/permission"
 	provinsiSvc "safety-riding/internal/services/province"
@@ -216,6 +219,30 @@ func (r *Routes) BudgetRoutes() {
 		budget.GET("/:id", h.GetBudgetById)
 		budget.PUT("/:id", mdw.RoleMiddleware(utils.RoleAdmin, utils.RoleStaff), h.UpdateBudget)
 		budget.DELETE("/:id", mdw.RoleMiddleware(utils.RoleAdmin, utils.RoleStaff), h.DeleteBudget)
+	}
+}
+
+func (r *Routes) MarketShareRoutes() {
+	repo := marketshareRepo.NewMarketShareRepository(r.DB)
+	svc := marketshareSvc.NewMarketShareService(repo)
+	h := marketshareHandler.NewMarketShareHandler(svc)
+	mdw := middlewares.NewMiddleware(authRepo.NewBlacklistRepo(r.DB))
+
+	// Dashboard endpoint (read-only for all authenticated users)
+	r.App.GET("/api/marketshare/top-districts", mdw.AuthMiddleware(), h.GetTopDistricts)
+	r.App.GET("/api/marketshare/summary", mdw.AuthMiddleware(), h.GetSummary)
+	r.App.GET("/api/marketshare/dashboard-suggestions", mdw.AuthMiddleware(), h.GetDashboardSuggestions)
+
+	// List endpoints
+	r.App.GET("/api/marketshares", mdw.AuthMiddleware(), h.FetchMarketShare)
+
+	// CRUD endpoints (admin/staff only)
+	marketshare := r.App.Group("/api/marketshare").Use(mdw.AuthMiddleware())
+	{
+		marketshare.POST("", mdw.RoleMiddleware(utils.RoleAdmin, utils.RoleStaff), h.AddMarketShare)
+		marketshare.GET("/:id", h.GetMarketShareById)
+		marketshare.PUT("/:id", mdw.RoleMiddleware(utils.RoleAdmin, utils.RoleStaff), h.UpdateMarketShare)
+		marketshare.DELETE("/:id", mdw.RoleMiddleware(utils.RoleAdmin, utils.RoleStaff), h.DeleteMarketShare)
 	}
 }
 

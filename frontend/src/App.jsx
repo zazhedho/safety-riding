@@ -17,6 +17,9 @@ import AccidentDetail from './pages/accidents/AccidentDetail';
 import BudgetList from './pages/budgets/BudgetList';
 import BudgetForm from './pages/budgets/BudgetForm';
 import BudgetDetail from './pages/budgets/BudgetDetail';
+import MarketShareList from './pages/marketshare/MarketShareList';
+import MarketShareForm from './pages/marketshare/MarketShareForm';
+import MarketShareDetail from './pages/marketshare/MarketShareDetail';
 import UserList from './pages/users/UserList';
 import UserForm from './pages/users/UserForm';
 import Profile from './pages/users/Profile';
@@ -199,6 +202,42 @@ function App() {
             element={
               <ProtectedRoute>
                 <BudgetForm />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/marketshare"
+            element={
+              <ProtectedRoute>
+                <MarketShareList />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/marketshare/add"
+            element={
+              <ProtectedRoute>
+                <MarketShareForm />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/marketshare/:id"
+            element={
+              <ProtectedRoute>
+                <MarketShareDetail />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/marketshare/:id/edit"
+            element={
+              <ProtectedRoute>
+                <MarketShareForm />
               </ProtectedRoute>
             }
           />

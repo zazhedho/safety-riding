@@ -92,8 +92,8 @@ INSERT INTO menu_items (id, name, display_name, path, icon, order_index) VALUES
     (gen_random_uuid(), 'events', 'Events', '/events', 'bi-calendar-event', 5),
     (gen_random_uuid(), 'accidents', 'Accidents', '/accidents', 'bi-exclamation-triangle', 6),
     (gen_random_uuid(), 'budgets', 'Budgets', '/budgets', 'bi-cash-stack', 7),
-    (gen_random_uuid(), 'users', 'Users', '/users', 'bi-people', 8),
-    (gen_random_uuid(), 'roles', 'Roles', '/roles', 'bi-shield-lock', 9)
+    (gen_random_uuid(), 'users', 'Users', '/users', 'bi-people', 9),
+    (gen_random_uuid(), 'roles', 'Roles', '/roles', 'bi-shield-lock', 10)
 ON CONFLICT (name) DO NOTHING;
 
 -- Insert permissions

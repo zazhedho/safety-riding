@@ -7,7 +7,7 @@ VALUES (
   '/menus',
   'bi-list-ul',
   NULL,
-  10,
+  11,
   true
 ) ON CONFLICT (name) DO NOTHING;
 

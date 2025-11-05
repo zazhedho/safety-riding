@@ -103,6 +103,7 @@ func main() {
 	routes.AccidentRoutes()
 	routes.EventRoutes()
 	routes.BudgetRoutes()
+	routes.MarketShareRoutes()
 	routes.RoleRoutes()
 	routes.PermissionRoutes()
 	routes.MenuRoutes()

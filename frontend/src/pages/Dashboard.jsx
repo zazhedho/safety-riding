@@ -6,6 +6,7 @@ import eventService from '../services/eventService';
 import accidentService from '../services/accidentService';
 import budgetService from '../services/budgetService';
 import locationService from '../services/locationService';
+import marketShareService from '../services/marketShareService';
 import { toast } from 'react-toastify';
 import { useAuth } from '../contexts/AuthContext';
 import DatePicker from 'react-datepicker';
@@ -41,6 +42,13 @@ const Dashboard = () => {
   const [allEvents, setAllEvents] = useState([]);
   const [allAccidents, setAllAccidents] = useState([]);
   const [allBudgets, setAllBudgets] = useState([]);
+  const [marketShareSuggestions, setMarketShareSuggestions] = useState({
+    topCities: [],
+    topDistricts: [],
+    year: null,
+    month: null
+  });
+  const [marketShareLoading, setMarketShareLoading] = useState(false);
 
   // Filtered data
   const [filteredEvents, setFilteredEvents] = useState([]);
@@ -61,10 +69,47 @@ const Dashboard = () => {
   const [selectedProvince, setSelectedProvince] = useState('');
   const [selectedCity, setSelectedCity] = useState('');
 
+  const formatUnits = (value) => new Intl.NumberFormat('id-ID', {
+    maximumFractionDigits: 0
+  }).format(value || 0);
+
+  const formatPercentage = (value) => `${Number(value ?? 0).toFixed(1)}%`;
+
+  const getMonthLabel = (month) => {
+    if (!month) return '';
+    return new Date(0, month - 1).toLocaleString('en-US', { month: 'long' });
+  };
+
   useEffect(() => {
     fetchProvinces();
     fetchDashboardData();
+    fetchMarketShareSuggestions();
   }, []);
+
+  const fetchMarketShareSuggestions = async () => {
+    try {
+      setMarketShareLoading(true);
+      const now = new Date();
+      const params = {
+        year: now.getFullYear(),
+        month: now.getMonth() + 1,
+        city_limit: 5,
+        district_limit: 5
+      };
+      const response = await marketShareService.getDashboardSuggestions(params);
+      const payload = response.data?.data || {};
+      setMarketShareSuggestions({
+        topCities: payload.top_cities || [],
+        topDistricts: payload.top_districts || [],
+        year: payload.year || params.year,
+        month: payload.month || params.month
+      });
+    } catch (error) {
+      console.error('Failed to load market share suggestions', error);
+    } finally {
+      setMarketShareLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (selectedProvince) {
@@ -292,6 +337,7 @@ const Dashboard = () => {
           schools={allSchools}
           events={allEvents}
           accidents={allAccidents}
+          marketShare={marketShareSuggestions}
         />
       </div>
 
@@ -505,6 +551,88 @@ const Dashboard = () => {
             </div>
             <div className="card-body">
               <BudgetUtilizationChart data={filteredBudgets} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Market Share Suggestions */}
+      <div className="card mb-4">
+        <div className="card-header d-flex justify-content-between align-items-center">
+          <div>
+            <h5 className="mb-0">Market Share Focus</h5>
+            <small className="text-muted">
+              {marketShareSuggestions.month ? `${getMonthLabel(marketShareSuggestions.month)} ${marketShareSuggestions.year}` : 'Latest available period'}
+            </small>
+          </div>
+          <button
+            type="button"
+            className="btn btn-sm btn-outline-primary"
+            onClick={fetchMarketShareSuggestions}
+            disabled={marketShareLoading}
+          >
+            {marketShareLoading ? (
+              <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+            ) : (
+              <>
+                <i className="bi bi-arrow-clockwise me-1"></i>
+                Refresh
+              </>
+            )}
+          </button>
+        </div>
+        <div className="card-body">
+          <div className="row g-4">
+            <div className="col-md-6">
+              <h6 className="text-uppercase text-muted mb-3">Top Cities / Regencies</h6>
+              {marketShareSuggestions.topCities.length > 0 ? (
+                <div className="list-group list-group-flush">
+                  {marketShareSuggestions.topCities.map((item, index) => (
+                    <div key={`${item.city_id}-${index}`} className="list-group-item px-0">
+                      <div className="d-flex justify-content-between align-items-start">
+                        <div>
+                          <strong>{index + 1}. {item.city_name}</strong>
+                          <div className="text-muted small">{item.province_name}</div>
+                        </div>
+                        <div className="text-end">
+                          <div className="fw-semibold text-primary">{formatUnits(item.total_sales || 0)} units</div>
+                          <div className="small text-muted">
+                            Share {formatPercentage(item.market_share || 0)} · Comp {formatPercentage(item.competitor_share || 0)}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-muted mb-0">No market share data available.</p>
+              )}
+            </div>
+
+            <div className="col-md-6">
+              <h6 className="text-uppercase text-muted mb-3">Top Districts</h6>
+              {marketShareSuggestions.topDistricts.length > 0 ? (
+                <div className="list-group list-group-flush">
+                  {marketShareSuggestions.topDistricts.map((item, index) => (
+                    <div key={`${item.district_id}-${index}`} className="list-group-item px-0">
+                      <div className="d-flex justify-content-between align-items-start">
+                        <div>
+                          <strong>{index + 1}. {item.district_name}</strong>
+                          <div className="text-muted small">{item.city_name}, {item.province_name}</div>
+                        </div>
+                        <div className="text-end">
+                          <div className="fw-semibold text-primary">{formatUnits(item.total_sales || 0)} units</div>
+                          <div className="small text-muted">
+                            Share {formatPercentage(item.market_share || 0)} · Comp {formatPercentage(item.competitor_share || 0)}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-muted mb-0">No district data available.</p>
+              )}
             </div>
           </div>
         </div>
