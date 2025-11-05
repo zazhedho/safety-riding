@@ -311,6 +311,12 @@ PROVINCE_YEAR=2025
 
 # Application Config ID (Optional)
 CONFIG_ID=
+
+# Redis Configuration (for session management)
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=
+REDIS_DB=0
 ```
 
 ### Environment Variables Explanation
@@ -339,10 +345,16 @@ CONFIG_ID=
 | `TTL_CACHE_CONFIG_APP` | Cache TTL in seconds | 86400 | No |
 | `PROVINCE_YEAR` | Province data year | 2025 | No |
 | `CONFIG_ID` | Application config ID | - | No |
+| `REDIS_HOST` | Redis server host | localhost | Yes*** |
+| `REDIS_PORT` | Redis server port | 6379 | Yes*** |
+| `REDIS_PASSWORD` | Redis password | - | No |
+| `REDIS_DB` | Redis database number | 0 | No |
 
 \* Use either `DATABASE_URL` OR individual `DB_*` variables, not both.
 
 \** Required only if using file upload features.
+
+\*** Required for session management. Sessions will not work without Redis.
 
 ### Frontend Configuration
 
