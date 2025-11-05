@@ -60,7 +60,31 @@ const BudgetForm = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+
+    // Handle budget amount fields (budget_amount, actual_spent)
+    const amountFields = ['budget_amount', 'actual_spent'];
+    if (amountFields.includes(name)) {
+      // Allow empty string or valid positive number only
+      if (value === '' || (value >= 0 && !value.includes('-'))) {
+        setFormData(prev => ({ ...prev, [name]: value }));
+      }
+      return;
+    }
+
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  // Handler to select all text on focus for number fields
+  const handleNumberFocus = (e) => {
+    e.target.select();
+  };
+
+  // Handler to prevent negative number input (block minus/dash key)
+  const handleNumberKeyDown = (e) => {
+    // Block minus/dash (-), plus (+), and 'e' keys for number inputs
+    if (e.key === '-' || e.key === '+' || e.key === 'e' || e.key === 'E') {
+      e.preventDefault();
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -68,8 +92,8 @@ const BudgetForm = () => {
     try {
       const dataToSend = {
         ...formData,
-        budget_amount: parseFloat(formData.budget_amount) || 0,
-        actual_spent: parseFloat(formData.actual_spent) || 0,
+        budget_amount: formData.budget_amount === '' ? 0 : parseFloat(formData.budget_amount) || 0,
+        actual_spent: formData.actual_spent === '' ? 0 : parseFloat(formData.actual_spent) || 0,
       };
 
       if (id) {
@@ -134,11 +158,11 @@ const BudgetForm = () => {
             <div className="row">
               <div className="col-md-6 mb-3">
                 <label className="form-label">Budget Amount</label>
-                <input type="number" min="0" step="any" className="form-control" name="budget_amount" value={formData.budget_amount} onChange={handleChange} placeholder="e.g., 5000000" required disabled={shouldDisable} />
+                <input type="number" min="0" step="any" className="form-control" name="budget_amount" value={formData.budget_amount} onChange={handleChange} onFocus={handleNumberFocus} onKeyDown={handleNumberKeyDown} placeholder="e.g., 5000000" required disabled={shouldDisable} />
               </div>
               <div className="col-md-6 mb-3">
                 <label className="form-label">Actual Spent</label>
-                <input type="number" min="0" step="any" className="form-control" name="actual_spent" value={formData.actual_spent} onChange={handleChange} placeholder="e.g., 4500000" disabled={shouldDisable} />
+                <input type="number" min="0" step="any" className="form-control" name="actual_spent" value={formData.actual_spent} onChange={handleChange} onFocus={handleNumberFocus} onKeyDown={handleNumberKeyDown} placeholder="e.g., 4500000" disabled={shouldDisable} />
               </div>
             </div>
             <div className="row">

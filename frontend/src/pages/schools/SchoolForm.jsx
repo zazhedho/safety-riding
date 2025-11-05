@@ -24,10 +24,10 @@ const SchoolForm = () => {
     postal_code: '',
     latitude: '',
     longitude: '',
-    student_count: 0,
-    teacher_count: 0,
-    major_count: 0,
-    visit_count: 0,
+    student_count: '',
+    teacher_count: '',
+    major_count: '',
+    visit_count: '',
     is_educated: false,
     last_visit_at: '',
   });
@@ -102,10 +102,34 @@ const SchoolForm = () => {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
+
+    // Handle count fields (student_count, teacher_count, major_count, visit_count)
+    const countFields = ['student_count', 'teacher_count', 'major_count', 'visit_count'];
+    if (countFields.includes(name)) {
+      // Allow empty string or valid positive number only
+      if (value === '' || (value >= 0 && !value.includes('-'))) {
+        setFormData(prev => ({ ...prev, [name]: value }));
+      }
+      return;
+    }
+
     setFormData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value,
     }));
+  };
+
+  // Handler to select all text on focus for number fields
+  const handleNumberFocus = (e) => {
+    e.target.select();
+  };
+
+  // Handler to prevent negative number input (block minus/dash key)
+  const handleNumberKeyDown = (e) => {
+    // Block minus/dash (-), plus (+), and 'e' keys for number inputs
+    if (e.key === '-' || e.key === '+' || e.key === 'e' || e.key === 'E') {
+      e.preventDefault();
+    }
   };
 
   const handleLocationSelect = (lat, lng, addressData) => {
@@ -225,10 +249,10 @@ const SchoolForm = () => {
       district_name: selectedDistrict ? selectedDistrict.name : '',
       latitude: parseFloat(formData.latitude) || 0,
       longitude: parseFloat(formData.longitude) || 0,
-      student_count: parseInt(formData.student_count, 10) || 0,
-      teacher_count: parseInt(formData.teacher_count, 10) || 0,
-      major_count: parseInt(formData.major_count, 10) || 0,
-      visit_count: parseInt(formData.visit_count, 10) || 0,
+      student_count: formData.student_count === '' ? 0 : parseInt(formData.student_count, 10) || 0,
+      teacher_count: formData.teacher_count === '' ? 0 : parseInt(formData.teacher_count, 10) || 0,
+      major_count: formData.major_count === '' ? 0 : parseInt(formData.major_count, 10) || 0,
+      visit_count: formData.visit_count === '' ? 0 : parseInt(formData.visit_count, 10) || 0,
       last_visit_at: formData.last_visit_at
         ? new Date(new Date(formData.last_visit_at).getTime() - new Date(formData.last_visit_at).getTimezoneOffset() * 60000).toISOString()
         : null,
@@ -347,21 +371,21 @@ const SchoolForm = () => {
             <div className="row">
               <div className="col-md-4 mb-3">
                 <label className="form-label">Student Count</label>
-                <input type="number" className="form-control" name="student_count" value={formData.student_count} onChange={handleChange} placeholder="e.g., 1200" min="0" />
+                <input type="number" className="form-control" name="student_count" value={formData.student_count} onChange={handleChange} onFocus={handleNumberFocus} onKeyDown={handleNumberKeyDown} placeholder="e.g., 1200" min="0" />
               </div>
               <div className="col-md-4 mb-3">
                 <label className="form-label">Teacher Count</label>
-                <input type="number" className="form-control" name="teacher_count" value={formData.teacher_count} onChange={handleChange} placeholder="e.g., 75" min="0" />
+                <input type="number" className="form-control" name="teacher_count" value={formData.teacher_count} onChange={handleChange} onFocus={handleNumberFocus} onKeyDown={handleNumberKeyDown} placeholder="e.g., 75" min="0" />
               </div>
               <div className="col-md-4 mb-3">
                 <label className="form-label">Major Count</label>
-                <input type="number" className="form-control" name="major_count" value={formData.major_count} onChange={handleChange} placeholder="e.g., 3" min="0" />
+                <input type="number" className="form-control" name="major_count" value={formData.major_count} onChange={handleChange} onFocus={handleNumberFocus} onKeyDown={handleNumberKeyDown} placeholder="e.g., 3" min="0" />
               </div>
             </div>
             <div className="row">
               <div className="col-md-4 mb-3">
                 <label className="form-label">Visit Count</label>
-                <input type="number" className="form-control" name="visit_count" value={formData.visit_count} onChange={handleChange} placeholder="e.g., 2" min="0" />
+                <input type="number" className="form-control" name="visit_count" value={formData.visit_count} onChange={handleChange} onFocus={handleNumberFocus} onKeyDown={handleNumberKeyDown} placeholder="e.g., 2" min="0" />
               </div>
               <div className="col-md-4 mb-3">
                 <label className="form-label">Last Visit At</label>
