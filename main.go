@@ -93,7 +93,7 @@ func main() {
 	// Initialize Redis for session management
 	redisClient, err := database.InitRedis()
 	if err != nil {
-		logger.WriteLog(logger.LogLevelWarning, "Redis not available, session management will be disabled")
+		logger.WriteLog(logger.LogLevelDebug, "Redis not available, session management will be disabled")
 	} else {
 		defer database.CloseRedis()
 		logger.WriteLog(logger.LogLevelInfo, "✓ Redis initialized, session management enabled")
