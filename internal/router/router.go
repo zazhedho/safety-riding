@@ -324,7 +324,7 @@ func (r *Routes) SessionRoutes() {
 	// Check if Redis is available
 	redisClient := database.GetRedisClient()
 	if redisClient == nil {
-		logger.WriteLog(logger.LogLevelWarning, "Redis not available, session routes will not be registered")
+		logger.WriteLog(logger.LogLevelDebug, "Redis not available, session routes will not be registered")
 		return
 	}
 
