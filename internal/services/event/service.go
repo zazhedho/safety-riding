@@ -33,8 +33,18 @@ func NewEventService(eventRepo interfaceevent.RepoEventInterface, schoolRepo int
 func (s *EventService) AddEvent(username string, req dto.AddEvent) (domainevent.Event, error) {
 	eventId := utils.CreateUUID()
 	phone := utils.NormalizePhoneTo62(req.InstructorPhone)
+
+	// Validate non-negative values
+	if err := utils.ValidateNonNegative(req.TargetAttendees, "target_attendees"); err != nil {
+		return domainevent.Event{}, err
+	}
 	if err := utils.ValidateNonNegative(req.AttendeesCount, "attendees_count"); err != nil {
 		return domainevent.Event{}, err
+	}
+
+	// Validate: if status is "completed", attendees_count must be filled (> 0)
+	if strings.EqualFold(req.Status, utils.StsCompleted) && req.AttendeesCount == 0 {
+		return domainevent.Event{}, fmt.Errorf("attendees_count must be greater than 0 when event status is 'completed'")
 	}
 
 	data := domainevent.Event{
@@ -51,6 +61,7 @@ func (s *EventService) AddEvent(username string, req dto.AddEvent) (domainevent.
 		ProvinceId:      req.ProvinceId,
 		EventType:       req.EventType,
 		TargetAudience:  req.TargetAudience,
+		TargetAttendees: req.TargetAttendees,
 		AttendeesCount:  req.AttendeesCount,
 		InstructorName:  utils.TitleCase(req.InstructorName),
 		InstructorPhone: phone,
@@ -112,6 +123,10 @@ func (s *EventService) GetEventById(id string) (domainevent.Event, error) {
 }
 
 func (s *EventService) UpdateEvent(id, username, role string, req dto.UpdateEvent) (domainevent.Event, error) {
+	// Validate non-negative values
+	if err := utils.ValidateNonNegative(req.TargetAttendees, "target_attendees"); err != nil {
+		return domainevent.Event{}, err
+	}
 	if err := utils.ValidateNonNegative(req.AttendeesCount, "attendees_count"); err != nil {
 		return domainevent.Event{}, err
 	}
@@ -129,6 +144,17 @@ func (s *EventService) UpdateEvent(id, username, role string, req dto.UpdateEven
 
 	if isFinalized && !isAdmin {
 		return domainevent.Event{}, fmt.Errorf("cannot update event with status '%s'. Event is already finalized", event.Status)
+	}
+
+	// Validate: if changing status to "completed", attendees_count must be filled (> 0)
+	if req.Status != "" && strings.EqualFold(req.Status, utils.StsCompleted) {
+		attendeesCount := event.AttendeesCount
+		if req.AttendeesCount != 0 {
+			attendeesCount = req.AttendeesCount
+		}
+		if attendeesCount == 0 {
+			return domainevent.Event{}, fmt.Errorf("attendees_count must be greater than 0 when changing event status to 'completed'")
+		}
 	}
 
 	// Update fields if provided
@@ -167,6 +193,9 @@ func (s *EventService) UpdateEvent(id, username, role string, req dto.UpdateEven
 	}
 	if req.TargetAudience != "" {
 		event.TargetAudience = req.TargetAudience
+	}
+	if req.TargetAttendees != 0 {
+		event.TargetAttendees = req.TargetAttendees
 	}
 	if req.AttendeesCount != 0 {
 		event.AttendeesCount = req.AttendeesCount

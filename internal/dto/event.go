@@ -13,6 +13,7 @@ type AddEvent struct {
 	ProvinceId      string          `json:"province_id" binding:"required"`
 	EventType       string          `json:"event_type" binding:"required"`
 	TargetAudience  string          `json:"target_audience,omitempty"`
+	TargetAttendees int             `json:"target_attendees,omitempty"`
 	AttendeesCount  int             `json:"attendees_count,omitempty"`
 	InstructorName  string          `json:"instructor_name,omitempty"`
 	InstructorPhone string          `json:"instructor_phone,omitempty"`
@@ -34,6 +35,7 @@ type UpdateEvent struct {
 	ProvinceId      string `json:"province_id,omitempty"`
 	EventType       string `json:"event_type,omitempty"`
 	TargetAudience  string `json:"target_audience,omitempty"`
+	TargetAttendees int    `json:"target_attendees,omitempty"`
 	AttendeesCount  int    `json:"attendees_count,omitempty"`
 	InstructorName  string `json:"instructor_name,omitempty"`
 	InstructorPhone string `json:"instructor_phone,omitempty"`
