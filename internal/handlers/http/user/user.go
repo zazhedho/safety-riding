@@ -1,11 +1,15 @@
 package user
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
 	"reflect"
+	"safety-riding/infrastructure/database"
 	"safety-riding/internal/dto"
+	sessionRepo "safety-riding/internal/repositories/session"
+	sessionSvc "safety-riding/internal/services/session"
 	"safety-riding/internal/services/user"
 	"safety-riding/pkg/filter"
 	"safety-riding/pkg/logger"
@@ -115,6 +119,23 @@ func (h *HandlerUser) Login(ctx *gin.Context) {
 		return
 	}
 
+	// Create session if Redis is available
+	if redisClient := database.GetRedisClient(); redisClient != nil {
+		user, errUser := h.Service.UserRepo.GetByEmail(req.Email)
+		if errUser == nil {
+			sRepo := sessionRepo.NewSessionRepository(redisClient)
+			sSvc := sessionSvc.NewSessionService(sRepo)
+
+			session, errSession := sSvc.CreateSession(context.Background(), &user, token, ctx)
+			if errSession != nil {
+				logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; Failed to create session: %v", logPrefix, errSession))
+				// Continue anyway - session is optional
+			} else {
+				logger.WriteLog(logger.LogLevelInfo, fmt.Sprintf("%s; Session created: %s", logPrefix, session.SessionID))
+			}
+		}
+	}
+
 	res := response.Response(http.StatusOK, "success", logId, map[string]interface{}{"token": token})
 	logger.WriteLog(logger.LogLevelDebug, fmt.Sprintf("%s; Response: %+v;", logPrefix, utils.JsonEncode(token)))
 	ctx.JSON(http.StatusOK, res)
@@ -143,6 +164,21 @@ func (h *HandlerUser) Logout(ctx *gin.Context) {
 		return
 	}
 
+	// Destroy session if Redis is available
+	if redisClient := database.GetRedisClient(); redisClient != nil {
+		sRepo := sessionRepo.NewSessionRepository(redisClient)
+		sSvc := sessionSvc.NewSessionService(sRepo)
+
+		errSession := sSvc.DestroySessionByToken(context.Background(), token.(string))
+		if errSession != nil {
+			logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; Failed to destroy session: %v", logPrefix, errSession))
+			// Continue with token blacklist anyway
+		} else {
+			logger.WriteLog(logger.LogLevelInfo, fmt.Sprintf("%s; Session destroyed successfully", logPrefix))
+		}
+	}
+
+	// Blacklist the token (existing behavior)
 	if err := h.Service.LogoutUser(token.(string)); err != nil {
 		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; Service.LogoutUser; Error: %+v", logPrefix, err))
 		res := response.Response(http.StatusInternalServerError, messages.MsgFail, logId, nil)

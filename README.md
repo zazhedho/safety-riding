@@ -273,44 +273,88 @@ docker-compose down
 Create a `.env` file in the root directory with the following variables:
 
 ```env
-# Server Configuration
-SERVER_PORT=8080
-GIN_MODE=debug
+# Application Configuration
+APP_NAME=Safety Riding API
+APP_ENV=development
+PORT=8080
 
 # Database Configuration
 DB_HOST=localhost
 DB_PORT=5432
-DB_USER=postgres
-DB_PASSWORD=your_password
+DB_USERNAME=postgres
+DB_PASS=your_password
 DB_NAME=safety_riding
 DB_SSLMODE=disable
+# Alternative: Use DATABASE_URL instead of individual DB_* variables
+# DATABASE_URL=postgres://username:password@localhost:5432/safety_riding?sslmode=disable
 
-# Redis Configuration (Optional)
+# JWT Configuration
+JWT_KEY=your-super-secret-jwt-key-change-this-in-production
+JWT_EXP=24
+
+# MinIO Configuration (for file/image uploads)
+MINIO_ENDPOINT=localhost:9000
+MINIO_ACCESS_KEY=minioadmin
+MINIO_SECRET_KEY=minioadmin
+MINIO_BUCKET_NAME=safety-riding
+MINIO_USE_SSL=false
+MINIO_BASE_URL=http://localhost:9000
+
+# Database Migration Configuration
+PATH_MIGRATE=file://migrations
+
+# Cache Configuration
+TTL_CACHE_CONFIG_APP=86400
+
+# Location Data Configuration
+PROVINCE_YEAR=2025
+
+# Application Config ID (Optional)
+CONFIG_ID=
+
+# Redis Configuration (for session management)
 REDIS_HOST=localhost
 REDIS_PORT=6379
 REDIS_PASSWORD=
 REDIS_DB=0
-
-# JWT Configuration
-JWT_SECRET=your-super-secret-jwt-key-change-this
-JWT_EXPIRATION=24h
-
-# MinIO Configuration (Optional - for file uploads)
-MINIO_ENDPOINT=localhost:9000
-MINIO_ACCESS_KEY=minioadmin
-MINIO_SECRET_KEY=minioadmin
-MINIO_BUCKET=safety-riding
-MINIO_USE_SSL=false
-
-# CORS Configuration
-CORS_ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000
-
-# Email Configuration (Optional - for notifications)
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=your-email@gmail.com
-SMTP_PASSWORD=your-app-password
 ```
+
+### Environment Variables Explanation
+
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `APP_NAME` | Application name | Safety Riding API | No |
+| `APP_ENV` | Environment mode | development | No |
+| `PORT` | Server port | 8080 | No |
+| `DB_HOST` | PostgreSQL host | localhost | Yes |
+| `DB_PORT` | PostgreSQL port | 5432 | Yes |
+| `DB_USERNAME` | Database username | postgres | Yes |
+| `DB_PASS` | Database password | - | Yes |
+| `DB_NAME` | Database name | safety_riding | Yes |
+| `DB_SSLMODE` | SSL mode | disable | No |
+| `DATABASE_URL` | Alternative connection string | - | No* |
+| `JWT_KEY` | Secret key for JWT signing | - | Yes |
+| `JWT_EXP` | JWT expiration in hours | 24 | No |
+| `MINIO_ENDPOINT` | MinIO server endpoint | localhost:9000 | Yes** |
+| `MINIO_ACCESS_KEY` | MinIO access key | minioadmin | Yes** |
+| `MINIO_SECRET_KEY` | MinIO secret key | minioadmin | Yes** |
+| `MINIO_BUCKET_NAME` | MinIO bucket name | safety-riding | Yes** |
+| `MINIO_USE_SSL` | Use SSL for MinIO | false | No |
+| `MINIO_BASE_URL` | Base URL for file access | http://localhost:9000 | Yes** |
+| `PATH_MIGRATE` | Migration files path | file://migrations | No |
+| `TTL_CACHE_CONFIG_APP` | Cache TTL in seconds | 86400 | No |
+| `PROVINCE_YEAR` | Province data year | 2025 | No |
+| `CONFIG_ID` | Application config ID | - | No |
+| `REDIS_HOST` | Redis server host | localhost | Yes*** |
+| `REDIS_PORT` | Redis server port | 6379 | Yes*** |
+| `REDIS_PASSWORD` | Redis password | - | No |
+| `REDIS_DB` | Redis database number | 0 | No |
+
+\* Use either `DATABASE_URL` OR individual `DB_*` variables, not both.
+
+\** Required only if using file upload features.
+
+\*** Required for session management. Sessions will not work without Redis.
 
 ### Frontend Configuration
 
