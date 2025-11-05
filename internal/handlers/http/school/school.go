@@ -183,7 +183,7 @@ func (h *SchoolHandler) GetEducationStats(ctx *gin.Context) {
 	logPrefix := fmt.Sprintf("[%s][SchoolHandler][GetEducationStats]", logId)
 
 	params, _ := filter.GetBaseParams(ctx, "name", "asc", 10)
-	params.Filters = filter.WhitelistStringFilter(params.Filters, []string{"district_id", "city_id", "province_id", "is_educated"})
+	params.Filters = filter.WhitelistStringFilter(params.Filters, []string{"district_id", "city_id", "province_id", "is_educated", "month", "year"})
 
 	stats, err := h.Service.GetEducationStats(params)
 	if err != nil {

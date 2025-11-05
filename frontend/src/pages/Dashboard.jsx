@@ -485,7 +485,7 @@ const Dashboard = () => {
             <div className="card-header">
               <h5 className="mb-0">
                 <i className="bi bi-geo-alt-fill me-2 text-danger"></i>
-                Top 10 Schools by Province
+                Top 10 Schools by City/Regency
               </h5>
             </div>
             <div className="card-body">

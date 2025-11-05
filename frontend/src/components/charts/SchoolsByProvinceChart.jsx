@@ -57,24 +57,24 @@ const wrapLabel = (label, maxLength = 14) => {
 };
 
 const SchoolsByProvinceChart = ({ data }) => {
-  // Group schools by province
-  const schoolsByProvince = {};
+  // Group schools by city/regency (fallback to province name, then Unknown)
+  const schoolsByCity = {};
 
   data.forEach(school => {
-    const provinceName = school.province_name || 'Unknown';
-    if (!schoolsByProvince[provinceName]) {
-      schoolsByProvince[provinceName] = 0;
+    const cityName = school.city_name || school.province_name || 'Unknown';
+    if (!schoolsByCity[cityName]) {
+      schoolsByCity[cityName] = 0;
     }
-    schoolsByProvince[provinceName]++;
+    schoolsByCity[cityName]++;
   });
 
   // Sort by count and get top 10
-  const sortedProvinces = Object.entries(schoolsByProvince)
+  const sortedCities = Object.entries(schoolsByCity)
     .sort((a, b) => b[1] - a[1])
     .slice(0, 10);
 
-  const provinceNames = sortedProvinces.map(([name]) => name);
-  const schoolCounts = sortedProvinces.map(([, count]) => count);
+  const cityNames = sortedCities.map(([name]) => name);
+  const schoolCounts = sortedCities.map(([, count]) => count);
 
   // Generate distinct colors per province to visually separate bars
   const generateColors = (count) => {
@@ -101,10 +101,10 @@ const SchoolsByProvinceChart = ({ data }) => {
     return { colors, borderColors };
   };
 
-  const { colors, borderColors } = generateColors(provinceNames.length);
+  const { colors, borderColors } = generateColors(cityNames.length);
 
   const chartData = {
-    labels: provinceNames,
+    labels: cityNames,
     datasets: [
       {
         label: 'Number of Schools',
@@ -164,7 +164,7 @@ const SchoolsByProvinceChart = ({ data }) => {
     },
   };
 
-  if (provinceNames.length === 0) {
+  if (cityNames.length === 0) {
     return (
       <div className="text-center py-5 text-muted">
         <i className="bi bi-geo-alt" style={{ fontSize: '3rem' }}></i>

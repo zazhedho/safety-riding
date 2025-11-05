@@ -5,6 +5,7 @@ import (
 	domainschool "safety-riding/internal/domain/school"
 	interfaceschool "safety-riding/internal/interfaces/school"
 	"safety-riding/pkg/filter"
+	"strconv"
 
 	"gorm.io/gorm"
 )
@@ -119,6 +120,22 @@ func (r *repo) GetEducationStats(params filter.BaseParams) ([]map[string]interfa
 		Joins("LEFT JOIN events ON schools.id = events.school_id AND events.deleted_at IS NULL").
 		Where("schools.deleted_at IS NULL").
 		Group("schools.id, schools.name, schools.npsn, schools.district_id, schools.district_name, schools.city_id, schools.city_name, schools.province_id, schools.province_name, schools.student_count, schools.is_educated")
+
+	if monthVal, ok := params.Filters["month"]; ok {
+		monthStr := fmt.Sprintf("%v", monthVal)
+		if monthInt, err := strconv.Atoi(monthStr); err == nil && monthInt >= 1 && monthInt <= 12 {
+			query = query.Where("EXTRACT(MONTH FROM events.event_date::date) = ?", monthInt)
+		}
+		delete(params.Filters, "month")
+	}
+
+	if yearVal, ok := params.Filters["year"]; ok {
+		yearStr := fmt.Sprintf("%v", yearVal)
+		if yearInt, err := strconv.Atoi(yearStr); err == nil {
+			query = query.Where("EXTRACT(YEAR FROM events.event_date::date) = ?", yearInt)
+		}
+		delete(params.Filters, "year")
+	}
 
 	// Apply search filter
 	if params.Search != "" {

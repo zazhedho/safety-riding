@@ -15,7 +15,9 @@ const SchoolEducationStats = () => {
     city_id: '',
     district_id: '',
     is_educated: '',
-    search: ''
+    search: '',
+    month: '',
+    year: String(new Date().getFullYear())
   });
   const [pagination, setPagination] = useState({
     page: 1,
@@ -25,6 +27,8 @@ const SchoolEducationStats = () => {
     order_by: 'name',
     order_direction: 'asc'
   });
+  const currentYear = new Date().getFullYear();
+  const yearOptions = Array.from({ length: 5 }, (_, idx) => String(currentYear - idx));
 
   useEffect(() => {
     fetchProvinces();
@@ -89,6 +93,8 @@ const SchoolEducationStats = () => {
       if (filters.city_id) params['filters[city_id]'] = filters.city_id;
       if (filters.district_id) params['filters[district_id]'] = filters.district_id;
       if (filters.is_educated !== '') params['filters[is_educated]'] = filters.is_educated;
+      if (filters.month) params['filters[month]'] = filters.month;
+      if (filters.year) params['filters[year]'] = filters.year;
       if (filters.search) params.search = filters.search;
 
       const response = await schoolService.getEducationStats(params);
@@ -102,12 +108,21 @@ const SchoolEducationStats = () => {
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
-    setFilters(prev => ({
-      ...prev,
+    const updatedFilters = {
+      ...filters,
       [name]: value,
-      ...(name === 'province_id' && { city_id: '', district_id: '' }),
-      ...(name === 'city_id' && { district_id: '' })
-    }));
+    };
+
+    if (name === 'province_id') {
+      updatedFilters.city_id = '';
+      updatedFilters.district_id = '';
+    }
+
+    if (name === 'city_id') {
+      updatedFilters.district_id = '';
+    }
+
+    setFilters(updatedFilters);
   };
 
   const handleSearch = () => {
@@ -241,7 +256,7 @@ const SchoolEducationStats = () => {
       <div className="card mb-4">
         <div className="card-body">
           <div className="row g-3">
-            <div className="col-md-3">
+            <div className="col-12 col-lg-3">
               <input
                 type="text"
                 className="form-control"
@@ -251,7 +266,7 @@ const SchoolEducationStats = () => {
                 onChange={handleFilterChange}
               />
             </div>
-            <div className="col-md-2">
+            <div className="col-6 col-lg-2">
               <select
                 className="form-select"
                 name="province_id"
@@ -264,7 +279,7 @@ const SchoolEducationStats = () => {
                 ))}
               </select>
             </div>
-            <div className="col-md-2">
+            <div className="col-6 col-lg-2">
               <select
                 className="form-select"
                 name="city_id"
@@ -278,7 +293,7 @@ const SchoolEducationStats = () => {
                 ))}
               </select>
             </div>
-            <div className="col-md-2">
+            <div className="col-6 col-lg-2">
               <select
                 className="form-select"
                 name="district_id"
@@ -292,7 +307,7 @@ const SchoolEducationStats = () => {
                 ))}
               </select>
             </div>
-            <div className="col-md-2">
+            <div className="col-6 col-lg-2">
               <select
                 className="form-select"
                 name="is_educated"
@@ -304,8 +319,36 @@ const SchoolEducationStats = () => {
                 <option value="false">Not Educated</option>
               </select>
             </div>
-            <div className="col-md-1">
-              <button className="btn btn-primary w-100" onClick={handleSearch}>
+            <div className="col-6 col-lg-2">
+              <select
+                className="form-select"
+                name="month"
+                value={filters.month}
+                onChange={handleFilterChange}
+              >
+                <option value="">All Months</option>
+                {Array.from({ length: 12 }, (_, index) => (
+                  <option key={index + 1} value={String(index + 1)}>
+                    {new Date(2000, index, 1).toLocaleString('en-US', { month: 'long' })}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="col-6 col-lg-2">
+              <select
+                className="form-select"
+                name="year"
+                value={filters.year}
+                onChange={handleFilterChange}
+              >
+                <option value="">All Years</option>
+                {yearOptions.map(year => (
+                  <option key={year} value={year}>{year}</option>
+                ))}
+              </select>
+            </div>
+            <div className="col-12 col-lg-1 d-grid">
+              <button className="btn btn-primary" onClick={handleSearch}>
                 <i className="bi bi-search"></i>
               </button>
             </div>
