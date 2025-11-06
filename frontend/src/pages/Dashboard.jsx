@@ -374,9 +374,15 @@ const Dashboard = () => {
               <div className="flex-grow-1 pe-2">
                 <h6 className="text-muted mb-1 small">Total Events</h6>
                 <div className="stats-number">{stats.events}</div>
-                <small className="text-info d-block text-truncate">
+                <small className="text-info d-flex align-items-center">
                   <i className="bi bi-people me-1"></i>
                   Avg {additionalStats.avgAttendeesPerEvent} attendees
+                  <span className="stats-info-tooltip ms-1">
+                    <i className="bi bi-info-circle" style={{ cursor: 'help', fontSize: '0.85rem' }}></i>
+                    <span className="tooltiptext">
+                      Average participants per event based on all recorded activities
+                    </span>
+                  </span>
                 </small>
               </div>
               <i className="bi bi-calendar-event fs-1 text-danger flex-shrink-0"></i>
@@ -390,9 +396,15 @@ const Dashboard = () => {
               <div className="flex-grow-1 pe-2">
                 <h6 className="text-muted mb-1 small">Total Accidents</h6>
                 <div className="stats-number">{stats.accidents}</div>
-                <small className="text-danger d-block text-truncate">
+                <small className="text-danger d-flex align-items-center">
                   <i className="bi bi-exclamation-triangle me-1"></i>
                   {additionalStats.totalDeaths} deaths, {additionalStats.totalInjured} injured
+                  <span className="stats-info-tooltip ms-1">
+                    <i className="bi bi-info-circle" style={{ cursor: 'help', fontSize: '0.85rem' }}></i>
+                    <span className="tooltiptext">
+                      Total fatalities and injuries aggregated from the entire accident dataset
+                    </span>
+                  </span>
                 </small>
               </div>
               <i className="bi bi-exclamation-triangle fs-1 text-danger flex-shrink-0"></i>
@@ -406,9 +418,15 @@ const Dashboard = () => {
               <div className="flex-grow-1 pe-2">
                 <h6 className="text-muted mb-1 small">Budget Utilization</h6>
                 <div className="stats-number">{additionalStats.budgetUtilizationRate}%</div>
-                <small className={`${additionalStats.budgetUtilizationRate > 100 ? 'text-danger' : 'text-success'} d-block text-truncate`}>
+                <small className={`${additionalStats.budgetUtilizationRate > 100 ? 'text-danger' : 'text-success'} d-flex align-items-center`}>
                   <i className={`bi bi-${additionalStats.budgetUtilizationRate > 100 ? 'exclamation' : 'check'}-circle me-1`}></i>
                   {additionalStats.budgetUtilizationRate > 100 ? 'Over budget' : 'On track'}
+                  <span className="stats-info-tooltip ms-1">
+                    <i className="bi bi-info-circle" style={{ cursor: 'help', fontSize: '0.85rem' }}></i>
+                    <span className="tooltiptext">
+                      Percentage of overall actual spending compared to total allocated budgets
+                    </span>
+                  </span>
                 </small>
               </div>
               <i className="bi bi-cash-stack fs-1 text-danger flex-shrink-0"></i>
