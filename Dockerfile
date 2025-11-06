@@ -18,6 +18,9 @@ FROM alpine:latest
 
 WORKDIR /root/
 
+# Install required runtime packages (tzdata for timezone support)
+RUN apk add --no-cache tzdata
+
 # Copy the built binary from the builder stage
 COPY --from=builder /app/main .
 

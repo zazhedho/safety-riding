@@ -1,0 +1,113 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres-safety-riding
+    environment:
+      POSTGRES_DB: safety_riding
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis-safety-riding
+    command: redis-server --save 20 1 --loglevel warning
+    ports:
+      - "6379:6379"
+
+  minio:
+    image: minio/minio:latest
+    container_name: minio-safety-riding
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio-data:/data
+
+  minio-init:
+    image: minio/mc:latest
+    container_name: minio-init-safety-riding
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+        until (mc alias set minio http://minio:9000 $${MINIO_ROOT_USER} $${MINIO_ROOT_PASSWORD}); do
+          echo 'Waiting for MinIO...';
+          sleep 2;
+        done;
+        mc mb -p minio/$${MINIO_BUCKET_NAME};
+        mc anonymous set download minio/$${MINIO_BUCKET_NAME};
+      "
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+      MINIO_BUCKET_NAME: safety-riding
+    restart: "no"
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: be-safety-riding
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      minio-init:
+        condition: service_completed_successfully
+    environment:
+      APP_NAME: Safety Riding API
+      APP_ENV: production
+      PORT: 8080
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASS: postgres
+      DB_NAME: safety_riding
+      DB_SSLMODE: disable
+      PATH_MIGRATE: file://migrations
+      JWT_KEY: super-secret-development-key
+      JWT_EXP: 24
+      MINIO_ENDPOINT: minio:9000
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+      MINIO_BUCKET_NAME: safety-riding
+      MINIO_USE_SSL: "false"
+      MINIO_BASE_URL: http://minio:9000
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ""
+      REDIS_DB: 0
+      PROVINCE_YEAR: 2025
+      CONFIG_ID: ""
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: fe-safety-riding
+    depends_on:
+      - backend
+    ports:
+      - "3000:80"
+
+volumes:
+  postgres-data:
+  minio-data:

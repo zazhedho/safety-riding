@@ -86,13 +86,31 @@ func (s *ServiceUser) RegisterUser(req dto.UserRegister) (domainuser.Users, erro
 	}
 
 	phone := utils.NormalizePhoneTo62(req.Phone)
+	var roleName = utils.RoleViewer
+	if strings.TrimSpace(req.Role) != "" {
+		roleName = strings.ToLower(req.Role)
+	}
+
+	var roleId *string
+	roleEntity, err := s.RoleRepo.GetByName(roleName)
+	if err == nil && roleEntity.Id != "" {
+		roleId = &roleEntity.Id
+	} else {
+		// Fallback to viewer role if the provided role does not exist
+		roleName = utils.RoleViewer
+		if viewerRole, errViewer := s.RoleRepo.GetByName(utils.RoleViewer); errViewer == nil && viewerRole.Id != "" {
+			roleId = &viewerRole.Id
+		}
+	}
+
 	data = domainuser.Users{
 		Id:        utils.CreateUUID(),
 		Name:      req.Name,
 		Phone:     phone,
 		Email:     req.Email,
 		Password:  string(hashedPwd),
-		Role:      utils.RoleViewer,
+		Role:      roleName,
+		RoleId:    roleId,
 		CreatedAt: time.Now(),
 	}
 
@@ -220,9 +238,15 @@ func (s *ServiceUser) Update(id, role string, req dto.UserUpdate) (domainuser.Us
 		data.Email = req.Email
 	}
 
-	if role == utils.RoleAdmin {
-		if req.Role != "" {
-			data.Role = strings.ToLower(req.Role)
+	if role == utils.RoleAdmin && strings.TrimSpace(req.Role) != "" {
+		newRoleName := strings.ToLower(req.Role)
+		data.Role = newRoleName
+
+		roleEntity, err := s.RoleRepo.GetByName(newRoleName)
+		if err == nil && roleEntity.Id != "" {
+			data.RoleId = &roleEntity.Id
+		} else {
+			data.RoleId = nil
 		}
 	}
 

@@ -17,6 +17,7 @@ type Users struct {
 	Phone     string         `json:"phone,omitempty" gorm:"column:phone"`
 	Password  string         `json:"-" gorm:"column:password"`
 	Role      string         `json:"role,omitempty" gorm:"column:role"`
+	RoleId    *string        `json:"role_id,omitempty" gorm:"column:role_id"`
 	CreatedAt time.Time      `json:"created_at,omitempty" gorm:"column:created_at"`
 	UpdatedAt *time.Time     `json:"updated_at,omitempty" gorm:"column:updated_at"`
 	DeletedAt gorm.DeletedAt `json:"-" gorm:"index"`
