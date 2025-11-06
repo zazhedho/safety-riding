@@ -29,6 +29,11 @@ const EventForm = () => {
     instructor_name: '',
     instructor_phone: '',
     status: 'planned',
+    visiting_service_unit_entry: '',
+    visiting_service_profit: '',
+    on_the_spot_sales: [
+      { vehicle_type: '', payment_method: 'cash', quantity: '' }
+    ],
     notes: ''
   });
   const [schools, setSchools] = useState([]);
@@ -65,7 +70,25 @@ const EventForm = () => {
     try {
       const response = await eventService.getById(eventId);
       const eventData = response.data.data;
-      setFormData(eventData);
+      const sales = (eventData.on_the_spot_sales && eventData.on_the_spot_sales.length > 0)
+        ? eventData.on_the_spot_sales.map(item => ({
+            vehicle_type: item.vehicle_type || '',
+            payment_method: item.payment_method || 'cash',
+            quantity: item.quantity !== undefined && item.quantity !== null ? item.quantity.toString() : ''
+          }))
+        : [{ vehicle_type: '', payment_method: 'cash', quantity: '' }];
+
+      setFormData(prev => ({
+        ...prev,
+        ...eventData,
+        target_attendees: eventData.target_attendees ?? '',
+        attendees_count: eventData.attendees_count ?? '',
+        visiting_service_unit_entry: eventData.visiting_service_unit_entry ?? '',
+        visiting_service_profit: eventData.visiting_service_profit !== undefined && eventData.visiting_service_profit !== null
+          ? eventData.visiting_service_profit.toString()
+          : '',
+        on_the_spot_sales: sales
+      }));
 
       // Check if event status is final (completed or cancelled)
       const finalStatuses = ['completed', 'cancelled'];
@@ -138,9 +161,14 @@ const EventForm = () => {
       else {
         setFormData(prev => ({ ...prev, [name]: value }));
       }
-    } else if (name === 'attendees_count' || name === 'target_attendees') {
-      // Allow empty string or valid positive number only
-      if (value === '' || (value >= 0 && !value.includes('-'))) {
+    } else if (['attendees_count', 'target_attendees', 'visiting_service_unit_entry'].includes(name)) {
+      // Allow empty string or valid non-negative integer only
+      if (value === '' || (!Number.isNaN(Number(value)) && Number(value) >= 0 && !value.includes('-'))) {
+        setFormData(prev => ({ ...prev, [name]: value }));
+      }
+    } else if (name === 'visiting_service_profit') {
+      // Allow empty string or valid non-negative decimal number
+      if (value === '' || (!Number.isNaN(Number(value)) && Number(value) >= 0)) {
         setFormData(prev => ({ ...prev, [name]: value }));
       }
     } else {
@@ -161,14 +189,66 @@ const EventForm = () => {
     }
   };
 
+  const handleOnTheSpotSaleChange = (index, field, value) => {
+    setFormData(prev => {
+      const updatedSales = prev.on_the_spot_sales.map((sale, idx) => {
+        if (idx !== index) return sale;
+
+        if (field === 'quantity') {
+          if (value === '' || (!Number.isNaN(Number(value)) && Number(value) >= 0 && !value.includes('-'))) {
+            return { ...sale, quantity: value };
+          }
+          return sale;
+        }
+
+        return { ...sale, [field]: value };
+      });
+
+      return { ...prev, on_the_spot_sales: updatedSales };
+    });
+  };
+
+  const addOnTheSpotSaleRow = () => {
+    setFormData(prev => ({
+      ...prev,
+      on_the_spot_sales: [
+        ...prev.on_the_spot_sales,
+        { vehicle_type: '', payment_method: 'cash', quantity: '' }
+      ]
+    }));
+  };
+
+  const removeOnTheSpotSaleRow = (index) => {
+    setFormData(prev => {
+      const updatedSales = prev.on_the_spot_sales.filter((_, idx) => idx !== index);
+      return {
+        ...prev,
+        on_the_spot_sales: updatedSales.length > 0
+          ? updatedSales
+          : [{ vehicle_type: '', payment_method: 'cash', quantity: '' }]
+      };
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     // Convert empty string to 0 for number fields before submitting
+    const sanitizedSales = formData.on_the_spot_sales
+      .map(item => ({
+        vehicle_type: item.vehicle_type.trim(),
+        payment_method: item.payment_method || 'cash',
+        quantity: item.quantity === '' ? 0 : parseInt(item.quantity, 10) || 0
+      }))
+      .filter(item => item.vehicle_type !== '' || item.quantity > 0);
+
     const submitData = {
       ...formData,
-      target_attendees: formData.target_attendees === '' ? 0 : parseInt(formData.target_attendees) || 0,
-      attendees_count: formData.attendees_count === '' ? 0 : parseInt(formData.attendees_count) || 0
+      target_attendees: formData.target_attendees === '' ? 0 : parseInt(formData.target_attendees, 10) || 0,
+      attendees_count: formData.attendees_count === '' ? 0 : parseInt(formData.attendees_count, 10) || 0,
+      visiting_service_unit_entry: formData.visiting_service_unit_entry === '' ? 0 : parseInt(formData.visiting_service_unit_entry, 10) || 0,
+      visiting_service_profit: formData.visiting_service_profit === '' ? 0 : parseFloat(formData.visiting_service_profit) || 0,
+      on_the_spot_sales: sanitizedSales
     };
 
     // Validate: if status is "completed", attendees_count must be filled
@@ -350,6 +430,110 @@ const EventForm = () => {
                     {formData.attendees_count} of {formData.target_attendees} attendees
                   </small>
                 )}
+              </div>
+            </div>
+            <div className="mb-4">
+              <div className="d-flex justify-content-between align-items-center mb-2">
+                <h5 className="mb-0">On the Spot Sales</h5>
+                <button type="button" className="btn btn-sm btn-outline-primary" onClick={addOnTheSpotSaleRow} disabled={shouldDisable}>
+                  <i className="bi bi-plus-circle me-1"></i>Add Row
+                </button>
+              </div>
+              {formData.on_the_spot_sales.map((sale, index) => (
+                <div className="card mb-3" key={`on-the-spot-${index}`}>
+                  <div className="card-body">
+                    <div className="row">
+                      <div className="col-md-4 mb-3">
+                        <label className="form-label">Vehicle Type</label>
+                        <input
+                          type="text"
+                          className="form-control"
+                          value={sale.vehicle_type}
+                          onChange={(e) => handleOnTheSpotSaleChange(index, 'vehicle_type', e.target.value)}
+                          placeholder="e.g., Scooter"
+                          disabled={shouldDisable}
+                        />
+                      </div>
+                      <div className="col-md-4 mb-3">
+                        <label className="form-label">Payment Method</label>
+                        <select
+                          className="form-select"
+                          value={sale.payment_method}
+                          onChange={(e) => handleOnTheSpotSaleChange(index, 'payment_method', e.target.value)}
+                          disabled={shouldDisable}
+                        >
+                          <option value="cash">Cash</option>
+                          <option value="credit">Credit</option>
+                        </select>
+                      </div>
+                      <div className="col-md-3 mb-3">
+                        <label className="form-label">Quantity</label>
+                        <input
+                          type="number"
+                          className="form-control"
+                          value={sale.quantity}
+                          onChange={(e) => handleOnTheSpotSaleChange(index, 'quantity', e.target.value)}
+                          onFocus={handleNumberFocus}
+                          onKeyDown={handleNumberKeyDown}
+                          placeholder="e.g., 5"
+                          min="0"
+                          disabled={shouldDisable}
+                        />
+                      </div>
+                      <div className="col-md-1 d-flex align-items-end mb-3">
+                        <button
+                          type="button"
+                          className="btn btn-outline-danger w-100"
+                          onClick={() => removeOnTheSpotSaleRow(index)}
+                          disabled={shouldDisable}
+                          aria-label="Remove row"
+                        >
+                          <i className="bi bi-trash"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              <small className="text-muted">
+                <i className="bi bi-info-circle me-1"></i>
+                Add one row per unit sold to capture different vehicle types and payment methods.
+              </small>
+            </div>
+            <div className="row">
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Visiting Service Unit Entry</label>
+                <input
+                  type="number"
+                  className="form-control"
+                  name="visiting_service_unit_entry"
+                  value={formData.visiting_service_unit_entry}
+                  onChange={handleChange}
+                  onFocus={handleNumberFocus}
+                  onKeyDown={handleNumberKeyDown}
+                  placeholder="e.g., 10"
+                  min="0"
+                  disabled={shouldDisable}
+                />
+              </div>
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Visiting Service Profit (IDR)</label>
+                <div className="input-group">
+                  <span className="input-group-text">Rp</span>
+                  <input
+                    type="number"
+                    className="form-control"
+                    name="visiting_service_profit"
+                    value={formData.visiting_service_profit}
+                    onChange={handleChange}
+                    onFocus={handleNumberFocus}
+                    onKeyDown={handleNumberKeyDown}
+                    placeholder="e.g., 1500000"
+                    min="0"
+                    step="0.01"
+                    disabled={shouldDisable}
+                  />
+                </div>
               </div>
             </div>
             <div className="row">

@@ -12,28 +12,31 @@ func (Event) TableName() string {
 }
 
 type Event struct {
-	ID              string `json:"id" gorm:"column:id;primaryKey"`
-	SchoolId        string `json:"school_id" gorm:"column:school_id"`
-	Title           string `json:"title" gorm:"column:title"`
-	Description     string `json:"description" gorm:"column:description"`
-	EventDate       string `json:"event_date" gorm:"column:event_date"`
-	StartTime       string `json:"start_time" gorm:"column:start_time"`
-	EndTime         string `json:"end_time" gorm:"column:end_time"`
-	Location        string `json:"location" gorm:"column:location"`
-	DistrictId      string `json:"district_id" gorm:"column:district_id"`
-	CityId          string `json:"city_id" gorm:"column:city_id"`
-	ProvinceId      string `json:"province_id" gorm:"column:province_id"`
-	EventType       string `json:"event_type" gorm:"column:event_type"`
-	TargetAudience  string `json:"target_audience" gorm:"column:target_audience"`
-	TargetAttendees int    `json:"target_attendees" gorm:"column:target_attendees"`
-	AttendeesCount  int    `json:"attendees_count" gorm:"column:attendees_count"`
-	InstructorName  string `json:"instructor_name" gorm:"column:instructor_name"`
-	InstructorPhone string `json:"instructor_phone" gorm:"column:instructor_phone"`
-	Status          string `json:"status" gorm:"column:status"`
-	Notes           string `json:"notes" gorm:"column:notes"`
+	ID                       string  `json:"id" gorm:"column:id;primaryKey"`
+	SchoolId                 string  `json:"school_id" gorm:"column:school_id"`
+	Title                    string  `json:"title" gorm:"column:title"`
+	Description              string  `json:"description" gorm:"column:description"`
+	EventDate                string  `json:"event_date" gorm:"column:event_date"`
+	StartTime                string  `json:"start_time" gorm:"column:start_time"`
+	EndTime                  string  `json:"end_time" gorm:"column:end_time"`
+	Location                 string  `json:"location" gorm:"column:location"`
+	DistrictId               string  `json:"district_id" gorm:"column:district_id"`
+	CityId                   string  `json:"city_id" gorm:"column:city_id"`
+	ProvinceId               string  `json:"province_id" gorm:"column:province_id"`
+	EventType                string  `json:"event_type" gorm:"column:event_type"`
+	TargetAudience           string  `json:"target_audience" gorm:"column:target_audience"`
+	TargetAttendees          int     `json:"target_attendees" gorm:"column:target_attendees"`
+	AttendeesCount           int     `json:"attendees_count" gorm:"column:attendees_count"`
+	VisitingServiceUnitEntry int     `json:"visiting_service_unit_entry" gorm:"column:visiting_service_unit_entry"`
+	VisitingServiceProfit    float64 `json:"visiting_service_profit" gorm:"column:visiting_service_profit"`
+	InstructorName           string  `json:"instructor_name" gorm:"column:instructor_name"`
+	InstructorPhone          string  `json:"instructor_phone" gorm:"column:instructor_phone"`
+	Status                   string  `json:"status" gorm:"column:status"`
+	Notes                    string  `json:"notes" gorm:"column:notes"`
 
-	Photos []EventPhoto        `json:"photos,omitempty" gorm:"foreignKey:EventId;constraint:OnDelete:CASCADE"`
-	School domainschool.School `json:"school,omitempty" gorm:"foreignKey:SchoolId;references:ID"`
+	Photos         []EventPhoto         `json:"photos,omitempty" gorm:"foreignKey:EventId;constraint:OnDelete:CASCADE"`
+	OnTheSpotSales []EventOnTheSpotSale `json:"on_the_spot_sales,omitempty" gorm:"foreignKey:EventId;constraint:OnDelete:CASCADE"`
+	School         domainschool.School  `json:"school,omitempty" gorm:"foreignKey:SchoolId;references:ID"`
 
 	CreatedAt time.Time      `json:"created_at" gorm:"column:created_at"`
 	CreatedBy string         `json:"created_by" gorm:"column:created_by"`
@@ -58,4 +61,20 @@ type EventPhoto struct {
 	CreatedBy string         `json:"created_by" gorm:"column:created_by"`
 	DeletedAt gorm.DeletedAt `json:"-"`
 	DeletedBy string         `json:"-"`
+}
+
+func (EventOnTheSpotSale) TableName() string {
+	return "event_on_the_spot_sales"
+}
+
+type EventOnTheSpotSale struct {
+	ID            string    `json:"id" gorm:"column:id;primaryKey"`
+	EventId       string    `json:"event_id" gorm:"column:event_id"`
+	VehicleType   string    `json:"vehicle_type" gorm:"column:vehicle_type"`
+	PaymentMethod string    `json:"payment_method" gorm:"column:payment_method"`
+	Quantity      int       `json:"quantity" gorm:"column:quantity"`
+	CreatedAt     time.Time `json:"created_at" gorm:"column:created_at"`
+	CreatedBy     string    `json:"created_by" gorm:"column:created_by"`
+	UpdatedAt     time.Time `json:"updated_at" gorm:"column:updated_at"`
+	UpdatedBy     string    `json:"updated_by" gorm:"column:updated_by"`
 }

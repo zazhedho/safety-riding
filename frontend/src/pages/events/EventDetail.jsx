@@ -85,6 +85,25 @@ const EventDetail = () => {
     return `${hours}:${minutes}`;
   };
 
+  const formatNumber = (value) => {
+    if (value === null || value === undefined) return '-';
+    const number = Number(value);
+    if (Number.isNaN(number)) return '-';
+    return number.toLocaleString('id-ID');
+  };
+
+  const formatCurrency = (value) => {
+    if (value === null || value === undefined) return '-';
+    const number = Number(value);
+    if (Number.isNaN(number)) return '-';
+    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 2 }).format(number);
+  };
+
+  const formatPaymentMethod = (method) => {
+    if (!method) return '-';
+    return method.charAt(0).toUpperCase() + method.slice(1);
+  };
+
   // Handle file selection
   const handleFileSelect = (e) => {
     const files = Array.from(e.target.files);
@@ -280,6 +299,9 @@ const EventDetail = () => {
   };
 
   const achievementBadge = getAchievementBadge();
+  const totalOnTheSpotSales = Array.isArray(event.on_the_spot_sales)
+    ? event.on_the_spot_sales.reduce((sum, item) => sum + (item.quantity || 0), 0)
+    : 0;
 
   return (
     <DashboardLayout>
@@ -529,102 +551,179 @@ const EventDetail = () => {
             )}
 
             {activeTab === 'participants' && (
-              <div className="row">
-                <div className="col-lg-6 mb-4">
-                  <div className="card h-100">
-                    <div className="card-header">
-                      <h5 className="mb-0">
-                        <i className="bi bi-person-badge me-2"></i>Instructor Information
-                      </h5>
+              <>
+                <div className="row">
+                  <div className="col-lg-6 mb-4">
+                    <div className="card h-100">
+                      <div className="card-header">
+                        <h5 className="mb-0">
+                          <i className="bi bi-person-badge me-2"></i>Instructor Information
+                        </h5>
+                      </div>
+                      <div className="card-body">
+                        <table className="table table-borderless">
+                          <tbody>
+                            <tr>
+                              <td className="text-muted" style={{ width: '40%' }}>
+                                <strong>Instructor Name</strong>
+                              </td>
+                              <td><strong>{event.instructor_name}</strong></td>
+                            </tr>
+                            <tr>
+                              <td className="text-muted">
+                                <strong>Phone</strong>
+                              </td>
+                              <td>
+                                {event.instructor_phone ? (
+                                  <a href={`tel:${event.instructor_phone}`} className="text-decoration-none">
+                                    <i className="bi bi-telephone me-1"></i>{event.instructor_phone}
+                                  </a>
+                                ) : '-'}
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
-                    <div className="card-body">
-                      <table className="table table-borderless">
-                        <tbody>
-                          <tr>
-                            <td className="text-muted" style={{ width: '40%' }}>
-                              <strong>Instructor Name</strong>
-                            </td>
-                            <td><strong>{event.instructor_name}</strong></td>
-                          </tr>
-                          <tr>
-                            <td className="text-muted">
-                              <strong>Phone</strong>
-                            </td>
-                            <td>
-                              {event.instructor_phone ? (
-                                <a href={`tel:${event.instructor_phone}`} className="text-decoration-none">
-                                  <i className="bi bi-telephone me-1"></i>{event.instructor_phone}
-                                </a>
-                              ) : '-'}
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
+                  </div>
+                  <div className="col-lg-6 mb-4">
+                    <div className="card h-100">
+                      <div className="card-header">
+                        <h5 className="mb-0">
+                          <i className="bi bi-people me-2"></i>Participants Information
+                        </h5>
+                      </div>
+                      <div className="card-body">
+                        <table className="table table-borderless">
+                          <tbody>
+                            <tr>
+                              <td className="text-muted" style={{ width: '40%' }}>
+                                <strong>Target Audience</strong>
+                              </td>
+                              <td><span className="badge bg-info">{event.target_audience}</span></td>
+                            </tr>
+                            <tr>
+                              <td className="text-muted">
+                                <strong>Target Attendees</strong>
+                              </td>
+                              <td>
+                                <i className="bi bi-bullseye me-1"></i>
+                                <strong>{event.target_attendees?.toLocaleString() || 0}</strong> participants (planned)
+                              </td>
+                            </tr>
+                            <tr>
+                              <td className="text-muted">
+                                <strong>Actual Attendees</strong>
+                              </td>
+                              <td>
+                                <i className="bi bi-people-fill me-1"></i>
+                                <strong>{event.attendees_count.toLocaleString()}</strong> participants
+                              </td>
+                            </tr>
+                            <tr>
+                              <td className="text-muted">
+                                <strong>Achievement</strong>
+                              </td>
+                              <td>
+                                <span className={`badge bg-${achievementBadge.color} fs-6 px-3 py-2`}>
+                                  <i className="bi bi-graph-up-arrow me-2"></i>
+                                  {achievementBadge.text}
+                                </span>
+                                {event.target_attendees > 0 && event.attendees_count > 0 && (
+                                  <div className="text-muted small mt-1">
+                                    {event.attendees_count} of {event.target_attendees} attendees
+                                  </div>
+                                )}
+                              </td>
+                            </tr>
+                            <tr>
+                              <td className="text-muted">
+                                <strong>Notes</strong>
+                              </td>
+                              <td>{event.notes || '-'}</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
                   </div>
                 </div>
-                <div className="col-lg-6 mb-4">
-                  <div className="card h-100">
-                    <div className="card-header">
-                      <h5 className="mb-0">
-                        <i className="bi bi-people me-2"></i>Participants Information
-                      </h5>
+                <div className="row">
+                  <div className="col-lg-6 mb-4">
+                    <div className="card h-100">
+                      <div className="card-header">
+                        <h5 className="mb-0">
+                          <i className="bi bi-bag-check me-2"></i>On the Spot Sales
+                        </h5>
+                      </div>
+                      <div className="card-body">
+                        {event.on_the_spot_sales?.length ? (
+                          <>
+                            <div className="table-responsive">
+                              <table className="table table-striped align-middle">
+                                <thead>
+                                  <tr>
+                                    <th style={{ width: '5%' }}>#</th>
+                                    <th>Vehicle Type</th>
+                                    <th>Payment Method</th>
+                                    <th className="text-end">Quantity</th>
+                                  </tr>
+                                </thead>
+                                <tbody>
+                                  {event.on_the_spot_sales.map((sale, idx) => (
+                                    <tr key={sale.id || idx}>
+                                      <td>{idx + 1}</td>
+                                      <td>{sale.vehicle_type || '-'}</td>
+                                      <td>{formatPaymentMethod(sale.payment_method)}</td>
+                                      <td className="text-end">{formatNumber(sale.quantity)}</td>
+                                    </tr>
+                                  ))}
+                                </tbody>
+                              </table>
+                            </div>
+                            <div className="text-muted small">
+                              <i className="bi bi-cart-check me-1"></i>Total quantity:&nbsp;
+                              <strong>{formatNumber(totalOnTheSpotSales)}</strong>
+                            </div>
+                          </>
+                        ) : (
+                          <p className="text-muted mb-0">No on the spot sales recorded.</p>
+                        )}
+                      </div>
                     </div>
-                    <div className="card-body">
-                      <table className="table table-borderless">
-                        <tbody>
-                          <tr>
-                            <td className="text-muted" style={{ width: '40%' }}>
-                              <strong>Target Audience</strong>
-                            </td>
-                            <td><span className="badge bg-info">{event.target_audience}</span></td>
-                          </tr>
-                          <tr>
-                            <td className="text-muted">
-                              <strong>Target Attendees</strong>
-                            </td>
-                            <td>
-                              <i className="bi bi-bullseye me-1"></i>
-                              <strong>{event.target_attendees?.toLocaleString() || 0}</strong> participants (planned)
-                            </td>
-                          </tr>
-                          <tr>
-                            <td className="text-muted">
-                              <strong>Actual Attendees</strong>
-                            </td>
-                            <td>
-                              <i className="bi bi-people-fill me-1"></i>
-                              <strong>{event.attendees_count.toLocaleString()}</strong> participants
-                            </td>
-                          </tr>
-                          <tr>
-                            <td className="text-muted">
-                              <strong>Achievement</strong>
-                            </td>
-                            <td>
-                              <span className={`badge bg-${achievementBadge.color} fs-6 px-3 py-2`}>
-                                <i className="bi bi-graph-up-arrow me-2"></i>
-                                {achievementBadge.text}
-                              </span>
-                              {event.target_attendees > 0 && event.attendees_count > 0 && (
-                                <div className="text-muted small mt-1">
-                                  {event.attendees_count} of {event.target_attendees} attendees
-                                </div>
-                              )}
-                            </td>
-                          </tr>
-                          <tr>
-                            <td className="text-muted">
-                              <strong>Notes</strong>
-                            </td>
-                            <td>{event.notes || '-'}</td>
-                          </tr>
-                        </tbody>
-                      </table>
+                  </div>
+                  <div className="col-lg-6 mb-4">
+                    <div className="card h-100">
+                      <div className="card-header">
+                        <h5 className="mb-0">
+                          <i className="bi bi-briefcase me-2"></i>Visiting Service
+                        </h5>
+                      </div>
+                      <div className="card-body">
+                        <table className="table table-borderless">
+                          <tbody>
+                            <tr>
+                              <td className="text-muted" style={{ width: '40%' }}>
+                                <strong>Unit Entry</strong>
+                              </td>
+                              <td>
+                                <i className="bi bi-truck me-1"></i>
+                                <strong>{formatNumber(event.visiting_service_unit_entry)}</strong>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td className="text-muted">
+                                <strong>Profit</strong>
+                              </td>
+                              <td>{formatCurrency(event.visiting_service_profit)}</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
+              </>
             )}
 
             {activeTab === 'photos' && (

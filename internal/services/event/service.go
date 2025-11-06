@@ -35,10 +35,16 @@ func (s *EventService) AddEvent(username string, req dto.AddEvent) (domainevent.
 	phone := utils.NormalizePhoneTo62(req.InstructorPhone)
 
 	// Validate non-negative values
-	if err := utils.ValidateNonNegative(req.TargetAttendees, "target_attendees"); err != nil {
+	if err := utils.ValidateNonNegativeBatch(map[string]interface{}{
+		"target_attendees":            req.TargetAttendees,
+		"attendees_count":             req.AttendeesCount,
+		"visiting_service_unit_entry": req.VisitingServiceUnitEntry,
+		"visiting_service_profit":     req.VisitingServiceProfit,
+	}); err != nil {
 		return domainevent.Event{}, err
 	}
-	if err := utils.ValidateNonNegative(req.AttendeesCount, "attendees_count"); err != nil {
+
+	if err := utils.ValidateOnTheSpotSales(req.OnTheSpotSales); err != nil {
 		return domainevent.Event{}, err
 	}
 
@@ -48,27 +54,29 @@ func (s *EventService) AddEvent(username string, req dto.AddEvent) (domainevent.
 	}
 
 	data := domainevent.Event{
-		ID:              eventId,
-		SchoolId:        req.SchoolId,
-		Title:           utils.TitleCase(req.Title),
-		Description:     req.Description,
-		EventDate:       req.EventDate,
-		StartTime:       req.StartTime,
-		EndTime:         req.EndTime,
-		Location:        req.Location,
-		DistrictId:      req.DistrictId,
-		CityId:          req.CityId,
-		ProvinceId:      req.ProvinceId,
-		EventType:       req.EventType,
-		TargetAudience:  req.TargetAudience,
-		TargetAttendees: req.TargetAttendees,
-		AttendeesCount:  req.AttendeesCount,
-		InstructorName:  utils.TitleCase(req.InstructorName),
-		InstructorPhone: phone,
-		Status:          strings.ToLower(req.Status),
-		Notes:           req.Notes,
-		CreatedAt:       time.Now(),
-		CreatedBy:       username,
+		ID:                       eventId,
+		SchoolId:                 req.SchoolId,
+		Title:                    utils.TitleCase(req.Title),
+		Description:              req.Description,
+		EventDate:                req.EventDate,
+		StartTime:                req.StartTime,
+		EndTime:                  req.EndTime,
+		Location:                 req.Location,
+		DistrictId:               req.DistrictId,
+		CityId:                   req.CityId,
+		ProvinceId:               req.ProvinceId,
+		EventType:                req.EventType,
+		TargetAudience:           req.TargetAudience,
+		TargetAttendees:          req.TargetAttendees,
+		AttendeesCount:           req.AttendeesCount,
+		VisitingServiceUnitEntry: req.VisitingServiceUnitEntry,
+		VisitingServiceProfit:    req.VisitingServiceProfit,
+		InstructorName:           utils.TitleCase(req.InstructorName),
+		InstructorPhone:          phone,
+		Status:                   strings.ToLower(req.Status),
+		Notes:                    req.Notes,
+		CreatedAt:                time.Now(),
+		CreatedBy:                username,
 	}
 
 	// Add photos if provided
@@ -90,6 +98,15 @@ func (s *EventService) AddEvent(username string, req dto.AddEvent) (domainevent.
 
 	if err := s.EventRepo.Create(data); err != nil {
 		return domainevent.Event{}, err
+	}
+
+	// Persist on the spot sales entries
+	if len(req.OnTheSpotSales) > 0 {
+		sales := utils.BuildOnTheSpotSales(eventId, username, req.OnTheSpotSales)
+		if err := s.EventRepo.AddOnTheSpotSales(sales); err != nil {
+			return domainevent.Event{}, err
+		}
+		data.OnTheSpotSales = sales
 	}
 
 	// Update school data if schoolId is provided
@@ -124,11 +141,19 @@ func (s *EventService) GetEventById(id string) (domainevent.Event, error) {
 
 func (s *EventService) UpdateEvent(id, username, role string, req dto.UpdateEvent) (domainevent.Event, error) {
 	// Validate non-negative values
-	if err := utils.ValidateNonNegative(req.TargetAttendees, "target_attendees"); err != nil {
+	if err := utils.ValidateNonNegativeBatch(map[string]interface{}{
+		"target_attendees":            req.TargetAttendees,
+		"attendees_count":             req.AttendeesCount,
+		"visiting_service_unit_entry": req.VisitingServiceUnitEntry,
+		"visiting_service_profit":     req.VisitingServiceProfit,
+	}); err != nil {
 		return domainevent.Event{}, err
 	}
-	if err := utils.ValidateNonNegative(req.AttendeesCount, "attendees_count"); err != nil {
-		return domainevent.Event{}, err
+
+	if req.OnTheSpotSales != nil {
+		if err := utils.ValidateOnTheSpotSales(req.OnTheSpotSales); err != nil {
+			return domainevent.Event{}, err
+		}
 	}
 
 	// Get existing event
@@ -200,6 +225,12 @@ func (s *EventService) UpdateEvent(id, username, role string, req dto.UpdateEven
 	if req.AttendeesCount != 0 {
 		event.AttendeesCount = req.AttendeesCount
 	}
+	if req.VisitingServiceUnitEntry != 0 {
+		event.VisitingServiceUnitEntry = req.VisitingServiceUnitEntry
+	}
+	if req.VisitingServiceProfit != 0 {
+		event.VisitingServiceProfit = req.VisitingServiceProfit
+	}
 	if req.InstructorName != "" {
 		event.InstructorName = req.InstructorName
 	}
@@ -219,6 +250,19 @@ func (s *EventService) UpdateEvent(id, username, role string, req dto.UpdateEven
 
 	if err := s.EventRepo.UpdateById(id, event); err != nil {
 		return domainevent.Event{}, err
+	}
+
+	// Replace on the spot sales entries when provided
+	if req.OnTheSpotSales != nil {
+		if err := s.EventRepo.DeleteOnTheSpotSalesByEventID(id); err != nil {
+			return domainevent.Event{}, err
+		}
+
+		sales := utils.BuildOnTheSpotSales(id, username, req.OnTheSpotSales)
+		if err := s.EventRepo.AddOnTheSpotSales(sales); err != nil {
+			return domainevent.Event{}, err
+		}
+		event.OnTheSpotSales = sales
 	}
 
 	// Update school data if schoolId is provided
@@ -269,6 +313,11 @@ func (s *EventService) DeleteEvent(id, username string) error {
 
 	// Delete associated photos first
 	if err := s.EventRepo.DeletePhotosByEventID(id); err != nil {
+		return err
+	}
+
+	// Delete on the spot sales entries
+	if err := s.EventRepo.DeleteOnTheSpotSalesByEventID(id); err != nil {
 		return err
 	}
 

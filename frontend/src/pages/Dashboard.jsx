@@ -331,7 +331,7 @@ const Dashboard = () => {
             <i className="bi bi-lightbulb-fill me-2 text-warning"></i>
             Recommended Districts for Next Month
           </h4>
-          <span className="badge bg-info">AI-Powered Insights</span>
+          {/*<span className="badge bg-info">AI-Powered Insights</span>*/}
         </div>
         <DistrictRecommendation
           schools={allSchools}

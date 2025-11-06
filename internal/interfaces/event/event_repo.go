@@ -19,4 +19,8 @@ type RepoEventInterface interface {
 	GetPhotoByID(photoId string) (domainevent.EventPhoto, error)
 	DeletePhoto(photoId string) error
 	DeletePhotosByEventID(eventId string) error
+
+	// On The Spot Sales methods
+	AddOnTheSpotSales(sales []domainevent.EventOnTheSpotSale) error
+	DeleteOnTheSpotSalesByEventID(eventId string) error
 }

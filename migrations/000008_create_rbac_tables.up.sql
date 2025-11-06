@@ -62,18 +62,30 @@ CREATE TABLE IF NOT EXISTS role_menus (
 );
 
 -- Create indexes for better performance
-CREATE INDEX idx_roles_name ON roles(name);
-CREATE INDEX idx_permissions_resource_action ON permissions(resource, action);
-CREATE INDEX idx_menu_items_parent_id ON menu_items(parent_id);
-CREATE INDEX idx_menu_items_order ON menu_items(order_index);
-CREATE INDEX idx_role_permissions_role_id ON role_permissions(role_id);
-CREATE INDEX idx_role_permissions_permission_id ON role_permissions(permission_id);
-CREATE INDEX idx_role_menus_role_id ON role_menus(role_id);
-CREATE INDEX idx_role_menus_menu_item_id ON role_menus(menu_item_id);
+CREATE INDEX IF NOT EXISTS idx_roles_name ON roles(name);
+CREATE INDEX IF NOT EXISTS idx_permissions_resource_action ON permissions(resource, action);
+CREATE INDEX IF NOT EXISTS idx_menu_items_parent_id ON menu_items(parent_id);
+CREATE INDEX IF NOT EXISTS idx_menu_items_order ON menu_items(order_index);
+CREATE INDEX IF NOT EXISTS idx_role_permissions_role_id ON role_permissions(role_id);
+CREATE INDEX IF NOT EXISTS idx_role_permissions_permission_id ON role_permissions(permission_id);
+CREATE INDEX IF NOT EXISTS idx_role_menus_role_id ON role_menus(role_id);
+CREATE INDEX IF NOT EXISTS idx_role_menus_menu_item_id ON role_menus(menu_item_id);
 
 -- Add role column to users table if not exists
 ALTER TABLE users ADD COLUMN IF NOT EXISTS role_id UUID;
-ALTER TABLE users ADD CONSTRAINT fk_users_role FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE SET NULL;
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conname = 'fk_users_role'
+      AND conrelid = 'users'::regclass
+  ) THEN
+ALTER TABLE users
+    ADD CONSTRAINT fk_users_role
+        FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE SET NULL;
+END IF;
+END$$;
 CREATE INDEX IF NOT EXISTS idx_users_role_id ON users(role_id);
 
 -- Insert system roles (admin, staff, viewer)
