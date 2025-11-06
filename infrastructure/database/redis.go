@@ -3,6 +3,7 @@ package database
 import (
 	"context"
 	"fmt"
+	"os"
 	"safety-riding/pkg/logger"
 	"safety-riding/utils"
 	"time"
@@ -14,21 +15,20 @@ var RedisClient *redis.Client
 
 // InitRedis initializes Redis client connection
 func InitRedis() (*redis.Client, error) {
-	host := utils.GetEnv("REDIS_HOST", "localhost").(string)
-	port := utils.GetEnv("REDIS_PORT", "6379").(string)
-	password := utils.GetEnv("REDIS_PASSWORD", "").(string)
-	db := utils.GetEnv("REDIS_DB", 0).(int)
-
-	client := redis.NewClient(&redis.Options{
-		Addr:         fmt.Sprintf("%s:%s", host, port),
-		Password:     password,
-		DB:           db,
-		DialTimeout:  10 * time.Second,
-		ReadTimeout:  30 * time.Second,
-		WriteTimeout: 30 * time.Second,
-		PoolSize:     10,
-		PoolTimeout:  30 * time.Second,
-	})
+	opt, _ := redis.ParseURL(os.Getenv("REDIS_URL"))
+	if opt == nil {
+		opt = &redis.Options{
+			Addr:         fmt.Sprintf("%s:%s", utils.GetEnv("REDIS_HOST", "localhost").(string), utils.GetEnv("REDIS_PORT", "6379").(string)),
+			Password:     utils.GetEnv("REDIS_PASSWORD", "").(string),
+			DB:           utils.GetEnv("REDIS_DB", 0).(int),
+			DialTimeout:  10 * time.Second,
+			ReadTimeout:  30 * time.Second,
+			WriteTimeout: 30 * time.Second,
+			PoolSize:     10,
+			PoolTimeout:  30 * time.Second,
+		}
+	}
+	client := redis.NewClient(opt)
 
 	// Test connection
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -40,7 +40,7 @@ func InitRedis() (*redis.Client, error) {
 		return nil, err
 	}
 
-	logger.WriteLog(logger.LogLevelInfo, fmt.Sprintf("✓ Connected to Redis at %s:%s", host, port))
+	logger.WriteLog(logger.LogLevelInfo, fmt.Sprintf("✓ Connected to Redis at %s:%s", utils.GetEnv("REDIS_HOST", "localhost").(string), utils.GetEnv("REDIS_PORT", "6379").(string)))
 	RedisClient = client
 	return client, nil
 }

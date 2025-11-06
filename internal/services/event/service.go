@@ -9,7 +9,7 @@ import (
 	interfaceevent "safety-riding/internal/interfaces/event"
 	interfaceschool "safety-riding/internal/interfaces/school"
 	"safety-riding/pkg/filter"
-	minioclient "safety-riding/pkg/minio"
+	"safety-riding/pkg/storage"
 	"safety-riding/utils"
 	"strconv"
 	"strings"
@@ -17,16 +17,16 @@ import (
 )
 
 type EventService struct {
-	EventRepo   interfaceevent.RepoEventInterface
-	SchoolRepo  interfaceschool.RepoSchoolInterface
-	MinioClient *minioclient.MinioClient
+	EventRepo       interfaceevent.RepoEventInterface
+	SchoolRepo      interfaceschool.RepoSchoolInterface
+	StorageProvider storage.StorageProvider
 }
 
-func NewEventService(eventRepo interfaceevent.RepoEventInterface, schoolRepo interfaceschool.RepoSchoolInterface, minioClient *minioclient.MinioClient) *EventService {
+func NewEventService(eventRepo interfaceevent.RepoEventInterface, schoolRepo interfaceschool.RepoSchoolInterface, storageProvider storage.StorageProvider) *EventService {
 	return &EventService{
-		EventRepo:   eventRepo,
-		SchoolRepo:  schoolRepo,
-		MinioClient: minioClient,
+		EventRepo:       eventRepo,
+		SchoolRepo:      schoolRepo,
+		StorageProvider: storageProvider,
 	}
 }
 
@@ -363,13 +363,13 @@ func (s *EventService) DeleteEventPhoto(photoId, username string) error {
 	}
 
 	if err = s.EventRepo.DeletePhoto(photoId); err == nil {
-		_ = s.MinioClient.DeleteFile(context.Background(), eventPhoto.PhotoUrl)
+		_ = s.StorageProvider.DeleteFile(context.Background(), eventPhoto.PhotoUrl)
 	}
 
 	return err
 }
 
-// AddEventPhotosFromFiles uploads photos to MinIO and saves to database
+// AddEventPhotosFromFiles uploads photos to storage and saves to database
 func (s *EventService) AddEventPhotosFromFiles(ctx context.Context, eventId, username string, files []*multipart.FileHeader, captions []string, photoOrders []string) ([]domainevent.EventPhoto, error) {
 	// Verify event exists
 	if _, err := s.EventRepo.GetByID(eventId); err != nil {
@@ -387,10 +387,10 @@ func (s *EventService) AddEventPhotosFromFiles(ctx context.Context, eventId, use
 		}
 		defer file.Close()
 
-		// Upload to MinIO
-		photoURL, err = s.MinioClient.UploadFile(ctx, file, fileHeader, "event-photos")
+		// Upload to storage provider (MinIO or R2)
+		photoURL, err = s.StorageProvider.UploadFile(ctx, file, fileHeader, "event-photos")
 		if err != nil {
-			return nil, fmt.Errorf("failed to upload file %s to MinIO: %w", fileHeader.Filename, err)
+			return nil, fmt.Errorf("failed to upload file %s to storage: %w", fileHeader.Filename, err)
 		}
 
 		// Get caption if provided
@@ -423,7 +423,7 @@ func (s *EventService) AddEventPhotosFromFiles(ctx context.Context, eventId, use
 
 	// Save photos to database
 	if err := s.EventRepo.AddPhotos(eventPhotos); err != nil {
-		_ = s.MinioClient.DeleteFile(ctx, photoURL)
+		_ = s.StorageProvider.DeleteFile(ctx, photoURL)
 		return nil, err
 	}
 

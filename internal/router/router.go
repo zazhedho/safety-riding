@@ -173,16 +173,16 @@ func (r *Routes) AccidentRoutes() {
 }
 
 func (r *Routes) EventRoutes() {
-	// Initialize MinIO client from infrastructure
-	minioClient, err := media.InitMinio()
+	// Initialize storage provider (MinIO or R2) from infrastructure
+	storageProvider, err := media.InitStorage()
 	if err != nil {
-		logger.WriteLog(logger.LogLevelError, "Failed to initialize MinIO client: "+err.Error())
-		panic("Failed to initialize MinIO client: " + err.Error())
+		logger.WriteLog(logger.LogLevelError, "Failed to initialize storage provider: "+err.Error())
+		panic("Failed to initialize storage provider: " + err.Error())
 	}
 
 	repo := eventRepo.NewEventRepo(r.DB)
 	repoSchool := schoolRepo.NewSchoolRepo(r.DB)
-	svc := eventSvc.NewEventService(repo, repoSchool, minioClient)
+	svc := eventSvc.NewEventService(repo, repoSchool, storageProvider)
 	h := eventHandler.NewEventHandler(svc)
 	mdw := middlewares.NewMiddleware(authRepo.NewBlacklistRepo(r.DB))
 

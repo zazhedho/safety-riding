@@ -83,6 +83,24 @@ services:
       PATH_MIGRATE: file://migrations
       JWT_KEY: super-secret-development-key
       JWT_EXP: 24
+      # Storage Configuration (supports MinIO and Cloudflare R2)
+      STORAGE_PROVIDER: minio
+      STORAGE_ENDPOINT: minio:9000
+      STORAGE_ACCESS_KEY: minioadmin
+      STORAGE_SECRET_KEY: minioadmin
+      STORAGE_BUCKET_NAME: safety-riding
+      STORAGE_USE_SSL: "false"
+      STORAGE_BASE_URL: http://minio:9000
+      STORAGE_REGION: auto
+      # For Cloudflare R2, change to:
+      # STORAGE_PROVIDER: r2
+      # STORAGE_ENDPOINT: <account_id>.r2.cloudflarestorage.com
+      # STORAGE_ACCESS_KEY: <r2_access_key>
+      # STORAGE_SECRET_KEY: <r2_secret_key>
+      # STORAGE_BASE_URL: https://pub-<hash>.r2.dev
+      # STORAGE_USE_SSL: "true"
+      # R2_ACCOUNT_ID: <your_account_id>
+      # Backward compatibility (deprecated)
       MINIO_ENDPOINT: minio:9000
       MINIO_ACCESS_KEY: minioadmin
       MINIO_SECRET_KEY: minioadmin
