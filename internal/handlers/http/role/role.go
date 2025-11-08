@@ -78,6 +78,10 @@ func (h *RoleHandler) GetAll(ctx *gin.Context) {
 	logId := utils.GenerateLogId(ctx)
 	logPrefix := fmt.Sprintf("[%s][RoleHandler][GetAll]", logId)
 
+	// Get current user's role to filter superadmin visibility
+	authData := utils.GetAuthData(ctx)
+	currentUserRole := utils.InterfaceString(authData["role"])
+
 	params, err := filter.GetBaseParams(ctx, "name", "asc", 10)
 	if err != nil {
 		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; GetBaseParams; Error: %+v", logPrefix, err))
@@ -87,7 +91,7 @@ func (h *RoleHandler) GetAll(ctx *gin.Context) {
 		return
 	}
 
-	data, total, err := h.Service.GetAll(params)
+	data, total, err := h.Service.GetAll(params, currentUserRole)
 	if err != nil {
 		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; Service.GetAll; Error: %+v", logPrefix, err))
 		res := response.Response(http.StatusInternalServerError, messages.MsgFail, logId, nil)

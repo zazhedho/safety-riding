@@ -105,7 +105,7 @@ func (r *Routes) UserRoutes() {
 		}
 	}
 
-	r.App.GET("/api/users", mdw.AuthMiddleware(), mdw.RoleMiddleware(utils.RoleAdmin, utils.RoleStaff), h.GetAllUsers)
+	r.App.GET("/api/users", mdw.AuthMiddleware(), mdw.RoleMiddleware(utils.RoleSuperAdmin, utils.RoleAdmin, utils.RoleStaff), h.GetAllUsers)
 }
 
 func (r *Routes) SchoolRoutes() {

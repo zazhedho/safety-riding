@@ -215,14 +215,37 @@ func (s *ServiceUser) GetUserByAuth(id string) (map[string]interface{}, error) {
 	}, nil
 }
 
-func (s *ServiceUser) GetAllUsers(params filter.BaseParams) ([]domainuser.Users, int64, error) {
-	return s.UserRepo.GetAll(params)
+func (s *ServiceUser) GetAllUsers(params filter.BaseParams, currentUserRole string) ([]domainuser.Users, int64, error) {
+	users, total, err := s.UserRepo.GetAll(params)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// Filter out superadmin users unless the current user is also a superadmin
+	if currentUserRole != utils.RoleSuperAdmin {
+		filteredUsers := make([]domainuser.Users, 0)
+		for _, user := range users {
+			if user.Role != utils.RoleSuperAdmin {
+				filteredUsers = append(filteredUsers, user)
+			}
+		}
+		// Adjust total count to exclude superadmin users
+		superadminCount := int64(len(users) - len(filteredUsers))
+		return filteredUsers, total - superadminCount, nil
+	}
+
+	return users, total, nil
 }
 
 func (s *ServiceUser) Update(id, role string, req dto.UserUpdate) (domainuser.Users, error) {
 	data, err := s.UserRepo.GetByID(id)
 	if err != nil {
 		return domainuser.Users{}, err
+	}
+
+	// Prevent non-superadmin from modifying superadmin users
+	if data.Role == utils.RoleSuperAdmin && role != utils.RoleSuperAdmin {
+		return domainuser.Users{}, errors.New("cannot modify superadmin users")
 	}
 
 	if req.Name != "" {
@@ -239,6 +262,25 @@ func (s *ServiceUser) Update(id, role string, req dto.UserUpdate) (domainuser.Us
 	}
 
 	if role == utils.RoleAdmin && strings.TrimSpace(req.Role) != "" {
+		newRoleName := strings.ToLower(req.Role)
+
+		// Prevent admin from assigning superadmin role
+		if newRoleName == utils.RoleSuperAdmin {
+			return domainuser.Users{}, errors.New("cannot assign superadmin role")
+		}
+
+		data.Role = newRoleName
+
+		roleEntity, err := s.RoleRepo.GetByName(newRoleName)
+		if err == nil && roleEntity.Id != "" {
+			data.RoleId = &roleEntity.Id
+		} else {
+			data.RoleId = nil
+		}
+	}
+
+	// Allow superadmin to change any role including to/from superadmin
+	if role == utils.RoleSuperAdmin && strings.TrimSpace(req.Role) != "" {
 		newRoleName := strings.ToLower(req.Role)
 		data.Role = newRoleName
 

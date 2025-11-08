@@ -18,6 +18,12 @@ const EventList = () => {
     school_id: '',
     search: ''
   });
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0
+  });
   const [sorting, setSorting] = useState({
     order_by: 'event_date',
     order_direction: 'desc'
@@ -29,7 +35,7 @@ const EventList = () => {
 
   useEffect(() => {
     fetchEvents();
-  }, [sorting]);
+  }, [pagination.page, filters, sorting]);
 
   const fetchSchools = async () => {
     try {
@@ -44,6 +50,8 @@ const EventList = () => {
     setLoading(true);
     try {
       const params = {
+        page: pagination.page,
+        limit: pagination.limit,
         order_by: sorting.order_by,
         order_direction: sorting.order_direction,
       };
@@ -52,6 +60,11 @@ const EventList = () => {
 
       const response = await eventService.getAll(params);
       setEvents(response.data.data || []);
+      setPagination(prev => ({
+        ...prev,
+        total: response.data.total_data || 0,
+        totalPages: response.data.total_pages || 0
+      }));
     } catch (error) {
       toast.error('Failed to load events');
     } finally {
@@ -62,10 +75,16 @@ const EventList = () => {
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     setFilters(prev => ({ ...prev, [name]: value }));
+    setPagination(prev => ({ ...prev, page: 1 }));
   };
 
   const handleSearch = () => {
+    setPagination(prev => ({ ...prev, page: 1 }));
     fetchEvents();
+  };
+
+  const handlePageChange = (newPage) => {
+    setPagination(prev => ({ ...prev, page: newPage }));
   };
 
   const handleSort = (column) => {
@@ -171,6 +190,7 @@ const EventList = () => {
               </div>
             </div>
           ) : events.length > 0 ? (
+            <>
             <div className="table-responsive">
               <table className="table table-hover">
                 <thead>
@@ -246,6 +266,61 @@ const EventList = () => {
                 </tbody>
               </table>
             </div>
+
+            {pagination.totalPages > 1 && (
+              <div className="d-flex justify-content-center mt-4">
+                <nav>
+                  <ul className="pagination">
+                    <li className={`page-item ${pagination.page === 1 ? 'disabled' : ''}`}>
+                      <button
+                        className="page-link"
+                        onClick={() => handlePageChange(pagination.page - 1)}
+                        disabled={pagination.page === 1}
+                      >
+                        Previous
+                      </button>
+                    </li>
+
+                    {[...Array(pagination.totalPages)].map((_, index) => {
+                      const pageNum = index + 1;
+                      if (
+                        pageNum === 1 ||
+                        pageNum === pagination.totalPages ||
+                        (pageNum >= pagination.page - 1 && pageNum <= pagination.page + 1)
+                      ) {
+                        return (
+                          <li key={pageNum} className={`page-item ${pagination.page === pageNum ? 'active' : ''}`}>
+                            <button
+                              className="page-link"
+                              onClick={() => handlePageChange(pageNum)}
+                            >
+                              {pageNum}
+                            </button>
+                          </li>
+                        );
+                      } else if (
+                        pageNum === pagination.page - 2 ||
+                        pageNum === pagination.page + 2
+                      ) {
+                        return <li key={pageNum} className="page-item disabled"><span className="page-link">...</span></li>;
+                      }
+                      return null;
+                    })}
+
+                    <li className={`page-item ${pagination.page === pagination.totalPages ? 'disabled' : ''}`}>
+                      <button
+                        className="page-link"
+                        onClick={() => handlePageChange(pagination.page + 1)}
+                        disabled={pagination.page === pagination.totalPages}
+                      >
+                        Next
+                      </button>
+                    </li>
+                  </ul>
+                </nav>
+              </div>
+            )}
+            </>
           ) : (
             <div className="text-center py-5 text-muted">
               No events found

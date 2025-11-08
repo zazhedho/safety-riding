@@ -106,6 +106,12 @@ func (m *Middleware) RoleMiddleware(allowedRoles ...string) gin.HandlerFunc {
 			return
 		}
 
+		// Superadmin bypasses all role restrictions
+		if userRole == utils.RoleSuperAdmin {
+			ctx.Next()
+			return
+		}
+
 		isAllowed := slices.Contains(allowedRoles, userRole)
 		if !isAllowed {
 			logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; User with role '%s' tried to access a restricted route;", logPrefix, userRole))

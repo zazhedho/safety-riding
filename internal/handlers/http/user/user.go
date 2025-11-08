@@ -291,10 +291,14 @@ func (h *HandlerUser) GetAllUsers(ctx *gin.Context) {
 	logId := utils.GenerateLogId(ctx)
 	logPrefix := fmt.Sprintf("[%s][UserHandler][GetAllUsers]", logId)
 
+	// Get current user's role to filter superadmin visibility
+	authData := utils.GetAuthData(ctx)
+	currentUserRole := utils.InterfaceString(authData["role"])
+
 	params, _ := filter.GetBaseParams(ctx, "updated_at", "desc", 10)
 	params.Filters = filter.WhitelistFilter(params.Filters, []string{"role"})
 
-	users, totalData, err := h.Service.GetAllUsers(params)
+	users, totalData, err := h.Service.GetAllUsers(params, currentUserRole)
 	if err != nil {
 		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; GetAllUsers; ERROR: %+v;", logPrefix, err))
 		res := response.Response(http.StatusInternalServerError, messages.MsgFail, logId, nil)

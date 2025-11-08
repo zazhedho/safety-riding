@@ -92,6 +92,7 @@ const UserList = () => {
 
   const getRoleBadge = (role) => {
     const variants = {
+      superadmin: 'bg-dark',
       admin: 'bg-danger',
       staff: 'bg-primary',
       member: 'bg-success',
@@ -100,7 +101,7 @@ const UserList = () => {
     return <span className={`badge ${variants[role] || 'bg-secondary'}`}>{role?.toUpperCase()}</span>;
   };
 
-  if (currentUser?.role !== 'admin') {
+  if (currentUser?.role !== 'admin' && currentUser?.role !== 'superadmin') {
     return (
       <DashboardLayout>
         <div className="card">
@@ -144,6 +145,7 @@ const UserList = () => {
                 onChange={handleFilterChange}
               >
                 <option value="">All Roles</option>
+                {currentUser?.role === 'superadmin' && <option value="superadmin">Superadmin</option>}
                 <option value="admin">Admin</option>
                 <option value="staff">Staff</option>
                 <option value="member">Member</option>

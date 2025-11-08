@@ -174,6 +174,10 @@ const MarketShareList = () => {
     }));
   };
 
+  const handlePageChange = (newPage) => {
+    setPagination(prev => ({ ...prev, page: newPage }));
+  };
+
   const formatUnits = (value) => new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(value || 0);
 
   const getMonthName = (month) => {
@@ -559,6 +563,61 @@ const MarketShareList = () => {
                   ))}
                 </tbody>
               </table>
+
+              {pagination.total > pagination.limit && (
+                <div className="d-flex justify-content-center mt-4">
+                  <nav>
+                    <ul className="pagination">
+                      <li className={`page-item ${pagination.page === 1 ? 'disabled' : ''}`}>
+                        <button
+                          className="page-link"
+                          onClick={() => handlePageChange(pagination.page - 1)}
+                          disabled={pagination.page === 1}
+                        >
+                          Previous
+                        </button>
+                      </li>
+
+                      {[...Array(Math.ceil(pagination.total / pagination.limit))].map((_, index) => {
+                        const pageNum = index + 1;
+                        const totalPages = Math.ceil(pagination.total / pagination.limit);
+                        if (
+                          pageNum === 1 ||
+                          pageNum === totalPages ||
+                          (pageNum >= pagination.page - 1 && pageNum <= pagination.page + 1)
+                        ) {
+                          return (
+                            <li key={pageNum} className={`page-item ${pagination.page === pageNum ? 'active' : ''}`}>
+                              <button
+                                className="page-link"
+                                onClick={() => handlePageChange(pageNum)}
+                              >
+                                {pageNum}
+                              </button>
+                            </li>
+                          );
+                        } else if (
+                          pageNum === pagination.page - 2 ||
+                          pageNum === pagination.page + 2
+                        ) {
+                          return <li key={pageNum} className="page-item disabled"><span className="page-link">...</span></li>;
+                        }
+                        return null;
+                      })}
+
+                      <li className={`page-item ${pagination.page >= Math.ceil(pagination.total / pagination.limit) ? 'disabled' : ''}`}>
+                        <button
+                          className="page-link"
+                          onClick={() => handlePageChange(pagination.page + 1)}
+                          disabled={pagination.page >= Math.ceil(pagination.total / pagination.limit)}
+                        >
+                          Next
+                        </button>
+                      </li>
+                    </ul>
+                  </nav>
+                </div>
+              )}
             </div>
           ) : (
             <div className="text-center py-5">

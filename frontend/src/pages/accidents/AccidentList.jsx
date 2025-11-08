@@ -25,11 +25,20 @@ const AccidentList = () => {
     police_station: '',
     search: ''
   });
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0
+  });
 
   useEffect(() => {
     fetchProvinces();
-    fetchAccidents();
   }, []);
+
+  useEffect(() => {
+    fetchAccidents();
+  }, [pagination.page, filters]);
 
   useEffect(() => {
     if (filters.province_id) {
@@ -78,7 +87,10 @@ const AccidentList = () => {
   const fetchAccidents = async () => {
     setLoading(true);
     try {
-      const params = {};
+      const params = {
+        page: pagination.page,
+        limit: pagination.limit
+      };
       if (filters.province_id) params['filters[province_id]'] = filters.province_id;
       if (filters.city_id) params['filters[city_id]'] = filters.city_id;
       if (filters.district_id) params['filters[district_id]'] = filters.district_id;
@@ -89,6 +101,11 @@ const AccidentList = () => {
 
       const response = await accidentService.getAll(params);
       setAccidents(response.data.data || []);
+      setPagination(prev => ({
+        ...prev,
+        total: response.data.total_data || 0,
+        totalPages: response.data.total_pages || 0
+      }));
     } catch (error) {
       toast.error('Failed to load accidents');
     } finally {
@@ -98,16 +115,22 @@ const AccidentList = () => {
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
-    setFilters(prev => ({ 
-      ...prev, 
-      [name]: value,      
+    setFilters(prev => ({
+      ...prev,
+      [name]: value,
       ...(name === 'province_id' && { city_id: '', district_id: '' }),
       ...(name === 'city_id' && { district_id: '' })
     }));
+    setPagination(prev => ({ ...prev, page: 1 }));
   };
 
   const handleSearch = () => {
+    setPagination(prev => ({ ...prev, page: 1 }));
     fetchAccidents();
+  };
+
+  const handlePageChange = (newPage) => {
+    setPagination(prev => ({ ...prev, page: newPage }));
   };
 
   const handleDeleteClick = (accident) => {
@@ -255,6 +278,7 @@ const AccidentList = () => {
               </div>
             </div>
           ) : accidents.length > 0 ? (
+            <>
             <div className="table-responsive">
               <table className="table table-hover">
                 <thead>
@@ -321,6 +345,61 @@ const AccidentList = () => {
                 </tbody>
               </table>
             </div>
+
+            {pagination.totalPages > 1 && (
+              <div className="d-flex justify-content-center mt-4">
+                <nav>
+                  <ul className="pagination">
+                    <li className={`page-item ${pagination.page === 1 ? 'disabled' : ''}`}>
+                      <button
+                        className="page-link"
+                        onClick={() => handlePageChange(pagination.page - 1)}
+                        disabled={pagination.page === 1}
+                      >
+                        Previous
+                      </button>
+                    </li>
+
+                    {[...Array(pagination.totalPages)].map((_, index) => {
+                      const pageNum = index + 1;
+                      if (
+                        pageNum === 1 ||
+                        pageNum === pagination.totalPages ||
+                        (pageNum >= pagination.page - 1 && pageNum <= pagination.page + 1)
+                      ) {
+                        return (
+                          <li key={pageNum} className={`page-item ${pagination.page === pageNum ? 'active' : ''}`}>
+                            <button
+                              className="page-link"
+                              onClick={() => handlePageChange(pageNum)}
+                            >
+                              {pageNum}
+                            </button>
+                          </li>
+                        );
+                      } else if (
+                        pageNum === pagination.page - 2 ||
+                        pageNum === pagination.page + 2
+                      ) {
+                        return <li key={pageNum} className="page-item disabled"><span className="page-link">...</span></li>;
+                      }
+                      return null;
+                    })}
+
+                    <li className={`page-item ${pagination.page === pagination.totalPages ? 'disabled' : ''}`}>
+                      <button
+                        className="page-link"
+                        onClick={() => handlePageChange(pagination.page + 1)}
+                        disabled={pagination.page === pagination.totalPages}
+                      >
+                        Next
+                      </button>
+                    </li>
+                  </ul>
+                </nav>
+              </div>
+            )}
+            </>
           ) : (
             <div className="text-center py-5 text-muted">
               No accident records found

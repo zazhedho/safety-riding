@@ -22,6 +22,12 @@ const SchoolList = () => {
     district_id: '',
     search: ''
   });
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0
+  });
   const [sorting, setSorting] = useState({
     order_by: 'updated_at',
     order_direction: 'desc'
@@ -36,7 +42,7 @@ const SchoolList = () => {
 
   useEffect(() => {
     fetchSchools();
-  }, [sorting]);
+  }, [pagination.page, filters, sorting]);
 
   useEffect(() => {
     if (filters.province_id) {
@@ -84,6 +90,8 @@ const SchoolList = () => {
     setLoading(true);
     try {
       const params = {
+        page: pagination.page,
+        limit: pagination.limit,
         order_by: sorting.order_by,
         order_direction: sorting.order_direction,
       };
@@ -94,6 +102,11 @@ const SchoolList = () => {
 
       const response = await schoolService.getAll(params);
       setSchools(response.data.data || []);
+      setPagination(prev => ({
+        ...prev,
+        total: response.data.total_data || 0,
+        totalPages: response.data.total_pages || 0
+      }));
     } catch (error) {
       toast.error('Failed to load schools');
     } finally {
@@ -109,10 +122,16 @@ const SchoolList = () => {
       ...(name === 'province_id' && { city_id: '', district_id: '' }),
       ...(name === 'city_id' && { district_id: '', selectedSchoolForMap: null })
     }));
+    setPagination(prev => ({ ...prev, page: 1 }));
   };
 
   const handleSearch = () => {
+    setPagination(prev => ({ ...prev, page: 1 }));
     fetchSchools();
+  };
+
+  const handlePageChange = (newPage) => {
+    setPagination(prev => ({ ...prev, page: newPage }));
   };
 
   const handleSort = (column) => {
@@ -268,6 +287,7 @@ const SchoolList = () => {
                 </div>
               </div>
             ) : schools.length > 0 ? (
+              <>
               <div className="table-responsive">
                 <table className="table table-hover">
                   <thead>
@@ -338,6 +358,61 @@ const SchoolList = () => {
                   </tbody>
                 </table>
               </div>
+
+              {pagination.totalPages > 1 && (
+                <div className="d-flex justify-content-center mt-4">
+                  <nav>
+                    <ul className="pagination">
+                      <li className={`page-item ${pagination.page === 1 ? 'disabled' : ''}`}>
+                        <button
+                          className="page-link"
+                          onClick={() => handlePageChange(pagination.page - 1)}
+                          disabled={pagination.page === 1}
+                        >
+                          Previous
+                        </button>
+                      </li>
+
+                      {[...Array(pagination.totalPages)].map((_, index) => {
+                        const pageNum = index + 1;
+                        if (
+                          pageNum === 1 ||
+                          pageNum === pagination.totalPages ||
+                          (pageNum >= pagination.page - 1 && pageNum <= pagination.page + 1)
+                        ) {
+                          return (
+                            <li key={pageNum} className={`page-item ${pagination.page === pageNum ? 'active' : ''}`}>
+                              <button
+                                className="page-link"
+                                onClick={() => handlePageChange(pageNum)}
+                              >
+                                {pageNum}
+                              </button>
+                            </li>
+                          );
+                        } else if (
+                          pageNum === pagination.page - 2 ||
+                          pageNum === pagination.page + 2
+                        ) {
+                          return <li key={pageNum} className="page-item disabled"><span className="page-link">...</span></li>;
+                        }
+                        return null;
+                      })}
+
+                      <li className={`page-item ${pagination.page === pagination.totalPages ? 'disabled' : ''}`}>
+                        <button
+                          className="page-link"
+                          onClick={() => handlePageChange(pagination.page + 1)}
+                          disabled={pagination.page === pagination.totalPages}
+                        >
+                          Next
+                        </button>
+                      </li>
+                    </ul>
+                  </nav>
+                </div>
+              )}
+              </>
             ) : (
               <div className="text-center py-5 text-muted">
                 No schools found

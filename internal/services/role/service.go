@@ -93,8 +93,25 @@ func (s *RoleService) GetByIDWithDetails(id string) (dto.RoleWithDetails, error)
 	}, nil
 }
 
-func (s *RoleService) GetAll(params filter.BaseParams) ([]domainrole.Role, int64, error) {
-	return s.RoleRepo.GetAll(params)
+func (s *RoleService) GetAll(params filter.BaseParams, currentUserRole string) ([]domainrole.Role, int64, error) {
+	roles, total, err := s.RoleRepo.GetAll(params)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	// Filter out superadmin role unless the current user is also a superadmin
+	if currentUserRole != utils.RoleSuperAdmin {
+		filteredRoles := make([]domainrole.Role, 0)
+		for _, role := range roles {
+			if role.Name != utils.RoleSuperAdmin {
+				filteredRoles = append(filteredRoles, role)
+			}
+		}
+		superadminCount := int64(len(roles) - len(filteredRoles))
+		return filteredRoles, total - superadminCount, nil
+	}
+
+	return roles, total, nil
 }
 
 func (s *RoleService) Update(id string, req dto.RoleUpdate) (domainrole.Role, error) {

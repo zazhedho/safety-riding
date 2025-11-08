@@ -12,10 +12,11 @@ const (
 )
 
 const (
-	RoleAdmin  = "admin"
-	RoleMember = "member"
-	RoleStaff  = "staff"
-	RoleViewer = "viewer"
+	RoleSuperAdmin = "superadmin" // Highest privilege, hidden from admins
+	RoleAdmin      = "admin"
+	RoleStaff      = "staff"
+	RoleMember     = "member"
+	RoleViewer     = "viewer"
 )
 
 const (

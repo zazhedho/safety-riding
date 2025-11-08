@@ -21,14 +21,23 @@ const BudgetList = () => {
     month: '',
     year: new Date().getFullYear()
   });
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 10,
+    total: 0,
+    totalPages: 0
+  });
   const [summaryView, setSummaryView] = useState('yearly');
   const [hasSearched, setHasSearched] = useState(false);
 
   useEffect(() => {
     fetchEvents();
-    fetchBudgets();
     fetchSummary();
   }, []);
+
+  useEffect(() => {
+    fetchBudgets();
+  }, [pagination.page, filters]);
 
   const fetchEvents = async () => {
     try {
@@ -42,13 +51,21 @@ const BudgetList = () => {
   const fetchBudgets = async () => {
     setLoading(true);
     try {
-      const params = {};
+      const params = {
+        page: pagination.page,
+        limit: pagination.limit
+      };
       if (filters.event_id) params['filters[event_id]'] = filters.event_id;
       if (filters.month) params['filters[budget_month]'] = filters.month;
       if (filters.year) params['filters[budget_year]'] = filters.year;
 
       const response = await budgetService.getAll(params);
       setBudgets(response.data.data || []);
+      setPagination(prev => ({
+        ...prev,
+        total: response.data.total_data || 0,
+        totalPages: response.data.total_pages || 0
+      }));
     } catch (error) {
       toast.error('Failed to load budgets');
     } finally {
@@ -116,6 +133,7 @@ const BudgetList = () => {
 
     setFilters(updatedFilters);
     setHasSearched(false);
+    setPagination(prev => ({ ...prev, page: 1 }));
 
     if (name === 'month') {
       setSummary(null);
@@ -137,8 +155,13 @@ const BudgetList = () => {
   const handleSearch = () => {
     setHasSearched(true);
     setSummaryView(filters.month ? 'monthly' : 'yearly');
+    setPagination(prev => ({ ...prev, page: 1 }));
     fetchBudgets();
     fetchSummary();
+  };
+
+  const handlePageChange = (newPage) => {
+    setPagination(prev => ({ ...prev, page: newPage }));
   };
 
   const handleDeleteClick = (budget) => {
@@ -358,6 +381,7 @@ const BudgetList = () => {
               </div>
             </div>
           ) : budgets.length > 0 ? (
+            <>
             <div className="table-responsive">
               <table className="table table-hover">
                 <thead>
@@ -464,6 +488,61 @@ const BudgetList = () => {
                 </tbody>
               </table>
             </div>
+
+            {pagination.totalPages > 1 && (
+              <div className="d-flex justify-content-center mt-4">
+                <nav>
+                  <ul className="pagination">
+                    <li className={`page-item ${pagination.page === 1 ? 'disabled' : ''}`}>
+                      <button
+                        className="page-link"
+                        onClick={() => handlePageChange(pagination.page - 1)}
+                        disabled={pagination.page === 1}
+                      >
+                        Previous
+                      </button>
+                    </li>
+
+                    {[...Array(pagination.totalPages)].map((_, index) => {
+                      const pageNum = index + 1;
+                      if (
+                        pageNum === 1 ||
+                        pageNum === pagination.totalPages ||
+                        (pageNum >= pagination.page - 1 && pageNum <= pagination.page + 1)
+                      ) {
+                        return (
+                          <li key={pageNum} className={`page-item ${pagination.page === pageNum ? 'active' : ''}`}>
+                            <button
+                              className="page-link"
+                              onClick={() => handlePageChange(pageNum)}
+                            >
+                              {pageNum}
+                            </button>
+                          </li>
+                        );
+                      } else if (
+                        pageNum === pagination.page - 2 ||
+                        pageNum === pagination.page + 2
+                      ) {
+                        return <li key={pageNum} className="page-item disabled"><span className="page-link">...</span></li>;
+                      }
+                      return null;
+                    })}
+
+                    <li className={`page-item ${pagination.page === pagination.totalPages ? 'disabled' : ''}`}>
+                      <button
+                        className="page-link"
+                        onClick={() => handlePageChange(pagination.page + 1)}
+                        disabled={pagination.page === pagination.totalPages}
+                      >
+                        Next
+                      </button>
+                    </li>
+                  </ul>
+                </nav>
+              </div>
+            )}
+            </>
           ) : (
             <div className="text-center py-5 text-muted">
               No budgets found
