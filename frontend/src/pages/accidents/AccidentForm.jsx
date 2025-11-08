@@ -233,7 +233,7 @@ const AccidentForm = () => {
       setPhotoPreviews([]);
       setCaptions({});
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to upload photos');
+      toast.error(error.response?.data?.error || 'Failed to upload photos');
     } finally {
       setUploading(false);
     }
@@ -454,7 +454,7 @@ const AccidentForm = () => {
               <div className="card border-primary">
                 <div className="card-body">
                   <div className="mb-3">
-                    <label className="form-label">Select Photos (Max 5 photos, 5MB each)</label>
+                    <label className="form-label">Select Photos (Max 4 photos, 5MB each)</label>
                     <input
                       type="file"
                       className="form-control"

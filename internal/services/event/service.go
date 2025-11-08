@@ -346,7 +346,13 @@ func (s *EventService) DeleteEvent(id, username string) error {
 // Photo methods
 func (s *EventService) AddEventPhotos(eventId, username string, photos []dto.AddEventPhoto) ([]domainevent.EventPhoto, error) {
 	// Verify event exists
-	if _, err := s.EventRepo.GetByID(eventId); err != nil {
+	eventData, err := s.EventRepo.GetByID(eventId)
+	if err != nil {
+		return nil, err
+	}
+
+	maxEventPhotos := utils.GetEnv("MAX_EVENT_PHOTOS", 5).(int)
+	if err := utils.ValidatePhotoLimit(len(eventData.Photos), len(photos), maxEventPhotos); err != nil {
 		return nil, err
 	}
 
@@ -386,7 +392,13 @@ func (s *EventService) DeleteEventPhoto(photoId, username string) error {
 // AddEventPhotosFromFiles uploads photos to storage and saves to database
 func (s *EventService) AddEventPhotosFromFiles(ctx context.Context, eventId, username string, files []*multipart.FileHeader, captions []string, photoOrders []string) ([]domainevent.EventPhoto, error) {
 	// Verify event exists
-	if _, err := s.EventRepo.GetByID(eventId); err != nil {
+	eventData, err := s.EventRepo.GetByID(eventId)
+	if err != nil {
+		return nil, err
+	}
+
+	maxEventPhotos := utils.GetEnv("MAX_EVENT_PHOTOS", 5).(int)
+	if err := utils.ValidatePhotoLimit(len(eventData.Photos), len(files), maxEventPhotos); err != nil {
 		return nil, err
 	}
 
@@ -394,6 +406,10 @@ func (s *EventService) AddEventPhotosFromFiles(ctx context.Context, eventId, use
 
 	var photoURL string
 	for i, fileHeader := range files {
+		if err := utils.ValidatePhotoFileSize(fileHeader); err != nil {
+			return nil, err
+		}
+
 		// Open file
 		file, err := fileHeader.Open()
 		if err != nil {

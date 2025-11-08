@@ -176,7 +176,7 @@ const AccidentDetail = () => {
       // Refresh accident data
       fetchAccident();
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to upload photos');
+      toast.error(error.response?.data?.error || 'Failed to upload photos');
     } finally {
       setUploading(false);
     }
@@ -572,7 +572,7 @@ const AccidentDetail = () => {
                     </div>
                     <div className="card-body">
                       <div className="mb-3">
-                        <label className="form-label">Select Photos (Max 5 photos, 5MB each)</label>
+                        <label className="form-label">Select Photos (Max 4 photos, 5MB each)</label>
                         <input
                           type="file"
                           className="form-control"
@@ -581,7 +581,7 @@ const AccidentDetail = () => {
                           onChange={handleFileSelect}
                           disabled={uploading}
                         />
-                        <small className="text-muted">Accepted formats: JPEG, PNG, GIF</small>
+                        <small className="text-muted">Accepted formats: JPEG, JPG, PNG, GIF</small>
                       </div>
 
                       {/* Preview Selected Photos */}

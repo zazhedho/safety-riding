@@ -206,7 +206,13 @@ func (s *AccidentService) DeleteAccident(id, username string) error {
 // Photo methods
 func (s *AccidentService) AddAccidentPhotos(accidentId, username string, photos []dto.AddAccidentPhoto) ([]domainaccident.AccidentPhoto, error) {
 	// Verify accident exists
-	if _, err := s.AccidentRepo.GetByID(accidentId); err != nil {
+	accident, err := s.AccidentRepo.GetByID(accidentId)
+	if err != nil {
+		return nil, err
+	}
+
+	maxAccidentPhotos := utils.GetEnv("MAX_ACCIDENT_PHOTOS", 4).(int)
+	if err := utils.ValidatePhotoLimit(len(accident.Photos), len(photos), maxAccidentPhotos); err != nil {
 		return nil, err
 	}
 
@@ -246,7 +252,13 @@ func (s *AccidentService) DeleteAccidentPhoto(photoId, username string) error {
 // AddAccidentPhotosFromFiles uploads photos to storage and saves to database
 func (s *AccidentService) AddAccidentPhotosFromFiles(ctx context.Context, accidentId, username string, files []*multipart.FileHeader, captions []string, photoOrders []string) ([]domainaccident.AccidentPhoto, error) {
 	// Verify accident exists
-	if _, err := s.AccidentRepo.GetByID(accidentId); err != nil {
+	accident, err := s.AccidentRepo.GetByID(accidentId)
+	if err != nil {
+		return nil, err
+	}
+
+	maxAccidentPhotos := utils.GetEnv("MAX_ACCIDENT_PHOTOS", 4).(int)
+	if err := utils.ValidatePhotoLimit(len(accident.Photos), len(files), maxAccidentPhotos); err != nil {
 		return nil, err
 	}
 
@@ -254,6 +266,10 @@ func (s *AccidentService) AddAccidentPhotosFromFiles(ctx context.Context, accide
 
 	var photoURL string
 	for i, fileHeader := range files {
+		if err := utils.ValidatePhotoFileSize(fileHeader); err != nil {
+			return nil, err
+		}
+
 		// Open file
 		file, err := fileHeader.Open()
 		if err != nil {

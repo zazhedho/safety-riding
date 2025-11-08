@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"mime/multipart"
 	domainevent "safety-riding/internal/domain/event"
 	"safety-riding/internal/dto"
 	"strings"
@@ -58,4 +59,24 @@ func BuildOnTheSpotSales(eventId, username string, items []dto.OnTheSpotSaleItem
 		})
 	}
 	return sales
+}
+
+func ValidatePhotoLimit(currentCount, incomingCount, maxAccidentPhotos int) error {
+	if currentCount+incomingCount > maxAccidentPhotos {
+		return fmt.Errorf("maximum %d photos are allowed per accident (current: %d, incoming: %d)", maxAccidentPhotos, currentCount, incomingCount)
+	}
+	return nil
+}
+
+func ValidatePhotoFileSize(fileHeader *multipart.FileHeader) error {
+	if fileHeader == nil {
+		return fmt.Errorf("invalid file header")
+	}
+
+	maxPhotoSizeBytes := GetEnv("MAX_PHOTO_SIZE_BYTES", 5*1024*1024).(int64)
+	if fileHeader.Size > maxPhotoSizeBytes {
+		return fmt.Errorf("file %s exceeds maximum size of 5MB", fileHeader.Filename)
+	}
+
+	return nil
 }

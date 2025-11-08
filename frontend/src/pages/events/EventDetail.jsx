@@ -192,7 +192,7 @@ const EventDetail = () => {
       // Refresh event data
       fetchEvent();
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to upload photos');
+      toast.error(error.response?.data?.error || 'Failed to upload photos');
     } finally {
       setUploading(false);
     }
