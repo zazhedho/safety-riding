@@ -5,7 +5,7 @@ import schoolService from '../../services/schoolService';
 import eventService from '../../services/eventService';
 import accidentService from '../../services/accidentService';
 
-const TopNav = () => {
+const TopNav = ({ onToggleMobileMenu, isMobileMenuOpen }) => {
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -135,28 +135,49 @@ const TopNav = () => {
   // Get page title from last breadcrumb
   const pageTitle = breadcrumbs[breadcrumbs.length - 1]?.label || 'Dashboard';
 
+  const handleMobileToggle = () => {
+    if (typeof onToggleMobileMenu === 'function') {
+      onToggleMobileMenu();
+    }
+  };
+
+  const showMobileToggle = typeof onToggleMobileMenu === 'function';
+
   return (
     <div className="modern-topnav">
       <div className="topnav-container">
-        {/* Left Section - Breadcrumbs & Title */}
-        <div className="topnav-left">
-          <h4 className="page-title">{pageTitle}</h4>
-          <nav aria-label="breadcrumb">
-            <ol className="breadcrumb mb-0">
-              {breadcrumbs.map((crumb, index) => (
-                <li
-                  key={crumb.path}
-                  className={`breadcrumb-item ${index === breadcrumbs.length - 1 ? 'active' : ''}`}
-                >
-                  {index === breadcrumbs.length - 1 ? (
-                    <span>{crumb.label}</span>
-                  ) : (
-                    <Link to={crumb.path}>{crumb.label}</Link>
-                  )}
-                </li>
-              ))}
-            </ol>
-          </nav>
+        <div className="topnav-main">
+          {showMobileToggle && (
+            <button
+              type="button"
+              className="mobile-menu-toggle"
+              onClick={handleMobileToggle}
+              aria-label={isMobileMenuOpen ? 'Close sidebar menu' : 'Open sidebar menu'}
+            >
+              <i className={`bi ${isMobileMenuOpen ? 'bi-x-lg' : 'bi-list'}`}></i>
+            </button>
+          )}
+
+          {/* Left Section - Breadcrumbs & Title */}
+          <div className="topnav-left">
+            <h4 className="page-title">{pageTitle}</h4>
+            <nav aria-label="breadcrumb">
+              <ol className="breadcrumb mb-0">
+                {breadcrumbs.map((crumb, index) => (
+                  <li
+                    key={crumb.path}
+                    className={`breadcrumb-item ${index === breadcrumbs.length - 1 ? 'active' : ''}`}
+                  >
+                    {index === breadcrumbs.length - 1 ? (
+                      <span>{crumb.label}</span>
+                    ) : (
+                      <Link to={crumb.path}>{crumb.label}</Link>
+                    )}
+                  </li>
+                ))}
+              </ol>
+            </nav>
+          </div>
         </div>
 
         {/* Right Section - Actions */}

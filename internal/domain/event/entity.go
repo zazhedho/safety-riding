@@ -35,6 +35,8 @@ type Event struct {
 	InstructorPhone          string  `json:"instructor_phone" gorm:"column:instructor_phone"`
 	Status                   string  `json:"status" gorm:"column:status"`
 	Notes                    string  `json:"notes" gorm:"column:notes"`
+	AppsDownloaded           int     `json:"apps_downloaded" gorm:"column:apps_downloaded"`
+	AppsName                 string  `json:"apps_name" gorm:"column:apps_name"`
 
 	Photos         []EventPhoto         `json:"photos,omitempty" gorm:"foreignKey:EventId;constraint:OnDelete:CASCADE"`
 	OnTheSpotSales []EventOnTheSpotSale `json:"on_the_spot_sales,omitempty" gorm:"foreignKey:EventId;constraint:OnDelete:CASCADE"`

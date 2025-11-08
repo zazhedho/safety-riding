@@ -37,7 +37,9 @@ const EventForm = () => {
     on_the_spot_sales: [
       { vehicle_type: '', payment_method: 'cash', quantity: '' }
     ],
-    notes: ''
+    notes: '',
+    apps_downloaded: '',
+    apps_name: ''
   });
   const [schools, setSchools] = useState([]);
   const [publics, setPublics] = useState([]);
@@ -99,7 +101,9 @@ const EventForm = () => {
         visiting_service_profit: eventData.visiting_service_profit !== undefined && eventData.visiting_service_profit !== null
           ? eventData.visiting_service_profit.toString()
           : '',
-        on_the_spot_sales: sales
+        on_the_spot_sales: sales,
+        apps_downloaded: eventData.apps_downloaded ?? '',
+        apps_name: eventData.apps_name ?? ''
       }));
 
       // Check if event status is final (completed or cancelled)
@@ -213,7 +217,7 @@ const EventForm = () => {
       else {
         setFormData(prev => ({ ...prev, [name]: value }));
       }
-    } else if (['attendees_count', 'target_attendees', 'visiting_service_unit_entry'].includes(name)) {
+    } else if (['attendees_count', 'target_attendees', 'visiting_service_unit_entry', 'apps_downloaded'].includes(name)) {
       // Allow empty string or valid non-negative integer only
       if (value === '' || (!Number.isNaN(Number(value)) && Number(value) >= 0 && !value.includes('-'))) {
         setFormData(prev => ({ ...prev, [name]: value }));
@@ -304,6 +308,8 @@ const EventForm = () => {
       attendees_count: formData.attendees_count === '' ? 0 : parseInt(formData.attendees_count, 10) || 0,
       visiting_service_unit_entry: formData.visiting_service_unit_entry === '' ? 0 : parseInt(formData.visiting_service_unit_entry, 10) || 0,
       visiting_service_profit: formData.visiting_service_profit === '' ? 0 : parseFloat(formData.visiting_service_profit) || 0,
+      apps_downloaded: formData.apps_downloaded === '' ? 0 : parseInt(formData.apps_downloaded, 10) || 0,
+      apps_name: formData.apps_name || undefined,
       on_the_spot_sales: sanitizedSales
     };
 
@@ -382,91 +388,117 @@ const EventForm = () => {
         </div>
       )}
 
-      <div className="card">
-        <div className="card-body">
-          <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit}>
+        {/* Basic Information Section */}
+        <div className="card mb-4">
+          <div className="card-header bg-primary text-white">
+            <h5 className="mb-0">
+              <i className="bi bi-info-circle me-2"></i>Basic Information
+            </h5>
+          </div>
+          <div className="card-body">
             <div className="row">
               <div className="col-md-6 mb-3">
-                <label className="form-label">Title</label>
+                <label className="form-label">Title <span className="text-danger">*</span></label>
                 <input type="text" className="form-control" name="title" value={formData.title} onChange={handleChange} placeholder="e.g., Safety Riding Seminar for Students" required disabled={shouldDisable} />
               </div>
               <div className="col-md-6 mb-3">
-                <label className="form-label">Entity Type</label>
+                <label className="form-label">Entity Type <span className="text-danger">*</span></label>
                 <select className="form-select" value={entityType} onChange={handleEntityTypeChange} disabled={shouldDisable}>
                   <option value="school">School</option>
                   <option value="public">Public Entity</option>
                 </select>
               </div>
             </div>
-            <div className="row">
-              <div className="col-md-12 mb-3">
-                {entityType === 'school' ? (
-                  <>
-                    <label className="form-label">School</label>
-                    <select className="form-select" name="school_id" value={formData.school_id} onChange={handleEntitySelect} required disabled={shouldDisable}>
-                      <option value="">Select School</option>
-                      {schools.map(school => <option key={school.id} value={school.id}>{school.name}</option>)}
-                    </select>
-                  </>
-                ) : (
-                  <>
-                    <label className="form-label">Public Entity</label>
-                    <select className="form-select" name="public_id" value={formData.public_id} onChange={handleEntitySelect} required disabled={shouldDisable}>
-                      <option value="">Select Public Entity</option>
-                      {publics.map(pub => <option key={pub.id} value={pub.id}>{pub.name} - {pub.category}</option>)}
-                    </select>
-                  </>
-                )}
-              </div>
+            <div className="mb-3">
+              {entityType === 'school' ? (
+                <>
+                  <label className="form-label">School <span className="text-danger">*</span></label>
+                  <select className="form-select" name="school_id" value={formData.school_id} onChange={handleEntitySelect} required disabled={shouldDisable}>
+                    <option value="">Select School</option>
+                    {schools.map(school => <option key={school.id} value={school.id}>{school.name}</option>)}
+                  </select>
+                </>
+              ) : (
+                <>
+                  <label className="form-label">Public Entity <span className="text-danger">*</span></label>
+                  <select className="form-select" name="public_id" value={formData.public_id} onChange={handleEntitySelect} required disabled={shouldDisable}>
+                    <option value="">Select Public Entity</option>
+                    {publics.map(pub => <option key={pub.id} value={pub.id}>{pub.name} - {pub.category}</option>)}
+                  </select>
+                </>
+              )}
             </div>
             <div className="mb-3">
-              <label className="form-label">Description</label>
-              <textarea className="form-control" name="description" value={formData.description} onChange={handleChange} placeholder="e.g., A seminar on the importance of safe driving for high school students" required disabled={shouldDisable} />
+              <label className="form-label">Description <span className="text-danger">*</span></label>
+              <textarea className="form-control" rows="3" name="description" value={formData.description} onChange={handleChange} placeholder="e.g., A seminar on the importance of safe driving for high school students" required disabled={shouldDisable} />
             </div>
+          </div>
+        </div>
+
+        {/* Event Schedule & Location Section */}
+        <div className="card mb-4">
+          <div className="card-header bg-success text-white">
+            <h5 className="mb-0">
+              <i className="bi bi-calendar-event me-2"></i>Event Schedule & Location
+            </h5>
+          </div>
+          <div className="card-body">
             <div className="row">
               <div className="col-md-4 mb-3">
-                <label className="form-label">Event Date</label>
+                <label className="form-label">Event Date <span className="text-danger">*</span></label>
                 <input type="date" className="form-control" name="event_date" value={formData.event_date} onChange={handleChange} required disabled={shouldDisable} />
               </div>
               <div className="col-md-4 mb-3">
-                <label className="form-label">Start Time</label>
+                <label className="form-label">Start Time <span className="text-danger">*</span></label>
                 <input type="time" className="form-control" name="start_time" value={formData.start_time} onChange={handleChange} required disabled={shouldDisable} />
               </div>
               <div className="col-md-4 mb-3">
-                <label className="form-label">End Time</label>
+                <label className="form-label">End Time <span className="text-danger">*</span></label>
                 <input type="time" className="form-control" name="end_time" value={formData.end_time} onChange={handleChange} required disabled={shouldDisable} />
               </div>
             </div>
             <div className="mb-3">
-              <label className="form-label">Location</label>
+              <label className="form-label">Location <span className="text-danger">*</span></label>
               <input type="text" className="form-control" name="location" value={formData.location} onChange={handleChange} placeholder="e.g., School Auditorium" required disabled={shouldDisable} />
             </div>
             <div className="row">
               <div className="col-md-4 mb-3">
-                <label className="form-label">Province</label>
+                <label className="form-label">Province <span className="text-danger">*</span></label>
                 <select className="form-select" name="province_id" value={formData.province_id} onChange={handleChange} required disabled={shouldDisable}>
                   <option value="">Select Province</option>
                   {provinces.map(prov => <option key={prov.code} value={prov.code}>{prov.name}</option>)}
                 </select>
               </div>
               <div className="col-md-4 mb-3">
-                <label className="form-label">City</label>
-                <select className="form-select" name="city_id" value={formData.city_id} onChange={handleChange} required disabled={!formData.province_id || isFinalized}>
+                <label className="form-label">City <span className="text-danger">*</span></label>
+                <select className="form-select" name="city_id" value={formData.city_id} onChange={handleChange} required disabled={!formData.province_id || shouldDisable}>
                   <option value="">Select City</option>
                   {cities.map(city => <option key={city.code} value={city.code}>{city.name}</option>)}
                 </select>
               </div>
               <div className="col-md-4 mb-3">
-                <label className="form-label">District</label>
-                <select className="form-select" name="district_id" value={formData.district_id} onChange={handleChange} required disabled={!formData.city_id || isFinalized}>
+                <label className="form-label">District <span className="text-danger">*</span></label>
+                <select className="form-select" name="district_id" value={formData.district_id} onChange={handleChange} required disabled={!formData.city_id || shouldDisable}>
                   <option value="">Select District</option>
                   {districts.map(dist => <option key={dist.code} value={dist.code}>{dist.name}</option>)}
                 </select>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Event Details Section */}
+        <div className="card mb-4">
+          <div className="card-header bg-info text-white">
+            <h5 className="mb-0">
+              <i className="bi bi-card-list me-2"></i>Event Details
+            </h5>
+          </div>
+          <div className="card-body">
             <div className="row">
               <div className="col-md-6 mb-3">
-                <label className="form-label">Event Type</label>
+                <label className="form-label">Event Type <span className="text-danger">*</span></label>
                 <select className="form-select" name="event_type" value={showOtherEventType ? 'other' : formData.event_type} onChange={handleChange} required disabled={shouldDisable}>
                   <option value="seminar">Seminar</option>
                   <option value="workshop">Workshop</option>
@@ -482,6 +514,28 @@ const EventForm = () => {
                 <input type="text" className="form-control" name="target_audience" value={formData.target_audience} onChange={handleChange} placeholder="e.g., High School Students, Grade 10-12" disabled={shouldDisable} />
               </div>
             </div>
+            <div className="row">
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Status <span className="text-danger">*</span></label>
+                <select className="form-select" name="status" value={formData.status} onChange={handleChange} required disabled={shouldDisable}>
+                  <option value="planned">Planned</option>
+                  <option value="ongoing">Ongoing</option>
+                  <option value="completed">Completed</option>
+                  <option value="cancelled">Cancelled</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Participants & Achievement Section */}
+        <div className="card mb-4">
+          <div className="card-header bg-warning text-dark">
+            <h5 className="mb-0">
+              <i className="bi bi-people me-2"></i>Participants & Achievement
+            </h5>
+          </div>
+          <div className="card-body">
             <div className="row">
               <div className="col-md-4 mb-3">
                 <label className="form-label">Target Attendees</label>
@@ -517,6 +571,17 @@ const EventForm = () => {
                 )}
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Sales & Services Section */}
+        <div className="card mb-4">
+          <div className="card-header bg-secondary text-white">
+            <h5 className="mb-0">
+              <i className="bi bi-cart me-2"></i>Sales & Services
+            </h5>
+          </div>
+          <div className="card-body">
             <div className="mb-4">
               <div className="d-flex justify-content-between align-items-center mb-2">
                 <h5 className="mb-0">On the Spot Sales</h5>
@@ -585,9 +650,14 @@ const EventForm = () => {
                 Add one row per unit sold to capture different vehicle types and payment methods.
               </small>
             </div>
+
+            <hr className="my-4" />
+
+            {/* Visiting Service */}
+            <h6 className="mb-3"><i className="bi bi-briefcase me-2"></i>Visiting Service</h6>
             <div className="row">
               <div className="col-md-6 mb-3">
-                <label className="form-label">Visiting Service Unit Entry</label>
+                <label className="form-label">Unit Entry</label>
                 <input
                   type="number"
                   className="form-control"
@@ -602,7 +672,7 @@ const EventForm = () => {
                 />
               </div>
               <div className="col-md-6 mb-3">
-                <label className="form-label">Visiting Service Profit (IDR)</label>
+                <label className="form-label">Profit (IDR)</label>
                 <div className="input-group">
                   <span className="input-group-text">Rp</span>
                   <input
@@ -621,6 +691,55 @@ const EventForm = () => {
                 </div>
               </div>
             </div>
+
+            <hr className="my-4" />
+
+            {/* App Downloads */}
+            <h6 className="mb-3"><i className="bi bi-download me-2"></i>App Downloads</h6>
+            <div className="row">
+              <div className="col-md-6 mb-3">
+                <label className="form-label">Number of Downloads</label>
+                <input
+                  type="number"
+                  className="form-control"
+                  name="apps_downloaded"
+                  value={formData.apps_downloaded}
+                  onChange={handleChange}
+                  onFocus={handleNumberFocus}
+                  onKeyDown={handleNumberKeyDown}
+                  placeholder="e.g., 50"
+                  min="0"
+                  disabled={shouldDisable}
+                />
+                <small className="text-muted">
+                  <i className="bi bi-info-circle me-1"></i>
+                  Number of app downloads during this event
+                </small>
+              </div>
+              <div className="col-md-6 mb-3">
+                <label className="form-label">App Name</label>
+                <select className="form-select" name="apps_name" value={formData.apps_name} onChange={handleChange} disabled={shouldDisable}>
+                  <option value="">Select App</option>
+                  <option value="Motorkux">Motorkux</option>
+                  <option value="Other">Other</option>
+                </select>
+                <small className="text-muted">
+                  <i className="bi bi-info-circle me-1"></i>
+                  Name of the app that was downloaded
+                </small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Instructor Information Section */}
+        <div className="card mb-4">
+          <div className="card-header bg-dark text-white">
+            <h5 className="mb-0">
+              <i className="bi bi-person-badge me-2"></i>Instructor Information
+            </h5>
+          </div>
+          <div className="card-body">
             <div className="row">
               <div className="col-md-6 mb-3">
                 <label className="form-label">Instructor Name</label>
@@ -631,26 +750,34 @@ const EventForm = () => {
                 <input type="text" className="form-control" name="instructor_phone" value={formData.instructor_phone} onChange={handleChange} placeholder="e.g., 081234567890" disabled={shouldDisable} />
               </div>
             </div>
-            <div className="row">
-              <div className="col-md-6 mb-3">
-                <label className="form-label">Status</label>
-                <select className="form-select" name="status" value={formData.status} onChange={handleChange} required disabled={shouldDisable}>
-                  <option value="planned">Planned</option>
-                  <option value="ongoing">Ongoing</option>
-                  <option value="completed">Completed</option>
-                  <option value="cancelled">Cancelled</option>
-                </select>
-              </div>
-            </div>
-            <div className="mb-3">
-              <label className="form-label">Notes</label>
-              <textarea className="form-control" name="notes" value={formData.notes} onChange={handleChange} placeholder="e.g., The event was a great success, with enthusiastic participation from students." disabled={shouldDisable} />
-            </div>
-            <button type="submit" className="btn btn-primary" disabled={shouldDisable}>{id ? 'Update' : 'Create'}</button>
-            <button type="button" className="btn btn-secondary ms-2" onClick={() => navigate('/events')}>Cancel</button>
-          </form>
+          </div>
         </div>
-      </div>
+
+        {/* Notes Section */}
+        <div className="card mb-4">
+          <div className="card-header">
+            <h5 className="mb-0">
+              <i className="bi bi-pencil-square me-2"></i>Notes
+            </h5>
+          </div>
+          <div className="card-body">
+            <div className="mb-3">
+              <label className="form-label">Additional Notes</label>
+              <textarea className="form-control" rows="4" name="notes" value={formData.notes} onChange={handleChange} placeholder="e.g., The event was a great success, with enthusiastic participation from students." disabled={shouldDisable} />
+            </div>
+          </div>
+        </div>
+
+        {/* Form Actions */}
+        <div className="d-flex justify-content-end gap-2 mb-4">
+          <button type="button" className="btn btn-secondary" onClick={() => navigate('/events')}>
+            <i className="bi bi-x-circle me-2"></i>Cancel
+          </button>
+          <button type="submit" className="btn btn-primary" disabled={shouldDisable}>
+            <i className="bi bi-save me-2"></i>{id ? 'Update Event' : 'Create Event'}
+          </button>
+        </div>
+      </form>
     </DashboardLayout>
   );
 };

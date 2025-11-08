@@ -23,6 +23,8 @@ type AddEvent struct {
 	InstructorPhone          string              `json:"instructor_phone,omitempty"`
 	Status                   string              `json:"status,omitempty"`
 	Notes                    string              `json:"notes,omitempty"`
+	AppsDownloaded           int                 `json:"apps_downloaded,omitempty"`
+	AppsName                 string              `json:"apps_name,omitempty"`
 	Photos                   []AddEventPhoto     `json:"photos,omitempty"`
 }
 
@@ -49,6 +51,8 @@ type UpdateEvent struct {
 	InstructorPhone          string              `json:"instructor_phone,omitempty"`
 	Status                   string              `json:"status,omitempty"`
 	Notes                    string              `json:"notes,omitempty"`
+	AppsDownloaded           int                 `json:"apps_downloaded,omitempty"`
+	AppsName                 string              `json:"apps_name,omitempty"`
 }
 
 type OnTheSpotSaleItem struct {

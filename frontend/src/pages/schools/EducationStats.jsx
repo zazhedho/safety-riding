@@ -6,21 +6,23 @@ import locationService from '../../services/locationService';
 import { toast } from 'react-toastify';
 
 const EducationStats = () => {
-  const [entityType, setEntityType] = useState('school'); // 'school' or 'public'
-  const [stats, setStats] = useState(null);
-  const [provinces, setProvinces] = useState([]);
-  const [cities, setCities] = useState([]);
-  const [districts, setDistricts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [filters, setFilters] = useState({
+  const currentYear = new Date().getFullYear();
+  const defaultFilters = {
     province_id: '',
     city_id: '',
     district_id: '',
     is_educated: '',
     search: '',
     month: '',
-    year: String(new Date().getFullYear())
-  });
+    year: String(currentYear)
+  };
+  const [entityType, setEntityType] = useState('school'); // 'school' or 'public'
+  const [stats, setStats] = useState(null);
+  const [provinces, setProvinces] = useState([]);
+  const [cities, setCities] = useState([]);
+  const [districts, setDistricts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filters, setFilters] = useState(defaultFilters);
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 10
@@ -29,7 +31,6 @@ const EducationStats = () => {
     order_by: 'name',
     order_direction: 'asc'
   });
-  const currentYear = new Date().getFullYear();
   const yearOptions = Array.from({ length: 5 }, (_, idx) => String(currentYear - idx));
 
   useEffect(() => {
@@ -86,23 +87,23 @@ const EducationStats = () => {
     }
   };
 
-  const fetchStats = async () => {
+  const fetchStats = async (customFilters = filters, customPagination = pagination) => {
     setLoading(true);
     try {
       const params = {
-        page: pagination.page,
-        limit: pagination.limit,
+        page: customPagination.page,
+        limit: customPagination.limit,
         order_by: sorting.order_by,
         order_direction: sorting.order_direction,
       };
 
-      if (filters.province_id) params['filters[province_id]'] = filters.province_id;
-      if (filters.city_id) params['filters[city_id]'] = filters.city_id;
-      if (filters.district_id) params['filters[district_id]'] = filters.district_id;
-      if (filters.is_educated !== '') params['filters[is_educated]'] = filters.is_educated;
-      if (filters.month) params['filters[month]'] = filters.month;
-      if (filters.year) params['filters[year]'] = filters.year;
-      if (filters.search) params.search = filters.search;
+      if (customFilters.province_id) params['filters[province_id]'] = customFilters.province_id;
+      if (customFilters.city_id) params['filters[city_id]'] = customFilters.city_id;
+      if (customFilters.district_id) params['filters[district_id]'] = customFilters.district_id;
+      if (customFilters.is_educated !== '') params['filters[is_educated]'] = customFilters.is_educated;
+      if (customFilters.month) params['filters[month]'] = customFilters.month;
+      if (customFilters.year) params['filters[year]'] = customFilters.year;
+      if (customFilters.search) params.search = customFilters.search;
 
       const service = entityType === 'school' ? schoolService : publicService;
       const response = await service.getEducationStats(params);
@@ -134,8 +135,19 @@ const EducationStats = () => {
   };
 
   const handleSearch = () => {
-    setPagination({ ...pagination, page: 1 });
-    fetchStats();
+    const updatedPagination = { ...pagination, page: 1 };
+    setPagination(updatedPagination);
+    fetchStats(filters, updatedPagination);
+  };
+
+  const handleClearFilters = () => {
+    const resetFilters = { ...defaultFilters };
+    setFilters(resetFilters);
+    setCities([]);
+    setDistricts([]);
+    const resetPagination = { ...pagination, page: 1 };
+    setPagination(resetPagination);
+    fetchStats(resetFilters, resetPagination);
   };
 
   const handleSort = (column) => {
@@ -214,7 +226,7 @@ const EducationStats = () => {
 
       {/* Statistics Cards */}
       {stats && (
-        <div className="row g-3 mb-4">
+        <div className="row gx-3 gy-1 mb-0">
           <div className="col-sm-6 col-lg-3">
             <div className="card border-primary">
               <div className="card-body">
@@ -391,10 +403,15 @@ const EducationStats = () => {
                 ))}
               </select>
             </div>
-            <div className="col-12 col-lg-1 d-grid">
-              <button className="btn btn-primary" onClick={handleSearch}>
-                <i className="bi bi-search"></i>
-              </button>
+            <div className="col-12 col-lg-2">
+              <div className="d-flex gap-2">
+                <button className="btn btn-primary flex-fill" onClick={handleSearch} title="Apply filters">
+                  <i className="bi bi-search"></i>
+                </button>
+                <button className="btn btn-outline-secondary" onClick={handleClearFilters} title="Clear all filters">
+                  <i className="bi bi-x-circle"></i>
+                </button>
+              </div>
             </div>
           </div>
         </div>

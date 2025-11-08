@@ -120,15 +120,6 @@ const DashboardLayout = ({ children }) => {
     <div className={`layout-wrapper ${isMobileMenuOpen ? 'sidebar-open' : ''} ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
       <ThemeSwitcher />
 
-      {/* Mobile Menu Toggle Button */}
-      <button
-        className="mobile-menu-toggle"
-        onClick={toggleMobileMenu}
-        aria-label="Toggle mobile menu"
-      >
-        <i className={`bi ${isMobileMenuOpen ? 'bi-x-lg' : 'bi-list'}`}></i>
-      </button>
-
       {/* Desktop Sidebar Toggle Button */}
       <button
         className="sidebar-toggle-btn"
@@ -192,7 +183,10 @@ const DashboardLayout = ({ children }) => {
       </div>
 
       <div className="main-content">
-        <TopNav />
+        <TopNav
+          onToggleMobileMenu={toggleMobileMenu}
+          isMobileMenuOpen={isMobileMenuOpen}
+        />
         <div className="content-area">
           {children}
         </div>

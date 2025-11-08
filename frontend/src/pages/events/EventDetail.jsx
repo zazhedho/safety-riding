@@ -735,6 +735,44 @@ const EventDetail = () => {
                     </div>
                   </div>
                 </div>
+                <div className="row">
+                  <div className="col-lg-6 mb-4">
+                    <div className="card h-100">
+                      <div className="card-header">
+                        <h5 className="mb-0">
+                          <i className="bi bi-download me-2"></i>App Downloads
+                        </h5>
+                      </div>
+                      <div className="card-body">
+                        <table className="table table-borderless">
+                          <tbody>
+                            <tr>
+                              <td className="text-muted" style={{ width: '40%' }}>
+                                <strong>App Name</strong>
+                              </td>
+                              <td>
+                                {event.apps_name ? (
+                                  <span className="badge bg-primary">{event.apps_name}</span>
+                                ) : (
+                                  <span className="text-muted">-</span>
+                                )}
+                              </td>
+                            </tr>
+                            <tr>
+                              <td className="text-muted">
+                                <strong>Downloads</strong>
+                              </td>
+                              <td>
+                                <i className="bi bi-cloud-download me-1"></i>
+                                <strong>{formatNumber(event.apps_downloaded)}</strong> downloads
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </>
             )}
 

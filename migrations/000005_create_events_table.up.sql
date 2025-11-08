@@ -17,6 +17,8 @@ CREATE TABLE IF NOT EXISTS events (
     target_audience     VARCHAR(100),
     target_attendees    INTEGER DEFAULT 0,
     attendees_count     INTEGER NOT NULL DEFAULT 0,
+    apps_downloaded     INTEGER NOT NULL DEFAULT 0,
+    apps_name           VARCHAR(50),
 
     visiting_service_unit_entry INTEGER NOT NULL DEFAULT 0,
     visiting_service_profit     NUMERIC(15,2) NOT NULL DEFAULT 0,

@@ -248,7 +248,7 @@ const EventList = () => {
             )}
             <div className={filters.entity_type ? "col-md-3" : "col-md-6"}>
               <div className="d-flex gap-2">
-                <button className="btn btn-primary flex-fill" onClick={handleSearch}>
+                <button className="btn btn-primary" onClick={handleSearch}>
                   <i className="bi bi-search me-2"></i>Search
                 </button>
                 <button className="btn btn-outline-secondary" onClick={handleClearFilters} title="Clear all filters">

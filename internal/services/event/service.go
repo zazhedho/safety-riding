@@ -86,6 +86,8 @@ func (s *EventService) AddEvent(username string, req dto.AddEvent) (domainevent.
 		InstructorPhone:          phone,
 		Status:                   strings.ToLower(req.Status),
 		Notes:                    req.Notes,
+		AppsDownloaded:           req.AppsDownloaded,
+		AppsName:                 req.AppsName,
 		CreatedAt:                time.Now(),
 		CreatedBy:                username,
 	}
@@ -257,6 +259,12 @@ func (s *EventService) UpdateEvent(id, username, role string, req dto.UpdateEven
 	}
 	if req.Notes != "" {
 		event.Notes = req.Notes
+	}
+	if req.AppsDownloaded != 0 {
+		event.AppsDownloaded = req.AppsDownloaded
+	}
+	if req.AppsName != "" {
+		event.AppsName = req.AppsName
 	}
 
 	event.UpdatedAt = time.Now()
