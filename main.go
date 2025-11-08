@@ -108,6 +108,7 @@ func main() {
 	// Register all routes
 	routes.UserRoutes()
 	routes.SchoolRoutes()
+	routes.PublicRoutes()
 	routes.ProvinceRoutes()
 	routes.CityRoutes()
 	routes.DistrictRoutes()

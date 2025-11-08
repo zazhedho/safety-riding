@@ -48,6 +48,12 @@ const AccidentForm = () => {
     accident_type: false,
   });
 
+  // Photo upload states
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [photoPreviews, setPhotoPreviews] = useState([]);
+  const [captions, setCaptions] = useState({});
+  const [uploading, setUploading] = useState(false);
+
   useEffect(() => {
     fetchProvinces();
     if (id) {
@@ -56,6 +62,15 @@ const AccidentForm = () => {
       setLoading(false);
     }
   }, [id]);
+
+  // Cleanup photo previews on unmount
+  useEffect(() => {
+    return () => {
+      photoPreviews.forEach(preview => {
+        URL.revokeObjectURL(preview.url);
+      });
+    };
+  }, [photoPreviews]);
 
   useEffect(() => {
     if (formData.province_id) {
@@ -134,6 +149,103 @@ const AccidentForm = () => {
     }
   };
 
+  // Handle file selection
+  const handleFileSelect = (e) => {
+    const files = Array.from(e.target.files);
+
+    if (files.length > 5) {
+      toast.error('Maximum 5 photos allowed');
+      return;
+    }
+
+    // Validate file types
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+    const invalidFiles = files.filter(file => !validTypes.includes(file.type));
+
+    if (invalidFiles.length > 0) {
+      toast.error('Only JPEG, PNG, and GIF images are allowed');
+      return;
+    }
+
+    // Validate file sizes (max 5MB per file)
+    const oversizedFiles = files.filter(file => file.size > 5 * 1024 * 1024);
+    if (oversizedFiles.length > 0) {
+      toast.error('Each photo must be less than 5MB');
+      return;
+    }
+
+    setSelectedFiles(files);
+
+    // Create previews
+    const previews = files.map((file, index) => ({
+      id: index,
+      url: URL.createObjectURL(file),
+      name: file.name
+    }));
+    setPhotoPreviews(previews);
+
+    // Initialize captions
+    const initialCaptions = {};
+    files.forEach((_, index) => {
+      initialCaptions[index] = '';
+    });
+    setCaptions(initialCaptions);
+  };
+
+  // Handle caption change
+  const handleCaptionChange = (index, value) => {
+    setCaptions(prev => ({
+      ...prev,
+      [index]: value
+    }));
+  };
+
+  // Handle photo upload after accident is saved
+  const handlePhotoUpload = async (accidentId) => {
+    if (selectedFiles.length === 0) {
+      return; // No photos to upload
+    }
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+
+      // Append files
+      selectedFiles.forEach((file) => {
+        formData.append('photos', file);
+      });
+
+      // Append captions
+      selectedFiles.forEach((_, index) => {
+        formData.append('captions', captions[index] || '');
+      });
+
+      // Append photo orders
+      selectedFiles.forEach((_, index) => {
+        formData.append('photo_orders', (index + 1).toString());
+      });
+
+      await accidentService.addPhotos(accidentId, formData);
+      toast.success('Photos uploaded successfully');
+
+      // Clear selection
+      setSelectedFiles([]);
+      setPhotoPreviews([]);
+      setCaptions({});
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to upload photos');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // Clear selection
+  const handleClearSelection = () => {
+    setSelectedFiles([]);
+    setPhotoPreviews([]);
+    setCaptions({});
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -155,13 +267,22 @@ const AccidentForm = () => {
     };
 
     try {
+      let accidentId = id;
+
       if (id) {
         await accidentService.update(id, dataToSend);
         toast.success('Accident updated successfully');
       } else {
-        await accidentService.create(dataToSend);
+        const response = await accidentService.create(dataToSend);
+        accidentId = response.data.data.id;
         toast.success('Accident created successfully');
       }
+
+      // Upload photos if any are selected
+      if (selectedFiles.length > 0) {
+        await handlePhotoUpload(accidentId);
+      }
+
       navigate('/accidents');
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to save accident');
@@ -325,8 +446,76 @@ const AccidentForm = () => {
                 <input type="text" className="form-control" name="officer_name" value={formData.officer_name} onChange={handleChange} placeholder="e.g., Bripka John Doe" />
               </div>
             </div>
-            <button type="submit" className="btn btn-primary">{id ? 'Update' : 'Create'}</button>
-            <button type="button" className="btn btn-secondary ms-2" onClick={() => navigate('/accidents')}>Cancel</button>
+            {/* Photo Upload Section */}
+            <div className="mb-4">
+              <h5 className="mb-3">
+                <i className="bi bi-images me-2"></i>Accident Photos {!id && <span className="text-muted small">(Optional - will be uploaded after saving)</span>}
+              </h5>
+              <div className="card border-primary">
+                <div className="card-body">
+                  <div className="mb-3">
+                    <label className="form-label">Select Photos (Max 5 photos, 5MB each)</label>
+                    <input
+                      type="file"
+                      className="form-control"
+                      accept="image/jpeg,image/jpg,image/png,image/gif"
+                      multiple
+                      onChange={handleFileSelect}
+                      disabled={uploading}
+                    />
+                    <small className="text-muted">Accepted formats: JPEG, PNG, GIF</small>
+                  </div>
+
+                  {/* Preview Selected Photos */}
+                  {photoPreviews.length > 0 && (
+                    <div className="mt-3">
+                      <h6>Preview ({photoPreviews.length} photo{photoPreviews.length > 1 ? 's' : ''} selected)</h6>
+                      <div className="row">
+                        {photoPreviews.map((preview, index) => (
+                          <div key={preview.id} className="col-md-4 mb-3">
+                            <div className="card">
+                              <img src={preview.url} className="card-img-top" alt={preview.name} style={{ height: '200px', objectFit: 'cover' }} />
+                              <div className="card-body">
+                                <label className="form-label small">Caption (optional)</label>
+                                <input
+                                  type="text"
+                                  className="form-control form-control-sm"
+                                  placeholder="Enter caption..."
+                                  value={captions[index] || ''}
+                                  onChange={(e) => handleCaptionChange(index, e.target.value)}
+                                  disabled={uploading}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      <button
+                        type="button"
+                        className="btn btn-secondary btn-sm"
+                        onClick={handleClearSelection}
+                        disabled={uploading}
+                      >
+                        Clear Selection
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <button type="submit" className="btn btn-primary" disabled={uploading}>
+              {uploading ? (
+                <>
+                  <span className="spinner-border spinner-border-sm me-2"></span>
+                  {id ? 'Updating...' : 'Creating...'}
+                </>
+              ) : (
+                id ? 'Update' : 'Create'
+              )}
+            </button>
+            <button type="button" className="btn btn-secondary ms-2" onClick={() => navigate('/accidents')} disabled={uploading}>Cancel</button>
           </form>
         </div>
       </div>

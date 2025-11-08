@@ -55,3 +55,9 @@ type UpdateAccident struct {
 	PoliceStation     string  `json:"police_station,omitempty"`
 	OfficerName       string  `json:"officer_name,omitempty"`
 }
+
+type AddAccidentPhoto struct {
+	PhotoUrl   string `json:"photo_url" binding:"required"`
+	Caption    string `json:"caption,omitempty"`
+	PhotoOrder int    `json:"photo_order,omitempty"`
+}

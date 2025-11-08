@@ -176,3 +176,83 @@ func (h *AccidentHandler) DeleteAccident(ctx *gin.Context) {
 	logger.WriteLog(logger.LogLevelDebug, fmt.Sprintf("%s; Success;", logPrefix))
 	ctx.JSON(http.StatusOK, res)
 }
+
+// Photo handlers
+func (h *AccidentHandler) AddAccidentPhotos(ctx *gin.Context) {
+	authData := utils.GetAuthData(ctx)
+	username := utils.InterfaceString(authData["username"])
+	logId := utils.GenerateLogId(ctx)
+	logPrefix := fmt.Sprintf("[%s][AccidentHandler][AddAccidentPhotos]", logId)
+
+	accidentId := ctx.Param("id")
+	if accidentId == "" {
+		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; Missing accident ID", logPrefix))
+		res := response.Response(http.StatusBadRequest, "Accident ID is required", logId, nil)
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	// Parse multipart form
+	form, err := ctx.MultipartForm()
+	if err != nil {
+		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; MultipartForm ERROR: %s;", logPrefix, err.Error()))
+		res := response.Response(http.StatusBadRequest, "Failed to parse form data", logId, nil)
+		res.Error = err.Error()
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	// Get files from form
+	files := form.File["photos"]
+	if len(files) == 0 {
+		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; No photos uploaded", logPrefix))
+		res := response.Response(http.StatusBadRequest, "At least one photo is required", logId, nil)
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	// Get optional captions and photo orders from form data
+	captions := form.Value["captions"]
+	photoOrders := form.Value["photo_orders"]
+
+	// Call service to upload photos to MinIO and save to database
+	data, err := h.Service.AddAccidentPhotosFromFiles(ctx, accidentId, username, files, captions, photoOrders)
+	if err != nil {
+		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; Service.AddAccidentPhotosFromFiles; Error: %+v", logPrefix, err))
+		res := response.Response(http.StatusInternalServerError, messages.MsgFail, logId, nil)
+		res.Error = err.Error()
+		ctx.JSON(http.StatusInternalServerError, res)
+		return
+	}
+
+	res := response.Response(http.StatusCreated, "Add accident photos successfully", logId, data)
+	logger.WriteLog(logger.LogLevelDebug, fmt.Sprintf("%s; Success: uploaded %d photos;", logPrefix, len(files)))
+	ctx.JSON(http.StatusCreated, res)
+}
+
+func (h *AccidentHandler) DeleteAccidentPhoto(ctx *gin.Context) {
+	authData := utils.GetAuthData(ctx)
+	username := utils.InterfaceString(authData["username"])
+	logId := utils.GenerateLogId(ctx)
+	logPrefix := fmt.Sprintf("[%s][AccidentHandler][DeleteAccidentPhoto]", logId)
+
+	photoId := ctx.Param("photoId")
+	if photoId == "" {
+		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; Missing photo ID", logPrefix))
+		res := response.Response(http.StatusBadRequest, "Photo ID is required", logId, nil)
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	if err := h.Service.DeleteAccidentPhoto(photoId, username); err != nil {
+		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; Service.DeleteAccidentPhoto; Error: %+v", logPrefix, err))
+		res := response.Response(http.StatusInternalServerError, messages.MsgFail, logId, nil)
+		res.Error = err.Error()
+		ctx.JSON(http.StatusInternalServerError, res)
+		return
+	}
+
+	res := response.Response(http.StatusOK, "Delete accident photo successfully", logId, nil)
+	logger.WriteLog(logger.LogLevelDebug, fmt.Sprintf("%s; Success;", logPrefix))
+	ctx.JSON(http.StatusOK, res)
+}

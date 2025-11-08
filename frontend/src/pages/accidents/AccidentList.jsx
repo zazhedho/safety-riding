@@ -25,6 +25,15 @@ const AccidentList = () => {
     police_station: '',
     search: ''
   });
+  const [appliedFilters, setAppliedFilters] = useState({
+    province_id: '',
+    city_id: '',
+    district_id: '',
+    accident_type: '',
+    vehicle_type: '',
+    police_station: '',
+    search: ''
+  });
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 10,
@@ -38,7 +47,7 @@ const AccidentList = () => {
 
   useEffect(() => {
     fetchAccidents();
-  }, [pagination.page, filters]);
+  }, [pagination.page, appliedFilters]);
 
   useEffect(() => {
     if (filters.province_id) {
@@ -91,13 +100,13 @@ const AccidentList = () => {
         page: pagination.page,
         limit: pagination.limit
       };
-      if (filters.province_id) params['filters[province_id]'] = filters.province_id;
-      if (filters.city_id) params['filters[city_id]'] = filters.city_id;
-      if (filters.district_id) params['filters[district_id]'] = filters.district_id;
-      if (filters.accident_type) params['filters[accident_type]'] = filters.accident_type;
-      if (filters.vehicle_type) params['filters[vehicle_type]'] = filters.vehicle_type;
-      if (filters.police_station) params['filters[police_station]'] = filters.police_station;
-      if (filters.search) params.search = filters.search;
+      if (appliedFilters.province_id) params['filters[province_id]'] = appliedFilters.province_id;
+      if (appliedFilters.city_id) params['filters[city_id]'] = appliedFilters.city_id;
+      if (appliedFilters.district_id) params['filters[district_id]'] = appliedFilters.district_id;
+      if (appliedFilters.accident_type) params['filters[accident_type]'] = appliedFilters.accident_type;
+      if (appliedFilters.vehicle_type) params['filters[vehicle_type]'] = appliedFilters.vehicle_type;
+      if (appliedFilters.police_station) params['filters[police_station]'] = appliedFilters.police_station;
+      if (appliedFilters.search) params.search = appliedFilters.search;
 
       const response = await accidentService.getAll(params);
       setAccidents(response.data.data || []);
@@ -121,12 +130,34 @@ const AccidentList = () => {
       ...(name === 'province_id' && { city_id: '', district_id: '' }),
       ...(name === 'city_id' && { district_id: '' })
     }));
-    setPagination(prev => ({ ...prev, page: 1 }));
   };
 
   const handleSearch = () => {
+    setAppliedFilters(filters);
     setPagination(prev => ({ ...prev, page: 1 }));
-    fetchAccidents();
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
+  const handleClearFilters = () => {
+    const emptyFilters = {
+      province_id: '',
+      city_id: '',
+      district_id: '',
+      accident_type: '',
+      vehicle_type: '',
+      police_station: '',
+      search: ''
+    };
+    setFilters(emptyFilters);
+    setAppliedFilters(emptyFilters);
+    setPagination(prev => ({ ...prev, page: 1 }));
+    setCities([]);
+    setDistricts([]);
   };
 
   const handlePageChange = (newPage) => {
@@ -187,6 +218,7 @@ const AccidentList = () => {
                 name="search"
                 value={filters.search}
                 onChange={handleFilterChange}
+                onKeyPress={handleKeyPress}
               />
             </div>
             <div className="col-md-3">
@@ -261,9 +293,14 @@ const AccidentList = () => {
               />
             </div>
             <div className="col-md-3">
-              <button className="btn btn-primary w-100" onClick={handleSearch}>
-                <i className="bi bi-search me-2"></i>Search
-              </button>
+              <div className="d-flex gap-2">
+                <button className="btn btn-primary flex-fill" onClick={handleSearch}>
+                  <i className="bi bi-search me-2"></i>Search
+                </button>
+                <button className="btn btn-outline-secondary" onClick={handleClearFilters} title="Clear all filters">
+                  <i className="bi bi-x-circle"></i>
+                </button>
+              </div>
             </div>
           </div>
         </div>

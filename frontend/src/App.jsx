@@ -7,7 +7,10 @@ import Dashboard from './pages/Dashboard';
 import SchoolList from './pages/schools/SchoolList';
 import SchoolForm from './pages/schools/SchoolForm';
 import SchoolDetail from './pages/schools/SchoolDetail';
-import SchoolEducationStats from './pages/schools/SchoolEducationStats';
+import EducationStats from './pages/schools/EducationStats';
+import PublicList from './pages/publics/PublicList';
+import PublicForm from './pages/publics/PublicForm';
+import PublicDetail from './pages/publics/PublicDetail';
 import EventList from './pages/events/EventList';
 import EventForm from './pages/events/EventForm';
 import EventDetail from './pages/events/EventDetail';
@@ -66,7 +69,7 @@ function App() {
             path="/schools/education-stats"
             element={
               <ProtectedRoute>
-                <SchoolEducationStats />
+                <EducationStats />
               </ProtectedRoute>
             }
           />
@@ -94,6 +97,42 @@ function App() {
             element={
               <ProtectedRoute>
                 <SchoolForm />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/publics"
+            element={
+              <ProtectedRoute>
+                <PublicList />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/publics/new"
+            element={
+              <ProtectedRoute>
+                <PublicForm />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/publics/:id"
+            element={
+              <ProtectedRoute>
+                <PublicDetail />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/publics/:id/edit"
+            element={
+              <ProtectedRoute>
+                <PublicForm />
               </ProtectedRoute>
             }
           />

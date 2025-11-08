@@ -1,0 +1,183 @@
+import { Bar } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+} from 'chart.js';
+
+// Register Chart.js components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
+
+const wrapLabel = (label, maxLength = 14) => {
+  if (!label) {
+    return [''];
+  }
+
+  const words = `${label}`.split(' ');
+  const lines = [];
+  let currentLine = '';
+
+  words.forEach(word => {
+    const tentativeLine = currentLine ? `${currentLine} ${word}` : word;
+    if (tentativeLine.length <= maxLength) {
+      currentLine = tentativeLine;
+    } else {
+      if (currentLine) {
+        lines.push(currentLine);
+      }
+
+      if (word.length > maxLength) {
+        const segments = word.match(new RegExp(`.{1,${maxLength}}`, 'g')) || [];
+        if (segments.length > 1) {
+          lines.push(...segments.slice(0, -1));
+        }
+        currentLine = segments[segments.length - 1] || '';
+      } else {
+        currentLine = word;
+      }
+    }
+  });
+
+  if (currentLine) {
+    lines.push(currentLine);
+  }
+
+  return lines.length > 0 ? lines : [''];
+};
+
+const PublicsByCityChart = ({ data }) => {
+  // Group public entities by city/regency (fallback to province name, then Unknown)
+  const publicsByCity = {};
+
+  data.forEach(publicEntity => {
+    const cityName = publicEntity.city_name || publicEntity.province_name || 'Unknown';
+    if (!publicsByCity[cityName]) {
+      publicsByCity[cityName] = 0;
+    }
+    publicsByCity[cityName]++;
+  });
+
+  // Sort by count and get top 10
+  const sortedCities = Object.entries(publicsByCity)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10);
+
+  const cityNames = sortedCities.map(([name]) => name);
+  const publicCounts = sortedCities.map(([, count]) => count);
+
+  // Generate distinct colors per city to visually separate bars
+  const generateColors = (count) => {
+    const palette = [
+      { bg: 'rgba(108, 117, 125, 0.85)', border: 'rgba(108, 117, 125, 1)' },
+      { bg: 'rgba(13, 110, 253, 0.85)', border: 'rgba(13, 110, 253, 1)' },
+      { bg: 'rgba(25, 135, 84, 0.85)', border: 'rgba(25, 135, 84, 1)' },
+      { bg: 'rgba(255, 193, 7, 0.85)', border: 'rgba(255, 193, 7, 1)' },
+      { bg: 'rgba(32, 201, 151, 0.85)', border: 'rgba(32, 201, 151, 1)' },
+      { bg: 'rgba(111, 66, 193, 0.85)', border: 'rgba(111, 66, 193, 1)' },
+      { bg: 'rgba(255, 126, 0, 0.85)', border: 'rgba(255, 126, 0, 1)' },
+      { bg: 'rgba(102, 16, 242, 0.85)', border: 'rgba(102, 16, 242, 1)' },
+      { bg: 'rgba(253, 126, 20, 0.85)', border: 'rgba(253, 126, 20, 1)' },
+      { bg: 'rgba(214, 51, 132, 0.85)', border: 'rgba(214, 51, 132, 1)' },
+    ];
+
+    const colors = [];
+    const borderColors = [];
+    for (let i = 0; i < count; i++) {
+      const paletteIndex = i % palette.length;
+      colors.push(palette[paletteIndex].bg);
+      borderColors.push(palette[paletteIndex].border);
+    }
+    return { colors, borderColors };
+  };
+
+  const { colors, borderColors } = generateColors(cityNames.length);
+
+  const chartData = {
+    labels: cityNames,
+    datasets: [
+      {
+        label: 'Number of Public Entities',
+        data: publicCounts,
+        backgroundColor: colors,
+        borderColor: borderColors,
+        borderWidth: 1,
+      },
+    ],
+  };
+
+  const options = {
+    responsive: true,
+    maintainAspectRatio: false,
+    layout: {
+      padding: {
+        bottom: 16,
+      },
+    },
+    plugins: {
+      legend: {
+        display: false,
+      },
+      title: {
+        display: false,
+      },
+      tooltip: {
+        callbacks: {
+          label: function(context) {
+            const value = context.parsed.y || 0;
+            return `Public Entities: ${value}`;
+          },
+          title: function(context) {
+            return context[0]?.label || '';
+          },
+        },
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        ticks: {
+          precision: 0,
+        },
+      },
+      x: {
+        ticks: {
+          autoSkip: false,
+          maxRotation: 0,
+          minRotation: 0,
+          callback: (value) => wrapLabel(value),
+        },
+        title: {
+          display: false,
+        },
+      },
+    },
+  };
+
+  if (cityNames.length === 0) {
+    return (
+      <div className="text-center py-5 text-muted">
+        <i className="bi bi-people" style={{ fontSize: '3rem' }}></i>
+        <p className="mt-2">No public entity data available</p>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ height: '300px' }}>
+      <Bar data={chartData} options={options} />
+    </div>
+  );
+};
+
+export default PublicsByCityChart;

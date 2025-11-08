@@ -53,9 +53,20 @@ func (s *EventService) AddEvent(username string, req dto.AddEvent) (domainevent.
 		return domainevent.Event{}, fmt.Errorf("attendees_count must be greater than 0 when event status is 'completed'")
 	}
 
+	// Handle SchoolId and PublicId (convert empty string to nil for UUID fields)
+	var schoolId *string
+	var publicId *string
+	if req.SchoolId != "" {
+		schoolId = &req.SchoolId
+	}
+	if req.PublicId != "" {
+		publicId = &req.PublicId
+	}
+
 	data := domainevent.Event{
 		ID:                       eventId,
-		SchoolId:                 req.SchoolId,
+		SchoolId:                 schoolId,
+		PublicId:                 publicId,
 		Title:                    utils.TitleCase(req.Title),
 		Description:              req.Description,
 		EventDate:                req.EventDate,
@@ -184,7 +195,10 @@ func (s *EventService) UpdateEvent(id, username, role string, req dto.UpdateEven
 
 	// Update fields if provided
 	if req.SchoolId != "" {
-		event.SchoolId = req.SchoolId
+		event.SchoolId = &req.SchoolId
+	}
+	if req.PublicId != "" {
+		event.PublicId = &req.PublicId
 	}
 	if req.Title != "" {
 		event.Title = req.Title

@@ -22,6 +22,12 @@ const SchoolList = () => {
     district_id: '',
     search: ''
   });
+  const [appliedFilters, setAppliedFilters] = useState({
+    province_id: '',
+    city_id: '',
+    district_id: '',
+    search: ''
+  });
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 10,
@@ -42,7 +48,7 @@ const SchoolList = () => {
 
   useEffect(() => {
     fetchSchools();
-  }, [pagination.page, filters, sorting]);
+  }, [pagination.page, appliedFilters, sorting]);
 
   useEffect(() => {
     if (filters.province_id) {
@@ -95,10 +101,10 @@ const SchoolList = () => {
         order_by: sorting.order_by,
         order_direction: sorting.order_direction,
       };
-      if (filters.province_id) params['filters[province_id]'] = filters.province_id;
-      if (filters.city_id) params['filters[city_id]'] = filters.city_id;
-      if (filters.district_id) params['filters[district_id]'] = filters.district_id;
-      if (filters.search) params.search = filters.search;
+      if (appliedFilters.province_id) params['filters[province_id]'] = appliedFilters.province_id;
+      if (appliedFilters.city_id) params['filters[city_id]'] = appliedFilters.city_id;
+      if (appliedFilters.district_id) params['filters[district_id]'] = appliedFilters.district_id;
+      if (appliedFilters.search) params.search = appliedFilters.search;
 
       const response = await schoolService.getAll(params);
       setSchools(response.data.data || []);
@@ -120,14 +126,35 @@ const SchoolList = () => {
       ...prev,
       [name]: value,
       ...(name === 'province_id' && { city_id: '', district_id: '' }),
-      ...(name === 'city_id' && { district_id: '', selectedSchoolForMap: null })
+      ...(name === 'city_id' && { district_id: '' })
     }));
-    setPagination(prev => ({ ...prev, page: 1 }));
   };
 
   const handleSearch = () => {
+    setAppliedFilters(filters);
     setPagination(prev => ({ ...prev, page: 1 }));
-    fetchSchools();
+    setSelectedSchoolForMap(null);
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
+  const handleClearFilters = () => {
+    const emptyFilters = {
+      province_id: '',
+      city_id: '',
+      district_id: '',
+      search: ''
+    };
+    setFilters(emptyFilters);
+    setAppliedFilters(emptyFilters);
+    setPagination(prev => ({ ...prev, page: 1 }));
+    setCities([]);
+    setDistricts([]);
+    setSelectedSchoolForMap(null);
   };
 
   const handlePageChange = (newPage) => {
@@ -219,9 +246,10 @@ const SchoolList = () => {
                 name="search"
                 value={filters.search}
                 onChange={handleFilterChange}
+                onKeyPress={handleKeyPress}
               />
             </div>
-            <div className="col-md-3">
+            <div className="col-md-2">
               <select
                 className="form-select"
                 name="province_id"
@@ -234,7 +262,7 @@ const SchoolList = () => {
                 ))}
               </select>
             </div>
-            <div className="col-md-3">
+            <div className="col-md-2">
               <select
                 className="form-select"
                 name="city_id"
@@ -248,7 +276,7 @@ const SchoolList = () => {
                 ))}
               </select>
             </div>
-            <div className="col-md-3">
+            <div className="col-md-2">
               <select
                 className="form-select"
                 name="district_id"
@@ -262,10 +290,15 @@ const SchoolList = () => {
                 ))}
               </select>
             </div>
-            <div className="col-12">
-              <button className="btn btn-primary" onClick={handleSearch}>
-                <i className="bi bi-search me-2"></i>Search
-              </button>
+            <div className="col-md-3">
+              <div className="d-flex gap-2">
+                <button className="btn btn-primary flex-fill" onClick={handleSearch}>
+                  <i className="bi bi-search me-2"></i>Search
+                </button>
+                <button className="btn btn-outline-secondary" onClick={handleClearFilters} title="Clear all filters">
+                  <i className="bi bi-x-circle"></i>
+                </button>
+              </div>
             </div>
           </div>
         </div>

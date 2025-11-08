@@ -13,6 +13,10 @@ const UserList = () => {
     role: '',
     search: ''
   });
+  const [appliedFilters, setAppliedFilters] = useState({
+    role: '',
+    search: ''
+  });
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 10,
@@ -26,7 +30,7 @@ const UserList = () => {
 
   useEffect(() => {
     fetchUsers();
-  }, [pagination.page, filters, sorting]);
+  }, [pagination.page, appliedFilters, sorting]);
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -38,8 +42,8 @@ const UserList = () => {
         order_direction: sorting.order_direction
       };
 
-      if (filters.role) params['filters[role]'] = filters.role;
-      if (filters.search) params.search = filters.search;
+      if (appliedFilters.role) params['filters[role]'] = appliedFilters.role;
+      if (appliedFilters.search) params.search = appliedFilters.search;
 
       const response = await api.get('/users', { params });
 
@@ -59,6 +63,26 @@ const UserList = () => {
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     setFilters(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSearch = () => {
+    setAppliedFilters(filters);
+    setPagination(prev => ({ ...prev, page: 1 }));
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
+  const handleClearFilters = () => {
+    const emptyFilters = {
+      role: '',
+      search: ''
+    };
+    setFilters(emptyFilters);
+    setAppliedFilters(emptyFilters);
     setPagination(prev => ({ ...prev, page: 1 }));
   };
 
@@ -127,7 +151,7 @@ const UserList = () => {
       <div className="card mb-4">
         <div className="card-body">
           <div className="row g-3">
-            <div className="col-md-6">
+            <div className="col-md-5">
               <input
                 type="text"
                 className="form-control"
@@ -135,9 +159,10 @@ const UserList = () => {
                 name="search"
                 value={filters.search}
                 onChange={handleFilterChange}
+                onKeyPress={handleKeyPress}
               />
             </div>
-            <div className="col-md-3">
+            <div className="col-md-4">
               <select
                 className="form-select"
                 name="role"
@@ -153,9 +178,14 @@ const UserList = () => {
               </select>
             </div>
             <div className="col-md-3">
-              <button className="btn btn-primary w-100" onClick={fetchUsers}>
-                <i className="bi bi-search me-2"></i>Search
-              </button>
+              <div className="d-flex gap-2">
+                <button className="btn btn-primary flex-fill" onClick={handleSearch}>
+                  <i className="bi bi-search me-2"></i>Search
+                </button>
+                <button className="btn btn-outline-secondary" onClick={handleClearFilters} title="Clear all filters">
+                  <i className="bi bi-x-circle"></i>
+                </button>
+              </div>
             </div>
           </div>
         </div>

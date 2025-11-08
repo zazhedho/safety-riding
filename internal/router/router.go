@@ -19,6 +19,7 @@ import (
 	menuHandler "safety-riding/internal/handlers/http/menu"
 	permissionHandler "safety-riding/internal/handlers/http/permission"
 	provinceHandler "safety-riding/internal/handlers/http/province"
+	publicsHandler "safety-riding/internal/handlers/http/publics"
 	roleHandler "safety-riding/internal/handlers/http/role"
 	schoolHandler "safety-riding/internal/handlers/http/school"
 	sessionHandler "safety-riding/internal/handlers/http/session"
@@ -30,6 +31,7 @@ import (
 	marketshareRepo "safety-riding/internal/repositories/marketshare"
 	menuRepo "safety-riding/internal/repositories/menu"
 	permissionRepo "safety-riding/internal/repositories/permission"
+	publicsRepo "safety-riding/internal/repositories/publics"
 	roleRepo "safety-riding/internal/repositories/role"
 	schoolRepo "safety-riding/internal/repositories/school"
 	sessionRepo "safety-riding/internal/repositories/session"
@@ -43,6 +45,7 @@ import (
 	menuSvc "safety-riding/internal/services/menu"
 	permissionSvc "safety-riding/internal/services/permission"
 	provinsiSvc "safety-riding/internal/services/province"
+	publicsSvc "safety-riding/internal/services/publics"
 	roleSvc "safety-riding/internal/services/role"
 	schoolSvc "safety-riding/internal/services/school"
 	sessionSvc "safety-riding/internal/services/session"
@@ -126,6 +129,24 @@ func (r *Routes) SchoolRoutes() {
 	}
 }
 
+func (r *Routes) PublicRoutes() {
+	repo := publicsRepo.NewPublicRepo(r.DB)
+	svc := publicsSvc.NewPublicService(repo)
+	h := publicsHandler.NewPublicHandler(svc)
+	mdw := middlewares.NewMiddleware(authRepo.NewBlacklistRepo(r.DB))
+
+	r.App.GET("/api/publics", mdw.AuthMiddleware(), h.FetchPublic)
+	r.App.GET("/api/publics/education-stats", mdw.AuthMiddleware(), h.GetEducationStats)
+
+	public := r.App.Group("/api/public").Use(mdw.AuthMiddleware())
+	{
+		public.POST("", mdw.RoleMiddleware(utils.RoleAdmin, utils.RoleStaff), h.AddPublic)
+		public.GET("/:id", h.GetPublicById)
+		public.PUT("/:id", mdw.RoleMiddleware(utils.RoleAdmin, utils.RoleStaff), h.UpdatePublic)
+		public.DELETE("/:id", mdw.RoleMiddleware(utils.RoleAdmin, utils.RoleStaff), h.DeletePublic)
+	}
+}
+
 func (r *Routes) ProvinceRoutes() {
 	svc := provinsiSvc.NewProvinceService()
 	h := provinceHandler.NewProvinceHandler(svc)
@@ -157,8 +178,15 @@ func (r *Routes) DistrictRoutes() {
 }
 
 func (r *Routes) AccidentRoutes() {
+	// Initialize storage provider (MinIO or R2) from infrastructure
+	storageProvider, err := media.InitStorage()
+	if err != nil {
+		logger.WriteLog(logger.LogLevelError, "Failed to initialize storage provider: "+err.Error())
+		panic("Failed to initialize storage provider: " + err.Error())
+	}
+
 	repo := accidentRepo.NewAccidentRepo(r.DB)
-	svc := accidentSvc.NewAccidentService(repo)
+	svc := accidentSvc.NewAccidentService(repo, storageProvider)
 	h := accidentHandler.NewAccidentHandler(svc)
 	mdw := middlewares.NewMiddleware(authRepo.NewBlacklistRepo(r.DB))
 
@@ -169,6 +197,10 @@ func (r *Routes) AccidentRoutes() {
 		accident.GET("/:id", h.GetAccidentById)
 		accident.PUT("/:id", mdw.RoleMiddleware(utils.RoleAdmin, utils.RoleStaff), h.UpdateAccident)
 		accident.DELETE("/:id", mdw.RoleMiddleware(utils.RoleAdmin, utils.RoleStaff), h.DeleteAccident)
+
+		// Photo endpoints
+		accident.POST("/:id/photos", mdw.RoleMiddleware(utils.RoleAdmin, utils.RoleStaff), h.AddAccidentPhotos)
+		accident.DELETE("/photo/:photoId", mdw.RoleMiddleware(utils.RoleAdmin, utils.RoleStaff), h.DeleteAccidentPhoto)
 	}
 }
 

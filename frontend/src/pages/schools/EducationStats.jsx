@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react';
 import DashboardLayout from '../../components/common/DashboardLayout';
 import schoolService from '../../services/schoolService';
+import publicService from '../../services/publicService';
 import locationService from '../../services/locationService';
 import { toast } from 'react-toastify';
 
-const SchoolEducationStats = () => {
+const EducationStats = () => {
+  const [entityType, setEntityType] = useState('school'); // 'school' or 'public'
   const [stats, setStats] = useState(null);
   const [provinces, setProvinces] = useState([]);
   const [cities, setCities] = useState([]);
@@ -34,6 +36,11 @@ const SchoolEducationStats = () => {
     fetchProvinces();
     fetchStats();
   }, []);
+
+  useEffect(() => {
+    // Refetch stats when entity type changes
+    fetchStats();
+  }, [entityType]);
 
   useEffect(() => {
     if (filters.province_id) {
@@ -97,7 +104,8 @@ const SchoolEducationStats = () => {
       if (filters.year) params['filters[year]'] = filters.year;
       if (filters.search) params.search = filters.search;
 
-      const response = await schoolService.getEducationStats(params);
+      const service = entityType === 'school' ? schoolService : publicService;
+      const response = await service.getEducationStats(params);
       setStats(response.data.data);
     } catch (error) {
       toast.error('Failed to load education statistics');
@@ -165,11 +173,44 @@ const SchoolEducationStats = () => {
     return ((part / total) * 100).toFixed(1);
   };
 
+  const handleEntityTypeChange = (type) => {
+    setEntityType(type);
+    setPagination({ page: 1, limit: 10 });
+  };
+
+  const getEntityLabel = () => {
+    return entityType === 'school' ? 'School' : 'Public Entity';
+  };
+
+  const getEntityLabelPlural = () => {
+    return entityType === 'school' ? 'Schools' : 'Public Entities';
+  };
+
   return (
     <DashboardLayout>
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2>School Education Statistics</h2>
+        <h2>Education Statistics</h2>
       </div>
+
+      {/* Entity Type Tabs */}
+      <ul className="nav nav-tabs mb-4">
+        <li className="nav-item">
+          <button
+            className={`nav-link ${entityType === 'school' ? 'active' : ''}`}
+            onClick={() => handleEntityTypeChange('school')}
+          >
+            <i className="bi bi-building me-2"></i>Schools
+          </button>
+        </li>
+        <li className="nav-item">
+          <button
+            className={`nav-link ${entityType === 'public' ? 'active' : ''}`}
+            onClick={() => handleEntityTypeChange('public')}
+          >
+            <i className="bi bi-people me-2"></i>Public Entities
+          </button>
+        </li>
+      </ul>
 
       {/* Statistics Cards */}
       {stats && (
@@ -179,11 +220,11 @@ const SchoolEducationStats = () => {
               <div className="card-body">
                 <div className="d-flex justify-content-between align-items-center">
                   <div className="flex-grow-1 pe-2">
-                    <h6 className="text-muted mb-1 small">Total Schools</h6>
-                    <h3 className="mb-0 text-truncate">{stats.total_schools}</h3>
+                    <h6 className="text-muted mb-1 small">Total {getEntityLabelPlural()}</h6>
+                    <h3 className="mb-0 text-truncate">{stats.total_schools || stats.total_publics || 0}</h3>
                   </div>
                   <div className="text-primary flex-shrink-0" style={{ fontSize: '2rem' }}>
-                    <i className="bi bi-building"></i>
+                    <i className={entityType === 'school' ? 'bi bi-building' : 'bi bi-people'}></i>
                   </div>
                 </div>
               </div>
@@ -195,11 +236,14 @@ const SchoolEducationStats = () => {
               <div className="card-body">
                 <div className="d-flex justify-content-between align-items-center">
                   <div className="flex-grow-1 pe-2">
-                    <h6 className="text-muted mb-1 small">Educated Schools</h6>
+                    <h6 className="text-muted mb-1 small">Educated {getEntityLabelPlural()}</h6>
                     <div className="d-flex align-items-baseline">
-                      <h3 className="mb-0 text-truncate">{stats.total_educated_schools}</h3>
+                      <h3 className="mb-0 text-truncate">{stats.total_educated_schools || stats.total_educated_publics || 0}</h3>
                       <small className="text-success ms-2 flex-shrink-0">
-                        ({calculatePercentage(stats.total_educated_schools, stats.total_schools)}%)
+                        ({calculatePercentage(
+                          stats.total_educated_schools || stats.total_educated_publics || 0,
+                          stats.total_schools || stats.total_publics || 0
+                        )}%)
                       </small>
                     </div>
                   </div>
@@ -216,9 +260,9 @@ const SchoolEducationStats = () => {
               <div className="card-body">
                 <div className="d-flex justify-content-between align-items-center">
                   <div className="flex-grow-1 pe-2">
-                    <h6 className="text-muted mb-1 small">Total Students Educated</h6>
-                    <h3 className="mb-0 text-truncate" title={stats.total_all_students.toLocaleString()}>
-                      {stats.total_all_students.toLocaleString()}
+                    <h6 className="text-muted mb-1 small">Total {entityType === 'school' ? 'Students' : 'People'} Educated</h6>
+                    <h3 className="mb-0 text-truncate" title={(stats.total_all_students || stats.total_all_employees || 0).toLocaleString()}>
+                      {(stats.total_all_students || stats.total_all_employees || 0).toLocaleString()}
                     </h3>
                   </div>
                   <div className="text-info flex-shrink-0" style={{ fontSize: '2rem' }}>
@@ -234,10 +278,10 @@ const SchoolEducationStats = () => {
               <div className="card-body">
                 <div className="d-flex justify-content-between align-items-center">
                   <div className="flex-grow-1 pe-2">
-                    <h6 className="text-muted mb-1 small">Avg Students/School</h6>
+                    <h6 className="text-muted mb-1 small">Avg {entityType === 'school' ? 'Students' : 'Employees'}/{getEntityLabel()}</h6>
                     <h3 className="mb-0 text-truncate">
-                      {stats.total_schools > 0
-                        ? Math.round(stats.total_all_students / stats.total_schools).toLocaleString()
+                      {(stats.total_schools || stats.total_publics || 0) > 0
+                        ? Math.round((stats.total_all_students || stats.total_all_employees || 0) / (stats.total_schools || stats.total_publics || 1)).toLocaleString()
                         : 0
                       }
                     </h3>
@@ -260,7 +304,7 @@ const SchoolEducationStats = () => {
               <input
                 type="text"
                 className="form-control"
-                placeholder="Search by school name..."
+                placeholder={`Search by ${entityType === 'school' ? 'school' : 'entity'} name...`}
                 name="search"
                 value={filters.search}
                 onChange={handleFilterChange}
@@ -359,7 +403,7 @@ const SchoolEducationStats = () => {
       {/* Data Table */}
       <div className="card">
         <div className="card-header d-flex justify-content-between align-items-center">
-          <h5 className="mb-0">School Details</h5>
+          <h5 className="mb-0">{getEntityLabel()} Details</h5>
           <div className="d-flex align-items-center gap-2">
             <label className="mb-0 me-2">Show:</label>
             <select className="form-select form-select-sm" style={{ width: 'auto' }} value={pagination.limit} onChange={handleLimitChange}>
@@ -377,24 +421,31 @@ const SchoolEducationStats = () => {
                 <span className="visually-hidden">Loading...</span>
               </div>
             </div>
-          ) : stats && stats.schools && stats.schools.length > 0 ? (
+          ) : stats && (stats.schools || stats.publics) && (stats.schools?.length > 0 || stats.publics?.length > 0) ? (
             <>
               <div className="table-responsive">
                 <table className="table table-hover">
                   <thead>
                     <tr>
                       <th style={{ cursor: 'pointer' }} onClick={() => handleSort('name')}>
-                        School Name {getSortIcon('name')}
+                        {getEntityLabel()} Name {getSortIcon('name')}
                       </th>
-                      <th style={{ cursor: 'pointer' }} onClick={() => handleSort('npsn')}>
-                        NPSN {getSortIcon('npsn')}
-                      </th>
+                      {entityType === 'school' && (
+                        <th style={{ cursor: 'pointer' }} onClick={() => handleSort('npsn')}>
+                          NPSN {getSortIcon('npsn')}
+                        </th>
+                      )}
+                      {entityType === 'public' && (
+                        <th style={{ cursor: 'pointer' }} onClick={() => handleSort('category')}>
+                          Category {getSortIcon('category')}
+                        </th>
+                      )}
                       <th>Location</th>
-                      <th style={{ cursor: 'pointer' }} onClick={() => handleSort('student_count')}>
-                        Total Students {getSortIcon('student_count')}
+                      <th style={{ cursor: 'pointer' }} onClick={() => handleSort(entityType === 'school' ? 'student_count' : 'employee_count')}>
+                        Total {entityType === 'school' ? 'Students' : 'Employees'} {getSortIcon(entityType === 'school' ? 'student_count' : 'employee_count')}
                       </th>
-                      <th style={{ cursor: 'pointer' }} onClick={() => handleSort('total_student_educated')}>
-                        Students Educated {getSortIcon('total_student_educated')}
+                      <th style={{ cursor: 'pointer' }} onClick={() => handleSort(entityType === 'school' ? 'total_student_educated' : 'total_employee_educated')}>
+                        {entityType === 'school' ? 'Students' : 'Employees'} Educated {getSortIcon(entityType === 'school' ? 'total_student_educated' : 'total_employee_educated')}
                       </th>
                       <th>Coverage</th>
                       <th style={{ cursor: 'pointer' }} onClick={() => handleSort('is_educated')}>
@@ -403,30 +454,39 @@ const SchoolEducationStats = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {stats.schools.map(school => {
-                      const studentCount = Number(school.student_count) || 0;
-                      const educatedCount = Number(school.total_student_educated) || 0;
-                      const coverageRaw = studentCount > 0
-                        ? Number(((educatedCount / studentCount) * 100).toFixed(1))
+                    {(stats.schools || stats.publics || []).map(entity => {
+                      const totalCount = Number(entity.student_count || entity.employee_count) || 0;
+                      const educatedCount = Number(entity.total_student_educated || entity.total_employee_educated) || 0;
+                      const coverageRaw = totalCount > 0
+                        ? Number(((educatedCount / totalCount) * 100).toFixed(1))
                         : 0;
                       const coverage = Number.isFinite(coverageRaw) ? coverageRaw : 0;
                       const hasCoverage = coverage > 0;
                       const coverageLabel = hasCoverage ? coverage.toFixed(1) : '0';
                       return (
-                        <tr key={school.id}>
+                        <tr key={entity.id}>
                           <td>
-                            <strong>{school.name}</strong>
+                            <strong>{entity.name}</strong>
                           </td>
-                          <td>{school.npsn || '-'}</td>
+                          {entityType === 'school' && (
+                            <td>{entity.npsn || '-'}</td>
+                          )}
+                          {entityType === 'public' && (
+                            <td>
+                              <span className="badge bg-secondary">
+                                {entity.category?.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()) || '-'}
+                              </span>
+                            </td>
+                          )}
                           <td>
                             <small>
-                              {school.district_name}<br />
-                              {school.city_name}, {school.province_name}
+                              {entity.district_name}<br />
+                              {entity.city_name}, {entity.province_name}
                             </small>
                           </td>
                           <td>
                             <span className="badge bg-secondary">
-                              {studentCount.toLocaleString()}
+                              {totalCount.toLocaleString()}
                             </span>
                           </td>
                           <td>
@@ -457,7 +517,7 @@ const SchoolEducationStats = () => {
                             </div>
                           </td>
                           <td>
-                            {school.is_educated ? (
+                            {entity.is_educated ? (
                               <span className="badge bg-success">
                                 <i className="bi bi-check-circle me-1"></i>Educated
                               </span>
@@ -475,22 +535,22 @@ const SchoolEducationStats = () => {
               </div>
 
               {/* Pagination */}
-              {stats.total_schools > pagination.limit && (
+              {(stats.total_schools || stats.total_publics || 0) > pagination.limit && (
                 <div className="d-flex justify-content-between align-items-center mt-3">
                   <div className="text-muted">
-                    Showing {((pagination.page - 1) * pagination.limit) + 1} to {Math.min(pagination.page * pagination.limit, stats.total_schools)} of {stats.total_schools} schools
+                    Showing {((pagination.page - 1) * pagination.limit) + 1} to {Math.min(pagination.page * pagination.limit, stats.total_schools || stats.total_publics || 0)} of {stats.total_schools || stats.total_publics || 0} {getEntityLabelPlural().toLowerCase()}
                   </div>
                   <nav>
                     <ul className="pagination mb-0">
                       <li className={`page-item ${pagination.page === 1 ? 'disabled' : ''}`}>
                         <button className="page-link" onClick={() => handlePageChange(pagination.page - 1)}>Previous</button>
                       </li>
-                      {[...Array(Math.ceil(stats.total_schools / pagination.limit))].map((_, index) => (
+                      {[...Array(Math.ceil((stats.total_schools || stats.total_publics || 0) / pagination.limit))].map((_, index) => (
                         <li key={index + 1} className={`page-item ${pagination.page === index + 1 ? 'active' : ''}`}>
                           <button className="page-link" onClick={() => handlePageChange(index + 1)}>{index + 1}</button>
                         </li>
-                      )).slice(Math.max(0, pagination.page - 3), Math.min(pagination.page + 2, Math.ceil(stats.total_schools / pagination.limit)))}
-                      <li className={`page-item ${pagination.page >= Math.ceil(stats.total_schools / pagination.limit) ? 'disabled' : ''}`}>
+                      )).slice(Math.max(0, pagination.page - 3), Math.min(pagination.page + 2, Math.ceil((stats.total_schools || stats.total_publics || 0) / pagination.limit)))}
+                      <li className={`page-item ${pagination.page >= Math.ceil((stats.total_schools || stats.total_publics || 0) / pagination.limit) ? 'disabled' : ''}`}>
                         <button className="page-link" onClick={() => handlePageChange(pagination.page + 1)}>Next</button>
                       </li>
                     </ul>
@@ -501,7 +561,7 @@ const SchoolEducationStats = () => {
           ) : (
             <div className="text-center py-5 text-muted">
               <i className="bi bi-inbox" style={{ fontSize: '3rem' }}></i>
-              <p className="mt-2">No schools found</p>
+              <p className="mt-2">No {getEntityLabelPlural().toLowerCase()} found</p>
             </div>
           )}
         </div>
@@ -510,4 +570,4 @@ const SchoolEducationStats = () => {
   );
 };
 
-export default SchoolEducationStats;
+export default EducationStats;

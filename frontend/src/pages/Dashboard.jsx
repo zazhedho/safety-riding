@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import DashboardLayout from '../components/common/DashboardLayout';
 import schoolService from '../services/schoolService';
+import publicService from '../services/publicService';
 import eventService from '../services/eventService';
 import accidentService from '../services/accidentService';
 import budgetService from '../services/budgetService';
@@ -17,12 +18,14 @@ import AccidentTrendsChart from '../components/charts/AccidentTrendsChart';
 import EventTypeDistributionChart from '../components/charts/EventTypeDistributionChart';
 import BudgetUtilizationChart from '../components/charts/BudgetUtilizationChart';
 import SchoolsByProvinceChart from '../components/charts/SchoolsByProvinceChart';
+import PublicsByCityChart from '../components/charts/PublicsByCityChart';
 import DistrictRecommendation from '../components/recommendations/DistrictRecommendation';
 
 const Dashboard = () => {
   const { hasPermission } = useAuth();
   const [stats, setStats] = useState({
     schools: 0,
+    publics: 0,
     events: 0,
     accidents: 0,
     budgets: 0
@@ -34,11 +37,13 @@ const Dashboard = () => {
     totalInjured: 0,
     avgAttendeesPerEvent: 0,
     budgetUtilizationRate: 0,
-    activeSchools: 0
+    activeSchools: 0,
+    activePublics: 0
   });
 
   // Data for charts
   const [allSchools, setAllSchools] = useState([]);
+  const [allPublics, setAllPublics] = useState([]);
   const [allEvents, setAllEvents] = useState([]);
   const [allAccidents, setAllAccidents] = useState([]);
   const [allBudgets, setAllBudgets] = useState([]);
@@ -147,8 +152,9 @@ const Dashboard = () => {
       setLoading(true);
 
       // Fetch basic statistics
-      const [schoolsRes, eventsRes, accidentsRes, budgetsRes] = await Promise.all([
+      const [schoolsRes, publicsRes, eventsRes, accidentsRes, budgetsRes] = await Promise.all([
         schoolService.getAll({ limit: 1 }),
+        publicService.getAll({ limit: 1 }),
         eventService.getAll({ limit: 1 }),
         accidentService.getAll({ limit: 1 }),
         budgetService.getAll({ limit: 1 })
@@ -156,20 +162,23 @@ const Dashboard = () => {
 
       setStats({
         schools: schoolsRes.data.total_data || 0,
+        publics: publicsRes.data.total_data || 0,
         events: eventsRes.data.total_data || 0,
         accidents: accidentsRes.data.total_data || 0,
         budgets: budgetsRes.data.total_data || 0
       });
 
       // Fetch all data for charts (with reasonable limits)
-      const [schoolsData, eventsData, accidentsData, budgetsData] = await Promise.all([
+      const [schoolsData, publicsData, eventsData, accidentsData, budgetsData] = await Promise.all([
         schoolService.getAll({ limit: 10000 }),
+        publicService.getAll({ limit: 10000 }),
         eventService.getAll({ limit: 10000 }),
         accidentService.getAll({ limit: 10000 }),
         budgetService.getAll({ limit: 10000 })
       ]);
 
       setAllSchools(schoolsData.data.data || []);
+      setAllPublics(publicsData.data.data || []);
       setAllEvents(eventsData.data.data || []);
       setAllAccidents(accidentsData.data.data || []);
       setAllBudgets(budgetsData.data.data || []);
@@ -186,6 +195,7 @@ const Dashboard = () => {
       // Calculate additional statistics
       calculateAdditionalStats(
         schoolsData.data.data || [],
+        publicsData.data.data || [],
         eventsData.data.data || [],
         accidentsData.data.data || [],
         budgetsData.data.data || []
@@ -199,7 +209,7 @@ const Dashboard = () => {
     }
   };
 
-  const calculateAdditionalStats = (schools, events, accidents, budgets) => {
+  const calculateAdditionalStats = (schools, publics, events, accidents, budgets) => {
     // Total deaths and injured
     const totalDeaths = accidents.reduce((sum, acc) => sum + (acc.death_count || 0), 0);
     const totalInjured = accidents.reduce((sum, acc) => sum + (acc.injured_count || 0), 0);
@@ -215,23 +225,33 @@ const Dashboard = () => {
       ? Math.round((totalBudgetSpent / totalBudgetAllocated) * 100)
       : 0;
 
-    // Active schools (schools with events in last 6 months)
+    // Active entities (schools and publics with events in last 6 months)
     const sixMonthsAgo = new Date();
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
+    const recentEvents = events.filter(evt => new Date(evt.event_date) >= sixMonthsAgo);
+
     const activeSchoolIds = new Set(
-      events
-        .filter(evt => new Date(evt.event_date) >= sixMonthsAgo)
+      recentEvents
+        .filter(evt => evt.school_id)
         .map(evt => evt.school_id)
     );
     const activeSchools = activeSchoolIds.size;
+
+    const activePublicIds = new Set(
+      recentEvents
+        .filter(evt => evt.public_id)
+        .map(evt => evt.public_id)
+    );
+    const activePublics = activePublicIds.size;
 
     setAdditionalStats({
       totalDeaths,
       totalInjured,
       avgAttendeesPerEvent,
       budgetUtilizationRate,
-      activeSchools
+      activeSchools,
+      activePublics
     });
   };
 
@@ -260,13 +280,19 @@ const Dashboard = () => {
 
     // Province filter
     if (selectedProvince) {
-      events = events.filter(evt => evt.school?.province_id === selectedProvince);
+      events = events.filter(evt =>
+        evt.school?.province_id === selectedProvince ||
+        evt.public?.province_id === selectedProvince
+      );
       accidents = accidents.filter(acc => acc.province_id === selectedProvince);
     }
 
     // City filter
     if (selectedCity) {
-      events = events.filter(evt => evt.school?.city_id === selectedCity);
+      events = events.filter(evt =>
+        evt.school?.city_id === selectedCity ||
+        evt.public?.city_id === selectedCity
+      );
       accidents = accidents.filter(acc => acc.city_id === selectedCity);
     }
 
@@ -347,18 +373,18 @@ const Dashboard = () => {
           <div className="stats-card">
             <div className="d-flex justify-content-between align-items-center">
               <div className="flex-grow-1 pe-2">
-                <h6 className="text-muted mb-1 small">Total Schools</h6>
-                <div className="stats-number">{stats.schools}</div>
+                <h6 className="text-muted mb-1 small">Total Entities</h6>
+                <div className="stats-number">{(stats.schools || 0) + (stats.publics || 0)}</div>
                 <small className="text-success d-block">
                   <i className="bi bi-check-circle me-1"></i>
-                  {additionalStats.activeSchools} of {stats.schools} trained (6M)
+                  {(additionalStats.activeSchools || 0) + (additionalStats.activePublics || 0)} of {(stats.schools || 0) + (stats.publics || 0)} trained (6M)
                   <span className="stats-info-tooltip">
                     <i
                       className="bi bi-info-circle ms-1"
                       style={{ cursor: 'help', fontSize: '0.85rem' }}
                     ></i>
                     <span className="tooltiptext">
-                      Schools that received safety riding training in the last 6 months
+                      Schools and public entities that received safety riding training in the last 6 months. Total: {stats.schools || 0} schools + {stats.publics || 0} public entities
                     </span>
                   </span>
                 </small>
@@ -544,12 +570,12 @@ const Dashboard = () => {
       {/* Charts Row 2 */}
       <div className="row g-4 mb-4">
         {/* Schools by Province */}
-        <div className="col-lg-6">
+        <div className="col-lg-4">
           <div className="card h-100">
             <div className="card-header">
               <h5 className="mb-0">
-                <i className="bi bi-geo-alt-fill me-2 text-danger"></i>
-                Top 10 Schools by City/Regency
+                <i className="bi bi-building me-2 text-danger"></i>
+                Top 10 Schools by City
               </h5>
             </div>
             <div className="card-body">
@@ -558,13 +584,28 @@ const Dashboard = () => {
           </div>
         </div>
 
+        {/* Public Entities by City */}
+        <div className="col-lg-4">
+          <div className="card h-100">
+            <div className="card-header">
+              <h5 className="mb-0">
+                <i className="bi bi-people me-2 text-danger"></i>
+                Top 10 Public Entities by City
+              </h5>
+            </div>
+            <div className="card-body">
+              <PublicsByCityChart data={allPublics} />
+            </div>
+          </div>
+        </div>
+
         {/* Budget Utilization */}
-        <div className="col-lg-6">
+        <div className="col-lg-4">
           <div className="card h-100">
             <div className="card-header">
               <h5 className="mb-0">
                 <i className="bi bi-cash-stack me-2 text-danger"></i>
-                Top 10 Budget vs Spending by Event
+                Top 10 Budget vs Spending
               </h5>
             </div>
             <div className="card-body">
@@ -681,8 +722,19 @@ const Dashboard = () => {
                         <div className="flex-grow-1">
                           <h6 className="mb-1">{event.title}</h6>
                           <p className="mb-1 text-muted small">
-                            <i className="bi bi-building me-1"></i>
-                            {event.school?.name || 'N/A'}
+                            {event.school ? (
+                              <>
+                                <i className="bi bi-building me-1"></i>
+                                {event.school.name}
+                              </>
+                            ) : event.public ? (
+                              <>
+                                <i className="bi bi-people me-1"></i>
+                                {event.public.name}
+                              </>
+                            ) : (
+                              'N/A'
+                            )}
                           </p>
                           <p className="mb-0 text-muted small">
                             <i className="bi bi-calendar3 me-1"></i>
@@ -702,7 +754,7 @@ const Dashboard = () => {
                   ))}
                 </div>
               ) : (
-                <p className="text-muted text-center py-4">No recent accidents</p>
+                <p className="text-muted text-center py-4">No recent events</p>
               )}
             </div>
           </div>

@@ -4,18 +4,28 @@ import DashboardLayout from '../../components/common/DashboardLayout';
 import ConfirmationModal from '../../components/common/ConfirmationModal';
 import eventService from '../../services/eventService';
 import schoolService from '../../services/schoolService';
+import publicService from '../../services/publicService';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../contexts/AuthContext';
 
 const EventList = () => {
-  const { hasPermission } = useAuth();
+  const { hasPermission, user } = useAuth();
   const [events, setEvents] = useState([]);
   const [schools, setSchools] = useState([]);
+  const [publics, setPublics] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [eventToDelete, setEventToDelete] = useState(null);
   const [filters, setFilters] = useState({
+    entity_type: '',
     school_id: '',
+    public_id: '',
+    search: ''
+  });
+  const [appliedFilters, setAppliedFilters] = useState({
+    entity_type: '',
+    school_id: '',
+    public_id: '',
     search: ''
   });
   const [pagination, setPagination] = useState({
@@ -31,11 +41,12 @@ const EventList = () => {
 
   useEffect(() => {
     fetchSchools();
+    fetchPublics();
   }, []);
 
   useEffect(() => {
     fetchEvents();
-  }, [pagination.page, filters, sorting]);
+  }, [pagination.page, appliedFilters, sorting]);
 
   const fetchSchools = async () => {
     try {
@@ -43,6 +54,15 @@ const EventList = () => {
       setSchools(response.data.data || []);
     } catch (error) {
       toast.error('Failed to load schools');
+    }
+  };
+
+  const fetchPublics = async () => {
+    try {
+      const response = await publicService.getAll({ limit: 1000 });
+      setPublics(response.data.data || []);
+    } catch (error) {
+      toast.error('Failed to load public entities');
     }
   };
 
@@ -55,8 +75,9 @@ const EventList = () => {
         order_by: sorting.order_by,
         order_direction: sorting.order_direction,
       };
-      if (filters.school_id) params['filters[school_id]'] = filters.school_id;
-      if (filters.search) params.search = filters.search;
+      if (appliedFilters.school_id) params['filters[school_id]'] = appliedFilters.school_id;
+      if (appliedFilters.public_id) params['filters[public_id]'] = appliedFilters.public_id;
+      if (appliedFilters.search) params.search = appliedFilters.search;
 
       const response = await eventService.getAll(params);
       setEvents(response.data.data || []);
@@ -74,13 +95,36 @@ const EventList = () => {
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
-    setFilters(prev => ({ ...prev, [name]: value }));
-    setPagination(prev => ({ ...prev, page: 1 }));
+
+    // If changing entity_type, reset school_id and public_id
+    if (name === 'entity_type') {
+      setFilters(prev => ({ ...prev, entity_type: value, school_id: '', public_id: '' }));
+    } else {
+      setFilters(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSearch = () => {
+    setAppliedFilters(filters);
     setPagination(prev => ({ ...prev, page: 1 }));
-    fetchEvents();
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter') {
+      handleSearch();
+    }
+  };
+
+  const handleClearFilters = () => {
+    const emptyFilters = {
+      entity_type: '',
+      school_id: '',
+      public_id: '',
+      search: ''
+    };
+    setFilters(emptyFilters);
+    setAppliedFilters(emptyFilters);
+    setPagination(prev => ({ ...prev, page: 1 }));
   };
 
   const handlePageChange = (newPage) => {
@@ -149,7 +193,7 @@ const EventList = () => {
       <div className="card mb-4">
         <div className="card-body">
           <div className="row g-3">
-            <div className="col-md-4">
+            <div className="col-md-3">
               <input
                 type="text"
                 className="form-control"
@@ -157,25 +201,60 @@ const EventList = () => {
                 name="search"
                 value={filters.search}
                 onChange={handleFilterChange}
+                onKeyPress={handleKeyPress}
               />
             </div>
-            <div className="col-md-4">
+            <div className="col-md-3">
               <select
                 className="form-select"
-                name="school_id"
-                value={filters.school_id}
+                name="entity_type"
+                value={filters.entity_type}
                 onChange={handleFilterChange}
               >
-                <option value="">All Schools</option>
-                {schools.map(school => (
-                  <option key={school.id} value={school.id}>{school.name}</option>
-                ))}
+                <option value="">All Entity Types</option>
+                <option value="school">School</option>
+                <option value="public">Public</option>
               </select>
             </div>
-            <div className="col-md-4">
-              <button className="btn btn-primary" onClick={handleSearch}>
-                <i className="bi bi-search me-2"></i>Search
-              </button>
+            {filters.entity_type === 'school' && (
+              <div className="col-md-3">
+                <select
+                  className="form-select"
+                  name="school_id"
+                  value={filters.school_id}
+                  onChange={handleFilterChange}
+                >
+                  <option value="">All Schools</option>
+                  {schools.map(school => (
+                    <option key={school.id} value={school.id}>{school.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {filters.entity_type === 'public' && (
+              <div className="col-md-3">
+                <select
+                  className="form-select"
+                  name="public_id"
+                  value={filters.public_id}
+                  onChange={handleFilterChange}
+                >
+                  <option value="">All Public Entities</option>
+                  {publics.map(pub => (
+                    <option key={pub.id} value={pub.id}>{pub.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+            <div className={filters.entity_type ? "col-md-3" : "col-md-6"}>
+              <div className="d-flex gap-2">
+                <button className="btn btn-primary flex-fill" onClick={handleSearch}>
+                  <i className="bi bi-search me-2"></i>Search
+                </button>
+                <button className="btn btn-outline-secondary" onClick={handleClearFilters} title="Clear all filters">
+                  <i className="bi bi-x-circle"></i>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -198,7 +277,7 @@ const EventList = () => {
                     <th style={{ cursor: 'pointer' }} onClick={() => handleSort('title')}>
                       Event Name {getSortIcon('title')}
                     </th>
-                    <th>School</th>
+                    <th>Entity</th>
                     <th style={{ cursor: 'pointer' }} onClick={() => handleSort('event_date')}>
                       Event Date {getSortIcon('event_date')}
                     </th>
@@ -218,7 +297,19 @@ const EventList = () => {
                   {events.map(event => (
                     <tr key={event.id}>
                       <td>{event.title}</td>
-                      <td>{event.school?.name || '-'}</td>
+                      <td>
+                        {event.school ? (
+                          <div>
+                            <span className="badge bg-info me-2">School</span>
+                            {event.school.name}
+                          </div>
+                        ) : event.public ? (
+                          <div>
+                            <span className="badge bg-secondary me-2">Public</span>
+                            {event.public.name}
+                          </div>
+                        ) : '-'}
+                      </td>
                       <td>{formatDate(event.event_date)}</td>
                       <td>{event.attendees_count || 0}</td>
                       <td>{event.instructor_name || '-'}</td>
@@ -242,7 +333,7 @@ const EventList = () => {
                               <i className="bi bi-eye"></i>
                             </Link>
                           )}
-                          {hasPermission('update_events') && (
+                          {hasPermission('update_events') && (event.status !== 'completed' || user?.role === 'admin' || user?.role === 'superadmin') && (
                             <Link
                               to={`/events/${event.id}/edit`}
                               className="btn btn-sm btn-outline-warning"
@@ -254,7 +345,7 @@ const EventList = () => {
                             <button
                               onClick={() => handleDeleteClick(event)}
                               className="btn btn-sm btn-outline-danger"
-                              disabled={event.status === 'completed'}
+                              disabled={event.status === 'completed' && user?.role !== 'admin' && user?.role !== 'superadmin'}
                             >
                               <i className="bi bi-trash"></i>
                             </button>

@@ -12,11 +12,33 @@ const AccidentDetail = () => {
   const { hasPermission } = useAuth();
   const [accident, setAccident] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('details');
+
+  // Photo upload states
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [photoPreviews, setPhotoPreviews] = useState([]);
+  const [captions, setCaptions] = useState({});
+  const [uploading, setUploading] = useState(false);
+
+  // Photo delete states
+  const [showDeletePhotoModal, setShowDeletePhotoModal] = useState(false);
+  const [photoToDelete, setPhotoToDelete] = useState(null);
+
+  // Accident delete states
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
   useEffect(() => {
     fetchAccident();
   }, [id]);
+
+  // Cleanup photo previews on unmount
+  useEffect(() => {
+    return () => {
+      photoPreviews.forEach(preview => {
+        URL.revokeObjectURL(preview.url);
+      });
+    };
+  }, [photoPreviews]);
 
   const fetchAccident = async () => {
     setLoading(true);
@@ -64,6 +86,136 @@ const AccidentDetail = () => {
     const date = new Date();
     date.setHours(hours, minutes, 0);
     return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+  };
+
+  // Handle file selection
+  const handleFileSelect = (e) => {
+    const files = Array.from(e.target.files);
+
+    if (files.length > 5) {
+      toast.error('Maximum 5 photos allowed');
+      return;
+    }
+
+    // Validate file types
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+    const invalidFiles = files.filter(file => !validTypes.includes(file.type));
+
+    if (invalidFiles.length > 0) {
+      toast.error('Only JPEG, PNG, and GIF images are allowed');
+      return;
+    }
+
+    // Validate file sizes (max 5MB per file)
+    const oversizedFiles = files.filter(file => file.size > 5 * 1024 * 1024);
+    if (oversizedFiles.length > 0) {
+      toast.error('Each photo must be less than 5MB');
+      return;
+    }
+
+    setSelectedFiles(files);
+
+    // Create previews
+    const previews = files.map((file, index) => ({
+      id: index,
+      url: URL.createObjectURL(file),
+      name: file.name
+    }));
+    setPhotoPreviews(previews);
+
+    // Initialize captions
+    const initialCaptions = {};
+    files.forEach((_, index) => {
+      initialCaptions[index] = '';
+    });
+    setCaptions(initialCaptions);
+  };
+
+  // Handle caption change
+  const handleCaptionChange = (index, value) => {
+    setCaptions(prev => ({
+      ...prev,
+      [index]: value
+    }));
+  };
+
+  // Handle photo upload
+  const handleUploadPhotos = async () => {
+    if (selectedFiles.length === 0) {
+      toast.error('Please select photos to upload');
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+
+      // Append files
+      selectedFiles.forEach((file) => {
+        formData.append('photos', file);
+      });
+
+      // Append captions
+      selectedFiles.forEach((_, index) => {
+        formData.append('captions', captions[index] || '');
+      });
+
+      // Append photo orders
+      selectedFiles.forEach((_, index) => {
+        formData.append('photo_orders', (index + 1).toString());
+      });
+
+      await accidentService.addPhotos(id, formData);
+      toast.success('Photos uploaded successfully');
+
+      // Clear selection
+      setSelectedFiles([]);
+      setPhotoPreviews([]);
+      setCaptions({});
+
+      // Refresh accident data
+      fetchAccident();
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to upload photos');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // Handle photo delete click
+  const handlePhotoDeleteClick = (photo) => {
+    setPhotoToDelete(photo);
+    setShowDeletePhotoModal(true);
+  };
+
+  // Handle photo delete confirm
+  const handlePhotoDeleteConfirm = async () => {
+    if (!photoToDelete) return;
+
+    try {
+      await accidentService.deletePhoto(photoToDelete.id);
+      toast.success('Photo deleted successfully');
+      setShowDeletePhotoModal(false);
+      setPhotoToDelete(null);
+      fetchAccident();
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to delete photo');
+      setShowDeletePhotoModal(false);
+      setPhotoToDelete(null);
+    }
+  };
+
+  // Handle photo delete cancel
+  const handlePhotoDeleteCancel = () => {
+    setShowDeletePhotoModal(false);
+    setPhotoToDelete(null);
+  };
+
+  // Clear selection
+  const handleClearSelection = () => {
+    setSelectedFiles([]);
+    setPhotoPreviews([]);
+    setCaptions({});
   };
 
   if (loading) {
@@ -179,15 +331,15 @@ const AccidentDetail = () => {
           </div>
         </div>
         <div className="col-sm-6 col-lg-3">
-          <div className="card border-primary h-100">
+          <div className="card border-success h-100">
             <div className="card-body">
               <div className="d-flex justify-content-between align-items-center">
                 <div className="flex-grow-1 pe-2">
-                  <h6 className="text-muted mb-1 small">Vehicles</h6>
-                  <h4 className="mb-0 text-primary text-truncate">{accident.vehicle_count.toLocaleString()}</h4>
+                  <h6 className="text-muted mb-1 small">Photos</h6>
+                  <h4 className="mb-0 text-success text-truncate">{accident.photos?.length || 0}</h4>
                 </div>
-                <div className="text-primary flex-shrink-0" style={{ fontSize: '2rem' }}>
-                  <i className="bi bi-car-front-fill"></i>
+                <div className="text-success flex-shrink-0" style={{ fontSize: '2rem' }}>
+                  <i className="bi bi-images"></i>
                 </div>
               </div>
             </div>
@@ -195,15 +347,30 @@ const AccidentDetail = () => {
         </div>
       </div>
 
-      <div className="row">
-        {/* Accident Information */}
-        <div className="col-lg-6 mb-4">
-          <div className="card h-100">
-            <div className="card-header">
-              <h5 className="mb-0">
-                <i className="bi bi-cone-striped me-2"></i>Accident Information
-              </h5>
-            </div>
+      <div className="card">
+        <div className="card-header">
+          <ul className="nav nav-tabs card-header-tabs">
+            <li className="nav-item">
+              <button className={`nav-link ${activeTab === 'details' ? 'active' : ''}`} onClick={() => setActiveTab('details')}>Details</button>
+            </li>
+            <li className="nav-item">
+              <button className={`nav-link ${activeTab === 'photos' ? 'active' : ''}`} onClick={() => setActiveTab('photos')}>Photos</button>
+            </li>
+          </ul>
+        </div>
+        <div className="card-body">
+          <div className="tab-content">
+            {activeTab === 'details' && (
+              <>
+              <div className="row">
+                {/* Accident Information */}
+                <div className="col-lg-6 mb-4">
+                  <div className="card h-100">
+                    <div className="card-header">
+                      <h5 className="mb-0">
+                        <i className="bi bi-cone-striped me-2"></i>Accident Information
+                      </h5>
+                    </div>
             <div className="card-body">
               <table className="table table-borderless">
                 <tbody>
@@ -391,10 +558,126 @@ const AccidentDetail = () => {
             </div>
           </div>
         </div>
+              </div>
+              </>
+            )}
+
+            {activeTab === 'photos' && (
+              <div>
+                {/* Upload Form */}
+                {hasPermission('update_accidents') && (
+                  <div className="card mb-4 border-primary">
+                    <div className="card-header bg-primary text-white">
+                      <h5 className="mb-0"><i className="bi bi-cloud-upload me-2"></i>Upload Photos</h5>
+                    </div>
+                    <div className="card-body">
+                      <div className="mb-3">
+                        <label className="form-label">Select Photos (Max 5 photos, 5MB each)</label>
+                        <input
+                          type="file"
+                          className="form-control"
+                          accept="image/jpeg,image/jpg,image/png,image/gif"
+                          multiple
+                          onChange={handleFileSelect}
+                          disabled={uploading}
+                        />
+                        <small className="text-muted">Accepted formats: JPEG, PNG, GIF</small>
+                      </div>
+
+                      {/* Preview Selected Photos */}
+                      {photoPreviews.length > 0 && (
+                        <div className="mt-3">
+                          <h6>Preview ({photoPreviews.length} photo{photoPreviews.length > 1 ? 's' : ''} selected)</h6>
+                          <div className="row">
+                            {photoPreviews.map((preview, index) => (
+                              <div key={preview.id} className="col-md-4 mb-3">
+                                <div className="card">
+                                  <img src={preview.url} className="card-img-top" alt={preview.name} style={{ height: '200px', objectFit: 'cover' }} />
+                                  <div className="card-body">
+                                    <label className="form-label small">Caption (optional)</label>
+                                    <input
+                                      type="text"
+                                      className="form-control form-control-sm"
+                                      placeholder="Enter caption..."
+                                      value={captions[index] || ''}
+                                      onChange={(e) => handleCaptionChange(index, e.target.value)}
+                                      disabled={uploading}
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+
+                          <div className="d-flex gap-2">
+                            <button
+                              className="btn btn-primary"
+                              onClick={handleUploadPhotos}
+                              disabled={uploading}
+                            >
+                              {uploading ? (
+                                <>
+                                  <span className="spinner-border spinner-border-sm me-2"></span>
+                                  Uploading...
+                                </>
+                              ) : (
+                                <>
+                                  <i className="bi bi-upload me-2"></i>
+                                  Upload Photos
+                                </>
+                              )}
+                            </button>
+                            <button
+                              className="btn btn-secondary"
+                              onClick={handleClearSelection}
+                              disabled={uploading}
+                            >
+                              Clear Selection
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Existing Photos */}
+                <h5 className="mb-3">Accident Photos</h5>
+                {accident.photos && accident.photos.length > 0 ? (
+                  <div className="row">
+                    {accident.photos.map(photo => (
+                      <div key={photo.id} className="col-md-4 mb-3">
+                        <div className="card shadow-sm">
+                          <img src={photo.photo_url} className="card-img-top" alt={photo.caption} style={{ height: '250px', objectFit: 'cover' }} />
+                          <div className="card-body">
+                            {photo.caption && <p className="card-text">{photo.caption}</p>}
+                            {hasPermission('delete_accidents') && (
+                              <button
+                                className="btn btn-danger btn-sm w-100"
+                                onClick={() => handlePhotoDeleteClick(photo)}
+                              >
+                                <i className="bi bi-trash me-2"></i>Delete Photo
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-5 text-muted">
+                    <i className="bi bi-images" style={{ fontSize: '3rem' }}></i>
+                    <p className="mt-2">No photos for this accident yet.</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Audit Information */}
-      <div className="card">
+      <div className="card mt-4">
         <div className="card-header">
           <h5 className="mb-0">
             <i className="bi bi-clock-history me-2"></i>Audit Information
@@ -424,6 +707,17 @@ const AccidentDetail = () => {
         </div>
       </div>
 
+      {/* Delete Photo Confirmation Modal */}
+      <ConfirmationModal
+        show={showDeletePhotoModal}
+        title="Delete Photo"
+        message={`Are you sure you want to delete this photo? This action cannot be undone.`}
+        confirmText="Delete"
+        onConfirm={handlePhotoDeleteConfirm}
+        onCancel={handlePhotoDeleteCancel}
+      />
+
+      {/* Delete Accident Confirmation Modal */}
       <ConfirmationModal
         show={showDeleteModal}
         title="Delete Accident"

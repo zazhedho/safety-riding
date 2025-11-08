@@ -105,17 +105,25 @@ const BudgetDetail = () => {
   const finalStatuses = ['completed', 'cancelled'];
   const isFinalized = finalStatuses.includes(budget.status?.toLowerCase());
   const isAdmin = hasRole(['admin']);
+  const isSuperadmin = hasRole(['superadmin']);
+  const isAdminOrSuperadmin = isAdmin || isSuperadmin;
 
   return (
     <DashboardLayout>
       {/* Warning for finalized budgets */}
-      {isFinalized && !isAdmin && (
+      {isFinalized && !isAdminOrSuperadmin && (
         <div className="alert alert-warning mb-4" role="alert">
           <i className="bi bi-exclamation-triangle-fill me-2"></i>
           <strong>Budget is Finalized!</strong> This budget has status "{budget.status}" and cannot be modified or deleted.
         </div>
       )}
-      {isFinalized && isAdmin && (
+      {isFinalized && isSuperadmin && (
+        <div className="alert alert-info mb-4" role="alert">
+          <i className="bi bi-info-circle-fill me-2"></i>
+          <strong>Superadmin Access:</strong> This budget has status "{budget.status}" (finalized), but you can still modify it as a superadmin.
+        </div>
+      )}
+      {isFinalized && isAdmin && !isSuperadmin && (
         <div className="alert alert-info mb-4" role="alert">
           <i className="bi bi-info-circle-fill me-2"></i>
           <strong>Admin Access:</strong> This budget has status "{budget.status}" (finalized), but you can still modify it as an admin.
@@ -136,12 +144,12 @@ const BudgetDetail = () => {
           </nav>
         </div>
         <div className="d-flex gap-2">
-          {hasPermission('update_budgets') && !(isFinalized && !isAdmin) && (
+          {hasPermission('update_budgets') && !(isFinalized && !isAdminOrSuperadmin) && (
             <Link to={`/budgets/${id}/edit`} className="btn btn-warning">
               <i className="bi bi-pencil me-2"></i>Edit
             </Link>
           )}
-          {hasPermission('delete_budgets') && !(isFinalized && !isAdmin) && (
+          {hasPermission('delete_budgets') && !(isFinalized && !isAdminOrSuperadmin) && (
             <button onClick={handleDeleteClick} className="btn btn-danger">
               <i className="bi bi-trash me-2"></i>Delete
             </button>

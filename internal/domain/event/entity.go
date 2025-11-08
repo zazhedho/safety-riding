@@ -1,6 +1,7 @@
 package domainevent
 
 import (
+	domainpublic "safety-riding/internal/domain/publics"
 	domainschool "safety-riding/internal/domain/school"
 	"time"
 
@@ -13,7 +14,8 @@ func (Event) TableName() string {
 
 type Event struct {
 	ID                       string  `json:"id" gorm:"column:id;primaryKey"`
-	SchoolId                 string  `json:"school_id" gorm:"column:school_id"`
+	SchoolId                 *string `json:"school_id,omitempty" gorm:"column:school_id"`
+	PublicId                 *string `json:"public_id,omitempty" gorm:"column:public_id"`
 	Title                    string  `json:"title" gorm:"column:title"`
 	Description              string  `json:"description" gorm:"column:description"`
 	EventDate                string  `json:"event_date" gorm:"column:event_date"`
@@ -36,7 +38,8 @@ type Event struct {
 
 	Photos         []EventPhoto         `json:"photos,omitempty" gorm:"foreignKey:EventId;constraint:OnDelete:CASCADE"`
 	OnTheSpotSales []EventOnTheSpotSale `json:"on_the_spot_sales,omitempty" gorm:"foreignKey:EventId;constraint:OnDelete:CASCADE"`
-	School         domainschool.School  `json:"school,omitempty" gorm:"foreignKey:SchoolId;references:ID"`
+	School         *domainschool.School `json:"school,omitempty" gorm:"foreignKey:SchoolId;references:ID"`
+	Public         *domainpublic.Public `json:"public,omitempty" gorm:"foreignKey:PublicId;references:ID"`
 
 	CreatedAt time.Time      `json:"created_at" gorm:"column:created_at"`
 	CreatedBy string         `json:"created_by" gorm:"column:created_by"`

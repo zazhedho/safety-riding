@@ -6,6 +6,10 @@ import (
 	"gorm.io/gorm"
 )
 
+func (Accident) TableName() string {
+	return "accidents"
+}
+
 type Accident struct {
 	ID                string  `json:"id" gorm:"column:id;primaryKey"`
 	PoliceReportNo    string  `json:"police_report_no" gorm:"column:police_report_no"`
@@ -34,10 +38,29 @@ type Accident struct {
 	PoliceStation     string  `json:"police_station" gorm:"column:police_station"`
 	OfficerName       string  `json:"officer_name" gorm:"column:officer_name"`
 
+	Photos []AccidentPhoto `json:"photos,omitempty" gorm:"foreignKey:AccidentId;constraint:OnDelete:CASCADE"`
+
 	CreatedAt time.Time      `json:"created_at" gorm:"column:created_at"`
 	CreatedBy string         `json:"created_by" gorm:"column:created_by"`
 	UpdatedAt time.Time      `json:"updated_at" gorm:"column:updated_at"`
 	UpdatedBy string         `json:"updated_by" gorm:"column:updated_by"`
+	DeletedAt gorm.DeletedAt `json:"-"`
+	DeletedBy string         `json:"-"`
+}
+
+func (AccidentPhoto) TableName() string {
+	return "accident_photos"
+}
+
+type AccidentPhoto struct {
+	ID         string `json:"id" gorm:"column:id;primaryKey"`
+	AccidentId string `json:"accident_id" gorm:"column:accident_id"`
+	PhotoUrl   string `json:"photo_url" gorm:"column:photo_url"`
+	Caption    string `json:"caption" gorm:"column:caption"`
+	PhotoOrder int    `json:"photo_order" gorm:"column:photo_order"`
+
+	CreatedAt time.Time      `json:"created_at" gorm:"column:created_at"`
+	CreatedBy string         `json:"created_by" gorm:"column:created_by"`
 	DeletedAt gorm.DeletedAt `json:"-"`
 	DeletedBy string         `json:"-"`
 }

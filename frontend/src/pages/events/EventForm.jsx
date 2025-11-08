@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import DashboardLayout from '../../components/common/DashboardLayout';
 import eventService from '../../services/eventService';
 import schoolService from '../../services/schoolService';
+import publicService from '../../services/publicService';
 import locationService from '../../services/locationService';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../contexts/AuthContext';
@@ -11,8 +12,10 @@ const EventForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { hasRole } = useAuth();
+  const [entityType, setEntityType] = useState('school');
   const [formData, setFormData] = useState({
     school_id: '',
+    public_id: '',
     title: '',
     description: '',
     event_date: '',
@@ -37,6 +40,7 @@ const EventForm = () => {
     notes: ''
   });
   const [schools, setSchools] = useState([]);
+  const [publics, setPublics] = useState([]);
   const [provinces, setProvinces] = useState([]);
   const [cities, setCities] = useState([]);
   const [districts, setDistricts] = useState([]);
@@ -46,6 +50,7 @@ const EventForm = () => {
 
   useEffect(() => {
     fetchSchools();
+    fetchPublics();
     fetchProvinces();
     if (id) {
       fetchEvent(id);
@@ -77,6 +82,13 @@ const EventForm = () => {
             quantity: item.quantity !== undefined && item.quantity !== null ? item.quantity.toString() : ''
           }))
         : [{ vehicle_type: '', payment_method: 'cash', quantity: '' }];
+
+      // Determine entity type based on which ID is set
+      if (eventData.public_id) {
+        setEntityType('public');
+      } else if (eventData.school_id) {
+        setEntityType('school');
+      }
 
       setFormData(prev => ({
         ...prev,
@@ -115,6 +127,15 @@ const EventForm = () => {
     }
   };
 
+  const fetchPublics = async () => {
+    try {
+      const response = await publicService.getAll({ limit: 1000 });
+      setPublics(response.data.data || []);
+    } catch (error) {
+      toast.error('Failed to load public entities');
+    }
+  };
+
   const fetchProvinces = async () => {
     try {
       const response = await locationService.getProvinces();
@@ -139,6 +160,37 @@ const EventForm = () => {
       setDistricts(response.data.data || []);
     } catch (error) {
       toast.error('Failed to load districts');
+    }
+  };
+
+  const handleEntityTypeChange = (e) => {
+    const newEntityType = e.target.value;
+    setEntityType(newEntityType);
+    // Clear both IDs when switching entity type
+    setFormData(prev => ({
+      ...prev,
+      school_id: '',
+      public_id: ''
+    }));
+  };
+
+  const handleEntitySelect = (e) => {
+    const { name, value } = e.target;
+
+    if (name === 'school_id') {
+      // Clear public_id when selecting a school
+      setFormData(prev => ({
+        ...prev,
+        school_id: value,
+        public_id: ''
+      }));
+    } else if (name === 'public_id') {
+      // Clear school_id when selecting a public entity
+      setFormData(prev => ({
+        ...prev,
+        public_id: value,
+        school_id: ''
+      }));
     }
   };
 
@@ -244,6 +296,10 @@ const EventForm = () => {
 
     const submitData = {
       ...formData,
+      // Only include school_id if it's not empty
+      school_id: formData.school_id || undefined,
+      // Only include public_id if it's not empty
+      public_id: formData.public_id || undefined,
       target_attendees: formData.target_attendees === '' ? 0 : parseInt(formData.target_attendees, 10) || 0,
       attendees_count: formData.attendees_count === '' ? 0 : parseInt(formData.attendees_count, 10) || 0,
       visiting_service_unit_entry: formData.visiting_service_unit_entry === '' ? 0 : parseInt(formData.visiting_service_unit_entry, 10) || 0,
@@ -276,7 +332,9 @@ const EventForm = () => {
   }
 
   const isAdmin = hasRole(['admin']);
-  const shouldDisable = isFinalized && !isAdmin;
+  const isSuperadmin = hasRole(['superadmin']);
+  const isAdminOrSuperadmin = isAdmin || isSuperadmin;
+  const shouldDisable = isFinalized && !isAdminOrSuperadmin;
 
   // Calculate achievement percentage
   const calculateAchievement = () => {
@@ -304,14 +362,20 @@ const EventForm = () => {
       <h2>{id ? 'Edit Event' : 'Add Event'}</h2>
 
       {/* Warning for finalized events */}
-      {isFinalized && !isAdmin && (
+      {isFinalized && !isAdminOrSuperadmin && (
         <div className="alert alert-warning mb-4" role="alert">
           <i className="bi bi-exclamation-triangle-fill me-2"></i>
           <strong>Event is Finalized!</strong> This event has status "{formData.status}" and cannot be modified.
           All fields are read-only.
         </div>
       )}
-      {isFinalized && isAdmin && (
+      {isFinalized && isSuperadmin && (
+        <div className="alert alert-info mb-4" role="alert">
+          <i className="bi bi-info-circle-fill me-2"></i>
+          <strong>Superadmin Access:</strong> This event has status "{formData.status}" (finalized), but you can still modify it as a superadmin.
+        </div>
+      )}
+      {isFinalized && isAdmin && !isSuperadmin && (
         <div className="alert alert-info mb-4" role="alert">
           <i className="bi bi-info-circle-fill me-2"></i>
           <strong>Admin Access:</strong> This event has status "{formData.status}" (finalized), but you can still modify it as an admin.
@@ -327,11 +391,32 @@ const EventForm = () => {
                 <input type="text" className="form-control" name="title" value={formData.title} onChange={handleChange} placeholder="e.g., Safety Riding Seminar for Students" required disabled={shouldDisable} />
               </div>
               <div className="col-md-6 mb-3">
-                <label className="form-label">School</label>
-                <select className="form-select" name="school_id" value={formData.school_id} onChange={handleChange} required disabled={shouldDisable}>
-                  <option value="">Select School</option>
-                  {schools.map(school => <option key={school.id} value={school.id}>{school.name}</option>)}
+                <label className="form-label">Entity Type</label>
+                <select className="form-select" value={entityType} onChange={handleEntityTypeChange} disabled={shouldDisable}>
+                  <option value="school">School</option>
+                  <option value="public">Public Entity</option>
                 </select>
+              </div>
+            </div>
+            <div className="row">
+              <div className="col-md-12 mb-3">
+                {entityType === 'school' ? (
+                  <>
+                    <label className="form-label">School</label>
+                    <select className="form-select" name="school_id" value={formData.school_id} onChange={handleEntitySelect} required disabled={shouldDisable}>
+                      <option value="">Select School</option>
+                      {schools.map(school => <option key={school.id} value={school.id}>{school.name}</option>)}
+                    </select>
+                  </>
+                ) : (
+                  <>
+                    <label className="form-label">Public Entity</label>
+                    <select className="form-select" name="public_id" value={formData.public_id} onChange={handleEntitySelect} required disabled={shouldDisable}>
+                      <option value="">Select Public Entity</option>
+                      {publics.map(pub => <option key={pub.id} value={pub.id}>{pub.name} - {pub.category}</option>)}
+                    </select>
+                  </>
+                )}
               </div>
             </div>
             <div className="mb-3">

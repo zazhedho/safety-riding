@@ -114,21 +114,29 @@ const BudgetForm = () => {
   }
 
   const isAdmin = hasRole(['admin']);
-  const shouldDisable = isFinalized && !isAdmin;
+  const isSuperadmin = hasRole(['superadmin']);
+  const isAdminOrSuperadmin = isAdmin || isSuperadmin;
+  const shouldDisable = isFinalized && !isAdminOrSuperadmin;
 
   return (
     <DashboardLayout>
       <h2>{id ? 'Edit Budget' : 'Add Budget'}</h2>
 
       {/* Warning for finalized budgets */}
-      {isFinalized && !isAdmin && (
+      {isFinalized && !isAdminOrSuperadmin && (
         <div className="alert alert-warning mb-4" role="alert">
           <i className="bi bi-exclamation-triangle-fill me-2"></i>
           <strong>Budget is Finalized!</strong> This budget has status "{formData.status}" and cannot be modified.
           All fields are read-only.
         </div>
       )}
-      {isFinalized && isAdmin && (
+      {isFinalized && isSuperadmin && (
+        <div className="alert alert-info mb-4" role="alert">
+          <i className="bi bi-info-circle-fill me-2"></i>
+          <strong>Superadmin Access:</strong> This budget has status "{formData.status}" (finalized), but you can still modify it as a superadmin.
+        </div>
+      )}
+      {isFinalized && isAdmin && !isSuperadmin && (
         <div className="alert alert-info mb-4" role="alert">
           <i className="bi bi-info-circle-fill me-2"></i>
           <strong>Admin Access:</strong> This budget has status "{formData.status}" (finalized), but you can still modify it as an admin.

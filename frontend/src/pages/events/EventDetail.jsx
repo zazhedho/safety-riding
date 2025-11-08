@@ -280,6 +280,8 @@ const EventDetail = () => {
   const finalStatuses = ['completed', 'cancelled'];
   const isFinalized = finalStatuses.includes(event.status?.toLowerCase());
   const isAdmin = hasRole(['admin']);
+  const isSuperadmin = hasRole(['superadmin']);
+  const isAdminOrSuperadmin = isAdmin || isSuperadmin;
 
   // Calculate achievement percentage
   const calculateAchievement = () => {
@@ -306,13 +308,19 @@ const EventDetail = () => {
   return (
     <DashboardLayout>
       {/* Warning for finalized events */}
-      {isFinalized && !isAdmin && (
+      {isFinalized && !isAdminOrSuperadmin && (
         <div className="alert alert-warning mb-4" role="alert">
           <i className="bi bi-exclamation-triangle-fill me-2"></i>
           <strong>Event is Finalized!</strong> This event has status "{event.status}" and cannot be modified or deleted.
         </div>
       )}
-      {isFinalized && isAdmin && (
+      {isFinalized && isSuperadmin && (
+        <div className="alert alert-info mb-4" role="alert">
+          <i className="bi bi-info-circle-fill me-2"></i>
+          <strong>Superadmin Access:</strong> This event has status "{event.status}" (finalized), but you can still modify it as a superadmin.
+        </div>
+      )}
+      {isFinalized && isAdmin && !isSuperadmin && (
         <div className="alert alert-info mb-4" role="alert">
           <i className="bi bi-info-circle-fill me-2"></i>
           <strong>Admin Access:</strong> This event has status "{event.status}" (finalized), but you can still modify it as an admin.
@@ -333,12 +341,12 @@ const EventDetail = () => {
           </nav>
         </div>
         <div className="d-flex gap-2">
-          {hasPermission('update_events') && !(isFinalized && !isAdmin) && (
+          {hasPermission('update_events') && !(isFinalized && !isAdminOrSuperadmin) && (
             <Link to={`/events/${id}/edit`} className="btn btn-warning">
               <i className="bi bi-pencil me-2"></i>Edit
             </Link>
           )}
-          {hasPermission('delete_events') && !(isFinalized && !isAdmin) && (
+          {hasPermission('delete_events') && !(isFinalized && !isAdminOrSuperadmin) && (
             <button onClick={handleDeleteClick} className="btn btn-danger">
               <i className="bi bi-trash me-2"></i>Delete
             </button>
@@ -359,6 +367,10 @@ const EventDetail = () => {
           {event.school?.name ? (
             <Link to={`/schools/${event.school.id}`} className="text-decoration-none">
               {event.school.name}
+            </Link>
+          ) : event.public?.name ? (
+            <Link to={`/publics/${event.public.id}`} className="text-decoration-none">
+              {event.public.name} ({event.public.category})
             </Link>
           ) : 'N/A'}
         </p>
@@ -729,7 +741,7 @@ const EventDetail = () => {
             {activeTab === 'photos' && (
               <div>
                 {/* Upload Form */}
-                {hasPermission('update_events') && !(isFinalized && !isAdmin) && (
+                {hasPermission('update_events') && !(isFinalized && !isAdminOrSuperadmin) && (
                   <div className="card mb-4 border-primary">
                     <div className="card-header bg-primary text-white">
                       <h5 className="mb-0"><i className="bi bi-cloud-upload me-2"></i>Upload Photos</h5>
@@ -815,7 +827,7 @@ const EventDetail = () => {
                           <img src={photo.photo_url} className="card-img-top" alt={photo.caption} style={{ height: '250px', objectFit: 'cover' }} />
                           <div className="card-body">
                             {photo.caption && <p className="card-text">{photo.caption}</p>}
-                            {hasPermission('delete_events') && !(isFinalized && !isAdmin) && (
+                            {hasPermission('delete_events') && !(isFinalized && !isAdminOrSuperadmin) && (
                               <button
                                 className="btn btn-danger btn-sm w-100"
                                 onClick={() => handlePhotoDeleteClick(photo)}

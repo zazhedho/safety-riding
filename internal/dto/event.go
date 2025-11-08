@@ -1,7 +1,8 @@
 package dto
 
 type AddEvent struct {
-	SchoolId                 string              `json:"school_id" binding:"required"`
+	SchoolId                 string              `json:"school_id,omitempty"`
+	PublicId                 string              `json:"public_id,omitempty"`
 	Title                    string              `json:"title" binding:"required,min=3,max=200"`
 	Description              string              `json:"description" binding:"required"`
 	EventDate                string              `json:"event_date" binding:"required"`
@@ -27,6 +28,7 @@ type AddEvent struct {
 
 type UpdateEvent struct {
 	SchoolId                 string              `json:"school_id,omitempty"`
+	PublicId                 string              `json:"public_id,omitempty"`
 	Title                    string              `json:"title,omitempty"`
 	Description              string              `json:"description,omitempty"`
 	EventDate                string              `json:"event_date,omitempty"`

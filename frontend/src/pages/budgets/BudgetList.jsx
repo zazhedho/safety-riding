@@ -464,7 +464,7 @@ const BudgetList = () => {
                                 <i className="bi bi-eye"></i>
                               </Link>
                             )}
-                            {hasPermission('update_budgets') && !(isFinalized(budget.status) && !hasRole(['admin'])) && (
+                            {hasPermission('update_budgets') && (!isFinalized(budget.status) || hasRole(['admin', 'superadmin'])) && (
                               <Link
                                 to={`/budgets/${budget.id}/edit`}
                                 className="btn btn-sm btn-outline-warning"
@@ -472,7 +472,7 @@ const BudgetList = () => {
                                 <i className="bi bi-pencil"></i>
                               </Link>
                             )}
-                            {hasPermission('delete_budgets') && !(isFinalized(budget.status) && !hasRole(['admin'])) && (
+                            {hasPermission('delete_budgets') && (!isFinalized(budget.status) || hasRole(['admin', 'superadmin'])) && (
                               <button
                                 onClick={() => handleDeleteClick(budget)}
                                 className="btn btn-sm btn-outline-danger"

@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS events (
     id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    school_id           UUID NOT NULL,
+    school_id           UUID,
+    public_id           UUID,
     title               VARCHAR(200) NOT NULL,
     description         TEXT NOT NULL,
     event_date          VARCHAR(20) NOT NULL,

@@ -25,7 +25,7 @@ func (r *repo) Create(accident domainaccident.Accident) error {
 
 func (r *repo) GetByID(id string) (domainaccident.Accident, error) {
 	var accident domainaccident.Accident
-	err := r.DB.Where("id = ?", id).First(&accident).Error
+	err := r.DB.Preload("Photos").Where("id = ?", id).First(&accident).Error
 	return accident, err
 }
 
@@ -98,4 +98,32 @@ func (r *repo) Fetch(params filter.BaseParams) (ret []domainaccident.Accident, t
 
 func (r *repo) Delete(id string) error {
 	return r.DB.Where("id = ?", id).Delete(&domainaccident.Accident{}).Error
+}
+
+// Accident Photo methods
+func (r *repo) AddPhotos(photos []domainaccident.AccidentPhoto) error {
+	if len(photos) == 0 {
+		return nil
+	}
+	return r.DB.Create(&photos).Error
+}
+
+func (r *repo) GetPhotosByAccidentID(accidentId string) ([]domainaccident.AccidentPhoto, error) {
+	var photos []domainaccident.AccidentPhoto
+	err := r.DB.Where("accident_id = ?", accidentId).Order("photo_order ASC").Find(&photos).Error
+	return photos, err
+}
+
+func (r *repo) GetPhotoByID(photoId string) (domainaccident.AccidentPhoto, error) {
+	var photo domainaccident.AccidentPhoto
+	err := r.DB.Where("id = ?", photoId).First(&photo).Error
+	return photo, err
+}
+
+func (r *repo) DeletePhoto(photoId string) error {
+	return r.DB.Where("id = ?", photoId).Delete(&domainaccident.AccidentPhoto{}).Error
+}
+
+func (r *repo) DeletePhotosByAccidentID(accidentId string) error {
+	return r.DB.Where("accident_id = ?", accidentId).Delete(&domainaccident.AccidentPhoto{}).Error
 }

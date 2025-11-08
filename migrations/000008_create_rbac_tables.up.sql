@@ -100,12 +100,12 @@ INSERT INTO menu_items (id, name, display_name, path, icon, order_index) VALUES
     (gen_random_uuid(), 'dashboard', 'Dashboard', '/dashboard', 'bi-speedometer2', 1),
     (gen_random_uuid(), 'profile', 'Profile', '/profile', 'bi-person-circle', 2),
     (gen_random_uuid(), 'schools', 'Schools', '/schools', 'bi-building', 3),
-    (gen_random_uuid(), 'education_stats', 'Education Stats', '/schools/education-stats', 'bi-bar-chart', 4),
-    (gen_random_uuid(), 'events', 'Events', '/events', 'bi-calendar-event', 5),
-    (gen_random_uuid(), 'accidents', 'Accidents', '/accidents', 'bi-exclamation-triangle', 6),
-    (gen_random_uuid(), 'budgets', 'Budgets', '/budgets', 'bi-cash-stack', 7),
-    (gen_random_uuid(), 'users', 'Users', '/users', 'bi-people', 9),
-    (gen_random_uuid(), 'roles', 'Roles', '/roles', 'bi-shield-lock', 10)
+    (gen_random_uuid(), 'education_stats', 'Education Stats', '/schools/education-stats', 'bi-bar-chart', 5),
+    (gen_random_uuid(), 'events', 'Events', '/events', 'bi-calendar-event', 6),
+    (gen_random_uuid(), 'accidents', 'Accidents', '/accidents', 'bi-exclamation-triangle', 7),
+    (gen_random_uuid(), 'budgets', 'Budgets', '/budgets', 'bi-cash-stack', 8),
+    (gen_random_uuid(), 'users', 'Users', '/users', 'bi-people', 900),
+    (gen_random_uuid(), 'roles', 'Roles', '/roles', 'bi-shield-lock', 901)
 ON CONFLICT (name) DO NOTHING;
 
 -- Insert permissions

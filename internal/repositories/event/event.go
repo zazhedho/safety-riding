@@ -28,6 +28,7 @@ func (r *repo) GetByID(id string) (domainevent.Event, error) {
 	err := r.DB.Preload("Photos").
 		Preload("OnTheSpotSales").
 		Preload("School").
+		Preload("Public").
 		Where("id = ?", id).
 		First(&event).Error
 	return event, err
@@ -45,7 +46,8 @@ func (r *repo) Fetch(params filter.BaseParams) (ret []domainevent.Event, totalDa
 	query := r.DB.Model(&domainevent.Event{}).
 		Preload("Photos").
 		Preload("OnTheSpotSales").
-		Preload("School").Debug()
+		Preload("School").
+		Preload("Public").Debug()
 
 	if len(params.Columns) > 0 {
 		query = query.Select(params.Columns)

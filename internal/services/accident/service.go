@@ -1,21 +1,28 @@
 package serviceaccident
 
 import (
+	"context"
+	"fmt"
+	"mime/multipart"
 	"safety-riding/internal/domain/accident"
 	"safety-riding/internal/dto"
 	interfaceaccident "safety-riding/internal/interfaces/accident"
 	"safety-riding/pkg/filter"
+	"safety-riding/pkg/storage"
 	"safety-riding/utils"
+	"strconv"
 	"time"
 )
 
 type AccidentService struct {
-	AccidentRepo interfaceaccident.RepoAccidentInterface
+	AccidentRepo    interfaceaccident.RepoAccidentInterface
+	StorageProvider storage.StorageProvider
 }
 
-func NewAccidentService(accidentRepo interfaceaccident.RepoAccidentInterface) *AccidentService {
+func NewAccidentService(accidentRepo interfaceaccident.RepoAccidentInterface, storageProvider storage.StorageProvider) *AccidentService {
 	return &AccidentService{
-		AccidentRepo: accidentRepo,
+		AccidentRepo:    accidentRepo,
+		StorageProvider: storageProvider,
 	}
 }
 
@@ -194,4 +201,105 @@ func (s *AccidentService) DeleteAccident(id, username string) error {
 	}
 
 	return nil
+}
+
+// Photo methods
+func (s *AccidentService) AddAccidentPhotos(accidentId, username string, photos []dto.AddAccidentPhoto) ([]domainaccident.AccidentPhoto, error) {
+	// Verify accident exists
+	if _, err := s.AccidentRepo.GetByID(accidentId); err != nil {
+		return nil, err
+	}
+
+	accidentPhotos := make([]domainaccident.AccidentPhoto, 0, len(photos))
+	for _, p := range photos {
+		accidentPhotos = append(accidentPhotos, domainaccident.AccidentPhoto{
+			ID:         utils.CreateUUID(),
+			AccidentId: accidentId,
+			PhotoUrl:   p.PhotoUrl,
+			Caption:    p.Caption,
+			PhotoOrder: p.PhotoOrder,
+			CreatedAt:  time.Now(),
+			CreatedBy:  username,
+		})
+	}
+
+	if err := s.AccidentRepo.AddPhotos(accidentPhotos); err != nil {
+		return nil, err
+	}
+
+	return accidentPhotos, nil
+}
+
+func (s *AccidentService) DeleteAccidentPhoto(photoId, username string) error {
+	accidentPhoto, err := s.AccidentRepo.GetPhotoByID(photoId)
+	if err != nil {
+		return err
+	}
+
+	if err = s.AccidentRepo.DeletePhoto(photoId); err == nil {
+		_ = s.StorageProvider.DeleteFile(context.Background(), accidentPhoto.PhotoUrl)
+	}
+
+	return err
+}
+
+// AddAccidentPhotosFromFiles uploads photos to storage and saves to database
+func (s *AccidentService) AddAccidentPhotosFromFiles(ctx context.Context, accidentId, username string, files []*multipart.FileHeader, captions []string, photoOrders []string) ([]domainaccident.AccidentPhoto, error) {
+	// Verify accident exists
+	if _, err := s.AccidentRepo.GetByID(accidentId); err != nil {
+		return nil, err
+	}
+
+	accidentPhotos := make([]domainaccident.AccidentPhoto, 0, len(files))
+
+	var photoURL string
+	for i, fileHeader := range files {
+		// Open file
+		file, err := fileHeader.Open()
+		if err != nil {
+			return nil, fmt.Errorf("failed to open file %s: %w", fileHeader.Filename, err)
+		}
+		defer file.Close()
+
+		// Upload to storage provider (MinIO or R2)
+		photoURL, err = s.StorageProvider.UploadFile(ctx, file, fileHeader, "accident-photos")
+		if err != nil {
+			return nil, fmt.Errorf("failed to upload file %s to storage: %w", fileHeader.Filename, err)
+		}
+
+		// Get caption if provided
+		caption := ""
+		if i < len(captions) {
+			caption = captions[i]
+		}
+
+		// Get photo order if provided
+		photoOrder := 0
+		if i < len(photoOrders) {
+			if order, err := strconv.Atoi(photoOrders[i]); err == nil {
+				photoOrder = order
+			}
+		}
+
+		// Create photo record
+		accidentPhoto := domainaccident.AccidentPhoto{
+			ID:         utils.CreateUUID(),
+			AccidentId: accidentId,
+			PhotoUrl:   photoURL,
+			Caption:    caption,
+			PhotoOrder: photoOrder,
+			CreatedAt:  time.Now(),
+			CreatedBy:  username,
+		}
+
+		accidentPhotos = append(accidentPhotos, accidentPhoto)
+	}
+
+	// Save photos to database
+	if err := s.AccidentRepo.AddPhotos(accidentPhotos); err != nil {
+		_ = s.StorageProvider.DeleteFile(ctx, photoURL)
+		return nil, err
+	}
+
+	return accidentPhotos, nil
 }
