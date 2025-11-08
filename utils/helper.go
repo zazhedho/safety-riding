@@ -73,8 +73,8 @@ func ValidatePhotoFileSize(fileHeader *multipart.FileHeader) error {
 		return fmt.Errorf("invalid file header")
 	}
 
-	maxPhotoSizeBytes := GetEnv("MAX_PHOTO_SIZE_BYTES", 5*1024*1024).(int64)
-	if fileHeader.Size > maxPhotoSizeBytes {
+	maxPhotoSizeBytes := GetEnv("MAX_PHOTO_SIZE_BYTES", 5*1024*1024).(int)
+	if fileHeader.Size > int64(maxPhotoSizeBytes) {
 		return fmt.Errorf("file %s exceeds maximum size of 5MB", fileHeader.Filename)
 	}
 

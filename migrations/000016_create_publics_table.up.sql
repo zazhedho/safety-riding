@@ -44,7 +44,19 @@ CREATE INDEX IF NOT EXISTS idx_publics_deleted_at   ON publics (deleted_at);
 CREATE INDEX IF NOT EXISTS idx_publics_last_visit   ON publics (last_visit_at);
 
 -- updated_at auto-touch trigger
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_trigger t
+    JOIN pg_class c ON c.oid = t.tgrelid
+    WHERE t.tgname = 'trg_publics_set_updated_at'
+      AND c.relname = 'publics'
+  ) THEN
 CREATE TRIGGER trg_publics_set_updated_at
     BEFORE UPDATE ON publics
     FOR EACH ROW
     EXECUTE FUNCTION set_updated_at();
+END IF;
+END
+$$;
