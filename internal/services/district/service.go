@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"safety-riding/internal/domain/district"
+	interfacedistrict "safety-riding/internal/interfaces/district"
 	"sort"
 )
 
@@ -55,3 +56,5 @@ func (s *DistrictService) GetDistrict(year, lvl, pro, kab string) ([]domaindistr
 
 	return districts, nil
 }
+
+var _ interfacedistrict.ServiceDistrictInterface = (*DistrictService)(nil)

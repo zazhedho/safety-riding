@@ -1,4 +1,4 @@
-package session
+package servicesession
 
 import (
 	"context"
@@ -116,6 +116,14 @@ func (s *ServiceSession) DestroySessionByToken(ctx context.Context, token string
 	return s.SessionRepo.Delete(ctx, session.SessionID)
 }
 
+func (s *ServiceSession) GetSessionByToken(ctx context.Context, token string) (*domainsession.Session, error) {
+	return s.SessionRepo.GetByToken(ctx, token)
+}
+
+func (s *ServiceSession) GetSessionBySessionID(ctx context.Context, sessionID string) (*domainsession.Session, error) {
+	return s.SessionRepo.GetBySessionID(ctx, sessionID)
+}
+
 // DestroyAllUserSessions destroys all sessions for a user
 func (s *ServiceSession) DestroyAllUserSessions(ctx context.Context, userID string) error {
 	return s.SessionRepo.DeleteByUserID(ctx, userID)
@@ -176,3 +184,5 @@ func indexOf(s, substr string) int {
 	}
 	return -1
 }
+
+var _ interfacesession.ServiceSessionInterface = (*ServiceSession)(nil)

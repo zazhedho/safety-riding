@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"safety-riding/internal/domain/province"
+	interfaceprovince "safety-riding/internal/interfaces/province"
 	"sort"
 )
 
@@ -55,3 +56,5 @@ func (s *ProvinceService) GetProvince(year string) ([]domainprovince.Province, e
 
 	return provinces, nil
 }
+
+var _ interfaceprovince.ServiceProvinceInterface = (*ProvinceService)(nil)

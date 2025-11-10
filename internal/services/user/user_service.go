@@ -1,4 +1,4 @@
-package user
+package serviceuser
 
 import (
 	"errors"
@@ -156,6 +156,10 @@ func (s *ServiceUser) LogoutUser(token string) error {
 
 func (s *ServiceUser) GetUserById(id string) (domainuser.Users, error) {
 	return s.UserRepo.GetByID(id)
+}
+
+func (s *ServiceUser) GetUserByEmail(email string) (domainuser.Users, error) {
+	return s.UserRepo.GetByEmail(email)
 }
 
 func (s *ServiceUser) GetUserByAuth(id string) (map[string]interface{}, error) {
@@ -335,3 +339,5 @@ func (s *ServiceUser) ChangePassword(id string, req dto.ChangePassword) (domainu
 func (s *ServiceUser) Delete(id string) error {
 	return s.UserRepo.Delete(id)
 }
+
+var _ interfaceuser.ServiceUserInterface = (*ServiceUser)(nil)

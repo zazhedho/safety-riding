@@ -175,3 +175,5 @@ func (s *MarketShareService) GetSummary(level string, year, month int, provinceI
 	}
 	return s.MarketShareRepo.GetSummary(level, year, month, provinceID, cityID, districtID)
 }
+
+var _ interfacemarketshare.ServiceMarketShareInterface = (*MarketShareService)(nil)

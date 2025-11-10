@@ -103,3 +103,5 @@ func (s *MenuService) Update(id string, req dto.MenuItemUpdate) (domainmenu.Menu
 func (s *MenuService) Delete(id string) error {
 	return s.MenuRepo.Delete(id)
 }
+
+var _ interfacemenu.ServiceMenuInterface = (*MenuService)(nil)

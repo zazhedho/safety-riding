@@ -1,11 +1,11 @@
-package handlerole
+package handlerrole
 
 import (
 	"fmt"
 	"net/http"
 	"reflect"
 	"safety-riding/internal/dto"
-	servicerole "safety-riding/internal/services/role"
+	interfacerole "safety-riding/internal/interfaces/role"
 	"safety-riding/pkg/filter"
 	"safety-riding/pkg/logger"
 	"safety-riding/pkg/messages"
@@ -16,10 +16,10 @@ import (
 )
 
 type RoleHandler struct {
-	Service *servicerole.RoleService
+	Service interfacerole.ServiceRoleInterface
 }
 
-func NewRoleHandler(s *servicerole.RoleService) *RoleHandler {
+func NewRoleHandler(s interfacerole.ServiceRoleInterface) *RoleHandler {
 	return &RoleHandler{Service: s}
 }
 

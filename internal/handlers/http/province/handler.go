@@ -3,7 +3,7 @@ package handlerprovince
 import (
 	"fmt"
 	"net/http"
-	"safety-riding/internal/services/province"
+	interfaceprovince "safety-riding/internal/interfaces/province"
 	"safety-riding/pkg/logger"
 	"safety-riding/pkg/messages"
 	"safety-riding/pkg/response"
@@ -13,10 +13,10 @@ import (
 )
 
 type ProvinceHandler struct {
-	Service *serviceprovince.ProvinceService
+	Service interfaceprovince.ServiceProvinceInterface
 }
 
-func NewProvinceHandler(s *serviceprovince.ProvinceService) *ProvinceHandler {
+func NewProvinceHandler(s interfaceprovince.ServiceProvinceInterface) *ProvinceHandler {
 	return &ProvinceHandler{
 		Service: s,
 	}

@@ -467,3 +467,5 @@ func (s *EventService) AddEventPhotosFromFiles(ctx context.Context, eventId, use
 
 	return eventPhotos, nil
 }
+
+var _ interfaceevent.ServiceEventInterface = (*EventService)(nil)

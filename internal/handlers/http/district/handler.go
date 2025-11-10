@@ -3,7 +3,7 @@ package handlerdistrict
 import (
 	"fmt"
 	"net/http"
-	"safety-riding/internal/services/district"
+	interfacedistrict "safety-riding/internal/interfaces/district"
 	"safety-riding/pkg/logger"
 	"safety-riding/pkg/messages"
 	"safety-riding/pkg/response"
@@ -13,10 +13,10 @@ import (
 )
 
 type DistrictHandler struct {
-	Service *servicedistrict.DistrictService
+	Service interfacedistrict.ServiceDistrictInterface
 }
 
-func NewDistrictHandler(s *servicedistrict.DistrictService) *DistrictHandler {
+func NewDistrictHandler(s interfacedistrict.ServiceDistrictInterface) *DistrictHandler {
 	return &DistrictHandler{
 		Service: s,
 	}

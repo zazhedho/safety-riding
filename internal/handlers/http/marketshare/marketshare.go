@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"reflect"
 	"safety-riding/internal/dto"
-	servicemarketshare "safety-riding/internal/services/marketshare"
+	interfacemarketshare "safety-riding/internal/interfaces/marketshare"
 	"safety-riding/pkg/filter"
 	"safety-riding/pkg/logger"
 	"safety-riding/pkg/messages"
@@ -20,10 +20,10 @@ import (
 )
 
 type MarketShareHandler struct {
-	Service *servicemarketshare.MarketShareService
+	Service interfacemarketshare.ServiceMarketShareInterface
 }
 
-func NewMarketShareHandler(s *servicemarketshare.MarketShareService) *MarketShareHandler {
+func NewMarketShareHandler(s interfacemarketshare.ServiceMarketShareInterface) *MarketShareHandler {
 	return &MarketShareHandler{
 		Service: s,
 	}

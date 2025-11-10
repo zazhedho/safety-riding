@@ -249,7 +249,7 @@ func (h *HandlerUser) Login(ctx *gin.Context) {
         sessionRepo := sessionrepo.NewSessionRepository(database.GetRedisClient())
         sessionService := sessionsvc.NewSessionService(sessionRepo)
 
-        user, _ := h.Service.UserRepo.GetByEmail(req.Email)
+        user, _ := h.Service.GetUserByEmail(req.Email)
         session, err := sessionService.CreateSession(context.Background(), &user, token, ctx)
         if err != nil {
             logger.WriteLog(logger.LogLevelError, fmt.Sprintf("Failed to create session: %v", err))

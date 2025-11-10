@@ -1,10 +1,10 @@
-package session
+package handlersession
 
 import (
 	"context"
 	"fmt"
 	"net/http"
-	sessionsvc "safety-riding/internal/services/session"
+	interfacesession "safety-riding/internal/interfaces/session"
 	"safety-riding/pkg/logger"
 	"safety-riding/pkg/messages"
 	"safety-riding/pkg/response"
@@ -14,10 +14,10 @@ import (
 )
 
 type HandlerSession struct {
-	Service *sessionsvc.ServiceSession
+	Service interfacesession.ServiceSessionInterface
 }
 
-func NewSessionHandler(s *sessionsvc.ServiceSession) *HandlerSession {
+func NewSessionHandler(s interfacesession.ServiceSessionInterface) *HandlerSession {
 	return &HandlerSession{Service: s}
 }
 
@@ -47,7 +47,7 @@ func (h *HandlerSession) GetActiveSessions(ctx *gin.Context) {
 
 	// Get current session ID from token
 	token, _ := ctx.Get("token")
-	currentSession, err := h.Service.SessionRepo.GetByToken(context.Background(), token.(string))
+	currentSession, err := h.Service.GetSessionByToken(context.Background(), token.(string))
 	currentSessionID := ""
 	if err == nil && currentSession != nil {
 		currentSessionID = currentSession.SessionID
@@ -104,9 +104,9 @@ func (h *HandlerSession) RevokeSession(ctx *gin.Context) {
 	}
 
 	// Verify the session belongs to the user
-	session, err := h.Service.SessionRepo.GetBySessionID(context.Background(), sessionID)
+	session, err := h.Service.GetSessionBySessionID(context.Background(), sessionID)
 	if err != nil {
-		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; SessionRepo.GetBySessionID; Error: %+v", logPrefix, err))
+		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; Service.GetSessionBySessionID; Error: %+v", logPrefix, err))
 		res := response.Response(http.StatusNotFound, messages.MsgFail, logId, nil)
 		res.Error = "session not found"
 		ctx.JSON(http.StatusNotFound, res)
@@ -159,9 +159,9 @@ func (h *HandlerSession) RevokeAllOtherSessions(ctx *gin.Context) {
 
 	// Get current session ID
 	token, _ := ctx.Get("token")
-	currentSession, err := h.Service.SessionRepo.GetByToken(context.Background(), token.(string))
+	currentSession, err := h.Service.GetSessionByToken(context.Background(), token.(string))
 	if err != nil {
-		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; SessionRepo.GetByToken; Error: %+v", logPrefix, err))
+		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; Service.GetSessionByToken; Error: %+v", logPrefix, err))
 		res := response.Response(http.StatusInternalServerError, messages.MsgFail, logId, nil)
 		res.Error = "failed to get current session"
 		ctx.JSON(http.StatusInternalServerError, res)

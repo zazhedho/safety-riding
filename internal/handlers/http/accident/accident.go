@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"reflect"
 	"safety-riding/internal/dto"
-	"safety-riding/internal/services/accident"
+	interfaceaccident "safety-riding/internal/interfaces/accident"
 	"safety-riding/pkg/filter"
 	"safety-riding/pkg/logger"
 	"safety-riding/pkg/messages"
@@ -18,10 +18,10 @@ import (
 )
 
 type AccidentHandler struct {
-	Service *serviceaccident.AccidentService
+	Service interfaceaccident.ServiceAccidentInterface
 }
 
-func NewAccidentHandler(s *serviceaccident.AccidentService) *AccidentHandler {
+func NewAccidentHandler(s interfaceaccident.ServiceAccidentInterface) *AccidentHandler {
 	return &AccidentHandler{
 		Service: s,
 	}

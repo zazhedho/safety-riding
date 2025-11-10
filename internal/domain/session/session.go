@@ -1,4 +1,4 @@
-package session
+package domainsession
 
 import "time"
 
@@ -19,10 +19,10 @@ type Session struct {
 
 // SessionInfo represents session information for listing
 type SessionInfo struct {
-	SessionID    string    `json:"session_id"`
-	DeviceInfo   string    `json:"device_info"`
-	IP           string    `json:"ip"`
-	LoginAt      time.Time `json:"login_at"`
-	LastActivity time.Time `json:"last_activity"`
-	IsCurrentSession bool  `json:"is_current_session"`
+	SessionID        string    `json:"session_id"`
+	DeviceInfo       string    `json:"device_info"`
+	IP               string    `json:"ip"`
+	LoginAt          time.Time `json:"login_at"`
+	LastActivity     time.Time `json:"last_activity"`
+	IsCurrentSession bool      `json:"is_current_session"`
 }

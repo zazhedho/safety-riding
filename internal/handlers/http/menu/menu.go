@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"reflect"
 	"safety-riding/internal/dto"
-	servicemenu "safety-riding/internal/services/menu"
+	interfacemenu "safety-riding/internal/interfaces/menu"
 	"safety-riding/pkg/filter"
 	"safety-riding/pkg/logger"
 	"safety-riding/pkg/messages"
@@ -16,10 +16,10 @@ import (
 )
 
 type MenuHandler struct {
-	Service *servicemenu.MenuService
+	Service interfacemenu.ServiceMenuInterface
 }
 
-func NewMenuHandler(s *servicemenu.MenuService) *MenuHandler {
+func NewMenuHandler(s interfacemenu.ServiceMenuInterface) *MenuHandler {
 	return &MenuHandler{Service: s}
 }
 

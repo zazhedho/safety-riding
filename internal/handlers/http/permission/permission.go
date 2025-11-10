@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"reflect"
 	"safety-riding/internal/dto"
-	servicepermission "safety-riding/internal/services/permission"
+	interfacepermission "safety-riding/internal/interfaces/permission"
 	"safety-riding/pkg/filter"
 	"safety-riding/pkg/logger"
 	"safety-riding/pkg/messages"
@@ -16,10 +16,10 @@ import (
 )
 
 type PermissionHandler struct {
-	Service *servicepermission.PermissionService
+	Service interfacepermission.ServicePermissionInterface
 }
 
-func NewPermissionHandler(s *servicepermission.PermissionService) *PermissionHandler {
+func NewPermissionHandler(s interfacepermission.ServicePermissionInterface) *PermissionHandler {
 	return &PermissionHandler{Service: s}
 }
 
