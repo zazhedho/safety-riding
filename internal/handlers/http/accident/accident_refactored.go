@@ -134,7 +134,7 @@ func (h *AccidentHandlerRefactored) DeleteAccident(ctx *gin.Context) {
 	helpers.SendSuccessResponse(ctx, http.StatusOK, "Delete accident successfully", logId, logPrefix, nil)
 }
 
-// AddAccidentPhotos - BEFORE: 47 lines | AFTER: 24 lines | SAVED: 23 lines (49% reduction)
+// AddAccidentPhotos - BEFORE: 47 lines | AFTER: 19 lines | SAVED: 28 lines (60% reduction)
 func (h *AccidentHandlerRefactored) AddAccidentPhotos(ctx *gin.Context) {
 	logId, logPrefix := helpers.GetLogContext(ctx, "AccidentHandler", "AddAccidentPhotos")
 	username := helpers.GetUsername(ctx)
@@ -150,23 +150,8 @@ func (h *AccidentHandlerRefactored) AddAccidentPhotos(ctx *gin.Context) {
 		return
 	}
 
-	// Build photo requests
-	photoRequests := make([]dto.AddAccidentPhoto, 0, len(files))
-	for i, file := range files {
-		photoReq := dto.AddAccidentPhoto{
-			AccidentId: accidentId,
-			File:       file,
-		}
-		if i < len(captions) {
-			photoReq.Caption = captions[i]
-		}
-		if i < len(photoOrders) {
-			photoReq.PhotoOrder = photoOrders[i]
-		}
-		photoRequests = append(photoRequests, photoReq)
-	}
-
-	data, err := h.Service.AddAccidentPhotos(username, photoRequests)
+	// Call service to upload photos to MinIO and save to database
+	data, err := h.Service.AddAccidentPhotosFromFiles(ctx, accidentId, username, files, captions, photoOrders)
 	if err != nil {
 		helpers.SendErrorResponse(ctx, http.StatusInternalServerError, "Failed to upload photos", logId, logPrefix, err)
 		return
@@ -182,10 +167,10 @@ func (h *AccidentHandlerRefactored) AddAccidentPhotos(ctx *gin.Context) {
 // UpdateAccident:      33 → 19 lines (-42%)
 // FetchAccident:       26 → 18 lines (-31%)
 // DeleteAccident:      25 → 17 lines (-32%)
-// AddAccidentPhotos:   47 → 24 lines (-49%)
+// AddAccidentPhotos:   47 → 19 lines (-60%)
 // =============================================
-// TOTAL:              187 → 109 lines
-// REDUCTION:           78 lines (42% reduction)
+// TOTAL:              187 → 104 lines
+// REDUCTION:           83 lines (44% reduction)
 //
 // This pattern can be applied to ALL 16 handlers
 // Estimated total reduction: ~984 lines across entire codebase
