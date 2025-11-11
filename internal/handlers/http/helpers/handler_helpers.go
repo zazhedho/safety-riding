@@ -78,19 +78,12 @@ func GetUserIdFromContextOrAuth(ctx *gin.Context, logPrefix string, logId uuid.U
 	return userId.(string), nil
 }
 
-// HandleServiceError handles common service errors (NotFound, Internal Server Error)
+// HandleServiceError handles common service errors using generic error responses
 // Eliminates 25+ duplicate GORM error handling blocks
-func HandleServiceError(ctx *gin.Context, err error, logId uuid.UUID, resourceName string) {
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		res := response.Response(http.StatusNotFound, messages.NotFound, logId, nil)
-		res.Error = fmt.Sprintf("%s data not found", resourceName)
-		ctx.JSON(http.StatusNotFound, res)
-		return
-	}
-
-	res := response.Response(http.StatusInternalServerError, messages.MsgFail, logId, nil)
-	res.Error = err.Error()
-	ctx.JSON(http.StatusInternalServerError, res)
+// SECURE: Uses SendGenericErrorResponse to prevent internal error exposure
+func HandleServiceError(ctx *gin.Context, err error, logId uuid.UUID, logPrefix string, resourceName string) {
+	// Use generic error response for security (no internal details exposed)
+	SendGenericErrorResponse(ctx, err, logId, logPrefix, resourceName)
 }
 
 // ValidateParamID validates and extracts ID from URL parameter
@@ -195,22 +188,16 @@ func SendGenericErrorResponse(ctx *gin.Context, err error, logId uuid.UUID, logP
 	ctx.JSON(statusCode, res)
 }
 
-// SendErrorResponse sends an error JSON response with logging
-// DEPRECATED: Use SendGenericErrorResponse instead for better security
-// This function exposes internal error details and should only be used in development
-func SendErrorResponse(ctx *gin.Context, statusCode int, message string, logId uuid.UUID, logPrefix string, err error) {
-	logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; ERROR: %s;", logPrefix, err.Error()))
-
-	// For production: use generic message
-	userMsg := message
-	if statusCode == http.StatusInternalServerError {
-		userMsg = "An error occurred while processing your request"
-	}
-
-	res := response.Response(statusCode, userMsg, logId, nil)
-	res.Error = userMsg // Changed from err.Error() to userMsg for security
-	ctx.JSON(statusCode, res)
-}
+// SendErrorResponse is DEPRECATED and REMOVED for security reasons
+// Use SendGenericErrorResponse instead - it's secure for all environments
+// This ensures no internal error details are ever exposed to clients
+//
+// Migration:
+//   OLD: helpers.SendErrorResponse(ctx, http.StatusInternalServerError, "Failed", logId, logPrefix, err)
+//   NEW: helpers.SendGenericErrorResponse(ctx, err, logId, logPrefix, "resource_name")
+//
+// REMOVED: This function is intentionally removed to prevent accidental use
+// If you see compilation errors, migrate to SendGenericErrorResponse
 
 // SendBadRequestResponse sends a 400 Bad Request response
 func SendBadRequestResponse(ctx *gin.Context, message string, logId uuid.UUID, logPrefix string, errorDetail interface{}) {
