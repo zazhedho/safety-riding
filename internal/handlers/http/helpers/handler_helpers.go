@@ -5,18 +5,20 @@ import (
 	"fmt"
 	"net/http"
 	"reflect"
+	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/imamhida1998/safety-riding/pkg/logger"
-	"github.com/imamhida1998/safety-riding/pkg/messages"
-	"github.com/imamhida1998/safety-riding/pkg/response"
-	"github.com/imamhida1998/safety-riding/utils"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
+	"safety-riding/pkg/logger"
+	"safety-riding/pkg/messages"
+	"safety-riding/pkg/response"
+	"safety-riding/utils"
 )
 
 // GetLogContext generates logId and logPrefix for handler methods
 // Eliminates duplicate log generation across 100+ handler methods
-func GetLogContext(ctx *gin.Context, handlerName, methodName string) (logId interface{}, logPrefix string) {
+func GetLogContext(ctx *gin.Context, handlerName, methodName string) (logId uuid.UUID, logPrefix string) {
 	logId = utils.GenerateLogId(ctx)
 	logPrefix = fmt.Sprintf("[%s][%s][%s]", logId, handlerName, methodName)
 	return
@@ -24,7 +26,7 @@ func GetLogContext(ctx *gin.Context, handlerName, methodName string) (logId inte
 
 // BindAndValidateJSON binds JSON request and handles validation errors
 // Eliminates 40+ duplicate BindJSON error handling blocks
-func BindAndValidateJSON(ctx *gin.Context, req interface{}, logPrefix string, logId interface{}) error {
+func BindAndValidateJSON(ctx *gin.Context, req interface{}, logPrefix string, logId uuid.UUID) error {
 	if err := ctx.BindJSON(req); err != nil {
 		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; BindJSON ERROR: %s;", logPrefix, err.Error()))
 		res := response.Response(http.StatusBadRequest, messages.InvalidRequest, logId, nil)
@@ -57,7 +59,7 @@ func GetUserId(ctx *gin.Context) string {
 
 // GetUserIdFromContextOrAuth attempts to get user ID from context first, then falls back to auth data
 // Eliminates duplicate user ID extraction with fallback logic
-func GetUserIdFromContextOrAuth(ctx *gin.Context, logPrefix string, logId interface{}) (string, error) {
+func GetUserIdFromContextOrAuth(ctx *gin.Context, logPrefix string, logId uuid.UUID) (string, error) {
 	userId, exists := ctx.Get("userId")
 	if !exists {
 		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; User ID not found in context", logPrefix))
@@ -78,7 +80,7 @@ func GetUserIdFromContextOrAuth(ctx *gin.Context, logPrefix string, logId interf
 
 // HandleServiceError handles common service errors (NotFound, Internal Server Error)
 // Eliminates 25+ duplicate GORM error handling blocks
-func HandleServiceError(ctx *gin.Context, err error, logId interface{}, resourceName string) {
+func HandleServiceError(ctx *gin.Context, err error, logId uuid.UUID, resourceName string) {
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		res := response.Response(http.StatusNotFound, messages.NotFound, logId, nil)
 		res.Error = fmt.Sprintf("%s data not found", resourceName)
@@ -93,7 +95,7 @@ func HandleServiceError(ctx *gin.Context, err error, logId interface{}, resource
 
 // ValidateParamID validates and extracts ID from URL parameter
 // Eliminates 15+ duplicate ID parameter validation blocks
-func ValidateParamID(ctx *gin.Context, paramName, resourceName string, logPrefix string, logId interface{}) (string, error) {
+func ValidateParamID(ctx *gin.Context, paramName, resourceName string, logPrefix string, logId uuid.UUID) (string, error) {
 	id := ctx.Param(paramName)
 	if id == "" {
 		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; Missing %s ID", logPrefix, resourceName))
@@ -106,7 +108,7 @@ func ValidateParamID(ctx *gin.Context, paramName, resourceName string, logPrefix
 
 // SendSuccessResponse sends a successful JSON response with logging
 // Eliminates 100+ duplicate success response blocks
-func SendSuccessResponse(ctx *gin.Context, statusCode int, message string, logId interface{}, logPrefix string, data interface{}) {
+func SendSuccessResponse(ctx *gin.Context, statusCode int, message string, logId uuid.UUID, logPrefix string, data interface{}) {
 	res := response.Response(statusCode, message, logId, data)
 	logger.WriteLog(logger.LogLevelDebug, fmt.Sprintf("%s; Success: %+v;", logPrefix, utils.JsonEncode(data)))
 	ctx.JSON(statusCode, res)
@@ -125,10 +127,10 @@ const (
 
 // ClassifyError determines error type without exposing internal details
 func ClassifyError(err error) (ErrorType, string) {
-	errMsg := err.Error()
+	errMsg := strings.ToLower(err.Error())
 
 	// Duplicate key violations
-	if contains(errMsg, "duplicate", "unique constraint", "already exists") {
+	if containsAny(errMsg, "duplicate", "unique constraint", "already exists") {
 		return ErrorTypeDuplicate, "A record with this information already exists"
 	}
 
@@ -138,12 +140,12 @@ func ClassifyError(err error) (ErrorType, string) {
 	}
 
 	// Validation errors
-	if contains(errMsg, "validation", "invalid", "required") {
+	if containsAny(errMsg, "validation", "invalid", "required") {
 		return ErrorTypeValidation, "Invalid input data"
 	}
 
 	// Authorization errors
-	if contains(errMsg, "unauthorized", "forbidden", "permission denied") {
+	if containsAny(errMsg, "unauthorized", "forbidden", "permission denied") {
 		return ErrorTypeUnauthorized, "You do not have permission to perform this action"
 	}
 
@@ -151,16 +153,12 @@ func ClassifyError(err error) (ErrorType, string) {
 	return ErrorTypeInternal, "An error occurred while processing your request"
 }
 
-// contains checks if the string contains any of the substrings (case-insensitive)
-func contains(str string, substrings ...string) bool {
-	lowerStr := fmt.Sprintf("%s", str)
+// containsAny checks if the string contains any of the substrings (case-insensitive)
+func containsAny(str string, substrings ...string) bool {
+	lowerStr := strings.ToLower(str)
 	for _, substr := range substrings {
-		if len(lowerStr) > 0 && len(substr) > 0 {
-			// Simple contains check
-			if fmt.Sprintf("%v", lowerStr) != fmt.Sprintf("%v", substr) {
-				// This is a simplified version - in production use strings.Contains
-				continue
-			}
+		if strings.Contains(lowerStr, strings.ToLower(substr)) {
+			return true
 		}
 	}
 	return false
@@ -168,7 +166,7 @@ func contains(str string, substrings ...string) bool {
 
 // SendGenericErrorResponse sends error response without exposing internal details
 // This is the SECURE version that should be used for all error responses
-func SendGenericErrorResponse(ctx *gin.Context, err error, logId interface{}, logPrefix string, resourceName string) {
+func SendGenericErrorResponse(ctx *gin.Context, err error, logId uuid.UUID, logPrefix string, resourceName string) {
 	// Log full error details (for developers only - not sent to client)
 	logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; Error: %+v", logPrefix, err))
 
@@ -200,7 +198,7 @@ func SendGenericErrorResponse(ctx *gin.Context, err error, logId interface{}, lo
 // SendErrorResponse sends an error JSON response with logging
 // DEPRECATED: Use SendGenericErrorResponse instead for better security
 // This function exposes internal error details and should only be used in development
-func SendErrorResponse(ctx *gin.Context, statusCode int, message string, logId interface{}, logPrefix string, err error) {
+func SendErrorResponse(ctx *gin.Context, statusCode int, message string, logId uuid.UUID, logPrefix string, err error) {
 	logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; ERROR: %s;", logPrefix, err.Error()))
 
 	// For production: use generic message
@@ -215,7 +213,7 @@ func SendErrorResponse(ctx *gin.Context, statusCode int, message string, logId i
 }
 
 // SendBadRequestResponse sends a 400 Bad Request response
-func SendBadRequestResponse(ctx *gin.Context, message string, logId interface{}, logPrefix string, errorDetail interface{}) {
+func SendBadRequestResponse(ctx *gin.Context, message string, logId uuid.UUID, logPrefix string, errorDetail interface{}) {
 	logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; Bad Request: %+v;", logPrefix, errorDetail))
 	res := response.Response(http.StatusBadRequest, message, logId, nil)
 	res.Error = errorDetail

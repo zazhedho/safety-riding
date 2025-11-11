@@ -6,13 +6,14 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/imamhida1998/safety-riding/pkg/logger"
-	"github.com/imamhida1998/safety-riding/pkg/response"
+	"github.com/google/uuid"
+	"safety-riding/pkg/logger"
+	"safety-riding/pkg/response"
 )
 
 // ParsePhotoUploadForm parses multipart form data for photo uploads
 // Eliminates duplicate photo upload form parsing in accident and event handlers
-func ParsePhotoUploadForm(ctx *gin.Context, logPrefix string, logId interface{}) ([]*multipart.FileHeader, []string, []string, error) {
+func ParsePhotoUploadForm(ctx *gin.Context, logPrefix string, logId uuid.UUID) ([]*multipart.FileHeader, []string, []string, error) {
 	// Parse multipart form
 	form, err := ctx.MultipartForm()
 	if err != nil {
