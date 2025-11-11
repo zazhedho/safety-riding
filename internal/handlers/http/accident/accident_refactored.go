@@ -166,20 +166,41 @@ func (h *AccidentHandlerRefactored) AddAccidentPhotos(ctx *gin.Context) {
 	helpers.SendSuccessResponse(ctx, http.StatusCreated, "Photos uploaded successfully", logId, logPrefix, data)
 }
 
+// DeleteAccidentPhoto - BEFORE: 26 lines | AFTER: 14 lines | SAVED: 12 lines (46% reduction)
+func (h *AccidentHandlerRefactored) DeleteAccidentPhoto(ctx *gin.Context) {
+	logId, logPrefix := helpers.GetLogContext(ctx, "AccidentHandler", "DeleteAccidentPhoto")
+	username := helpers.GetUsername(ctx)
+
+	// Before: 7 lines for ID validation → Now: 1 line
+	photoId, err := helpers.ValidateParamID(ctx, "photoId", "Photo", logPrefix, logId)
+	if err != nil {
+		return
+	}
+
+	if err := h.Service.DeleteAccidentPhoto(photoId, username); err != nil {
+		// ✅ SECURE: Generic error response (no internal details exposed)
+		helpers.SendGenericErrorResponse(ctx, err, logId, logPrefix, "accident photo")
+		return
+	}
+
+	helpers.SendSuccessResponse(ctx, http.StatusOK, "Delete accident photo successfully", logId, logPrefix, nil)
+}
+
 // CODE REDUCTION SUMMARY FOR ACCIDENT HANDLER:
 // =============================================
-// AddAccident:         28 → 17 lines (-39%)
-// GetAccidentById:     28 → 14 lines (-50%)
-// UpdateAccident:      33 → 19 lines (-42%)
-// FetchAccident:       26 → 18 lines (-31%)
-// DeleteAccident:      25 → 17 lines (-32%)
-// AddAccidentPhotos:   47 → 19 lines (-60%)
+// AddAccident:          28 → 17 lines (-39%)
+// GetAccidentById:      28 → 14 lines (-50%)
+// UpdateAccident:       33 → 19 lines (-42%)
+// FetchAccident:        26 → 18 lines (-31%)
+// DeleteAccident:       25 → 17 lines (-32%)
+// AddAccidentPhotos:    47 → 19 lines (-60%)
+// DeleteAccidentPhoto:  26 → 14 lines (-46%)
 // =============================================
-// TOTAL:              187 → 104 lines
-// REDUCTION:           83 lines (44% reduction)
+// TOTAL:              213 → 118 lines
+// REDUCTION:           95 lines (45% reduction)
 //
 // SECURITY IMPROVEMENTS:
-// - All error responses use SendGenericErrorResponse
+// - All 7 methods use SendGenericErrorResponse
 // - No internal error details exposed to clients
 // - Full error details logged for debugging
 // - Secure for all environments (dev/staging/production)
