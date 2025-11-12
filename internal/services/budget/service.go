@@ -186,3 +186,5 @@ func (s *BudgetService) GetYearlySummary(year int) ([]domainbudget.BudgetSummary
 func (s *BudgetService) GetEventSummary(eventId string) (domainbudget.BudgetSummary, error) {
 	return s.BudgetRepo.GetSummaryByEvent(eventId)
 }
+
+var _ interfacebudget.ServiceBudgetInterface = (*BudgetService)(nil)

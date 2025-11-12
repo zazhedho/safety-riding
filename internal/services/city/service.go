@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"safety-riding/internal/domain/city"
+	interfacecity "safety-riding/internal/interfaces/city"
 	"sort"
 )
 
@@ -55,3 +56,5 @@ func (s *CityService) GetCity(year, lvl, pro string) ([]domaincity.City, error) 
 
 	return cities, nil
 }
+
+var _ interfacecity.ServiceCityInterface = (*CityService)(nil)

@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"reflect"
 	"safety-riding/internal/dto"
-	"safety-riding/internal/services/school"
+	interfaceschool "safety-riding/internal/interfaces/school"
 	"safety-riding/pkg/filter"
 	"safety-riding/pkg/logger"
 	"safety-riding/pkg/messages"
@@ -18,10 +18,10 @@ import (
 )
 
 type SchoolHandler struct {
-	Service *serviceschool.SchoolService
+	Service interfaceschool.ServiceSchoolInterface
 }
 
-func NewSchoolHandler(s *serviceschool.SchoolService) *SchoolHandler {
+func NewSchoolHandler(s interfaceschool.ServiceSchoolInterface) *SchoolHandler {
 	return &SchoolHandler{
 		Service: s,
 	}

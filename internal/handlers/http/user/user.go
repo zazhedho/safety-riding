@@ -1,4 +1,4 @@
-package user
+package handleruser
 
 import (
 	"context"
@@ -8,9 +8,9 @@ import (
 	"reflect"
 	"safety-riding/infrastructure/database"
 	"safety-riding/internal/dto"
+	interfaceuser "safety-riding/internal/interfaces/user"
 	sessionRepo "safety-riding/internal/repositories/session"
 	sessionSvc "safety-riding/internal/services/session"
-	"safety-riding/internal/services/user"
 	"safety-riding/pkg/filter"
 	"safety-riding/pkg/logger"
 	"safety-riding/pkg/messages"
@@ -22,10 +22,10 @@ import (
 )
 
 type HandlerUser struct {
-	Service *user.ServiceUser
+	Service interfaceuser.ServiceUserInterface
 }
 
-func NewUserHandler(s *user.ServiceUser) *HandlerUser {
+func NewUserHandler(s interfaceuser.ServiceUserInterface) *HandlerUser {
 	return &HandlerUser{Service: s}
 }
 
@@ -121,7 +121,7 @@ func (h *HandlerUser) Login(ctx *gin.Context) {
 
 	// Create session if Redis is available
 	if redisClient := database.GetRedisClient(); redisClient != nil {
-		user, errUser := h.Service.UserRepo.GetByEmail(req.Email)
+		user, errUser := h.Service.GetUserByEmail(req.Email)
 		if errUser == nil {
 			sRepo := sessionRepo.NewSessionRepository(redisClient)
 			sSvc := sessionSvc.NewSessionService(sRepo)

@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"reflect"
 	"safety-riding/internal/dto"
-	"safety-riding/internal/services/budget"
+	interfacebudget "safety-riding/internal/interfaces/budget"
 	"safety-riding/pkg/filter"
 	"safety-riding/pkg/logger"
 	"safety-riding/pkg/messages"
@@ -19,10 +19,10 @@ import (
 )
 
 type BudgetHandler struct {
-	Service *servicebudget.BudgetService
+	Service interfacebudget.ServiceBudgetInterface
 }
 
-func NewBudgetHandler(s *servicebudget.BudgetService) *BudgetHandler {
+func NewBudgetHandler(s interfacebudget.ServiceBudgetInterface) *BudgetHandler {
 	return &BudgetHandler{
 		Service: s,
 	}

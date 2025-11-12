@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"reflect"
 	"safety-riding/internal/dto"
-	"safety-riding/internal/services/event"
+	interfaceevent "safety-riding/internal/interfaces/event"
 	"safety-riding/pkg/filter"
 	"safety-riding/pkg/logger"
 	"safety-riding/pkg/messages"
@@ -18,10 +18,10 @@ import (
 )
 
 type EventHandler struct {
-	Service *serviceevent.EventService
+	Service interfaceevent.ServiceEventInterface
 }
 
-func NewEventHandler(s *serviceevent.EventService) *EventHandler {
+func NewEventHandler(s interfaceevent.ServiceEventInterface) *EventHandler {
 	return &EventHandler{
 		Service: s,
 	}

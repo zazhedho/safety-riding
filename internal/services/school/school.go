@@ -239,6 +239,8 @@ func (s *SchoolService) GetEducationStats(params filter.BaseParams) (dto.SchoolE
 	return response, nil
 }
 
+var _ interfaceschool.ServiceSchoolInterface = (*SchoolService)(nil)
+
 // Helper function to safely get string values
 func getStringValue(val interface{}) string {
 	if val == nil {

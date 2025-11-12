@@ -1,4 +1,4 @@
-package handlersPublic
+package handlerpublic
 
 import (
 	"errors"
@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"reflect"
 	"safety-riding/internal/dto"
-	servicepublic "safety-riding/internal/services/publics"
+	interfacespublic "safety-riding/internal/interfaces/publics"
 	"safety-riding/pkg/filter"
 	"safety-riding/pkg/logger"
 	"safety-riding/pkg/messages"
@@ -18,10 +18,10 @@ import (
 )
 
 type PublicHandler struct {
-	Service *servicepublic.PublicService
+	Service interfacespublic.ServicePublicInterface
 }
 
-func NewPublicHandler(s *servicepublic.PublicService) *PublicHandler {
+func NewPublicHandler(s interfacespublic.ServicePublicInterface) *PublicHandler {
 	return &PublicHandler{
 		Service: s,
 	}

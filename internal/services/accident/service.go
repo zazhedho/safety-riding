@@ -319,3 +319,5 @@ func (s *AccidentService) AddAccidentPhotosFromFiles(ctx context.Context, accide
 
 	return accidentPhotos, nil
 }
+
+var _ interfaceaccident.ServiceAccidentInterface = (*AccidentService)(nil)

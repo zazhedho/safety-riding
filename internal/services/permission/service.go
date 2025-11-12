@@ -90,3 +90,5 @@ func (s *PermissionService) Update(id string, req dto.PermissionUpdate) (domainp
 func (s *PermissionService) Delete(id string) error {
 	return s.PermissionRepo.Delete(id)
 }
+
+var _ interfacepermission.ServicePermissionInterface = (*PermissionService)(nil)

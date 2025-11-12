@@ -3,7 +3,7 @@ package handlercity
 import (
 	"fmt"
 	"net/http"
-	"safety-riding/internal/services/city"
+	interfacecity "safety-riding/internal/interfaces/city"
 	"safety-riding/pkg/logger"
 	"safety-riding/pkg/messages"
 	"safety-riding/pkg/response"
@@ -13,10 +13,10 @@ import (
 )
 
 type CityHandler struct {
-	Service *servicecity.CityService
+	Service interfacecity.ServiceCityInterface
 }
 
-func NewKabupatenHandler(s *servicecity.CityService) *CityHandler {
+func NewKabupatenHandler(s interfacecity.ServiceCityInterface) *CityHandler {
 	return &CityHandler{
 		Service: s,
 	}

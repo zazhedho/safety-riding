@@ -245,3 +245,5 @@ func getStringValue(val interface{}) string {
 	}
 	return ""
 }
+
+var _ interfacespublic.ServicePublicInterface = (*PublicService)(nil)

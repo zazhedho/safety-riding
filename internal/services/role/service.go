@@ -195,3 +195,5 @@ func (s *RoleService) GetRolePermissions(roleId string) ([]string, error) {
 func (s *RoleService) GetRoleMenus(roleId string) ([]string, error) {
 	return s.RoleRepo.GetRoleMenus(roleId)
 }
+
+var _ interfacerole.ServiceRoleInterface = (*RoleService)(nil)
