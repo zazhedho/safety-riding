@@ -27,6 +27,18 @@ func NewPublicHandler(s interfacespublic.ServicePublicInterface) *PublicHandler 
 	}
 }
 
+// AddPublic godoc
+// @Summary Create a public entity
+// @Description Create a new public entity record
+// @Tags Publics
+// @Accept json
+// @Produce json
+// @Param public body dto.AddPublic true "Public payload"
+// @Success 201 {object} response.Success
+// @Failure 400 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /public [post]
 func (h *PublicHandler) AddPublic(ctx *gin.Context) {
 	authData := utils.GetAuthData(ctx)
 	username := utils.InterfaceString(authData["username"])
@@ -57,6 +69,18 @@ func (h *PublicHandler) AddPublic(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, res)
 }
 
+// GetPublicById godoc
+// @Summary Get public entity detail
+// @Description Retrieve public entity by ID
+// @Tags Publics
+// @Accept json
+// @Produce json
+// @Param id path string true "Public entity ID"
+// @Success 200 {object} response.Success
+// @Failure 404 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /public/{id} [get]
 func (h *PublicHandler) GetPublicById(ctx *gin.Context) {
 	logId := utils.GenerateLogId(ctx)
 	logPrefix := fmt.Sprintf("[%s][PublicHandler][GetPublicById]", logId)
@@ -87,6 +111,19 @@ func (h *PublicHandler) GetPublicById(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
+// UpdatePublic godoc
+// @Summary Update a public entity
+// @Description Update public entity information by ID
+// @Tags Publics
+// @Accept json
+// @Produce json
+// @Param id path string true "Public entity ID"
+// @Param public body dto.UpdatePublic true "Public payload"
+// @Success 200 {object} response.Success
+// @Failure 400 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /public/{id} [put]
 func (h *PublicHandler) UpdatePublic(ctx *gin.Context) {
 	authData := utils.GetAuthData(ctx)
 	username := utils.InterfaceString(authData["username"])
@@ -122,6 +159,25 @@ func (h *PublicHandler) UpdatePublic(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
+// FetchPublic godoc
+// @Summary List public entities
+// @Description Retrieve paginated public entities with optional filters
+// @Tags Publics
+// @Accept json
+// @Produce json
+// @Param page query int false "Page number"
+// @Param limit query int false "Items per page"
+// @Param sort query string false "Sort field"
+// @Param order query string false "Sort order (asc/desc)"
+// @Param district_id query string false "Filter by district ID"
+// @Param city_id query string false "Filter by city ID"
+// @Param province_id query string false "Filter by province ID"
+// @Param category query string false "Filter by category"
+// @Success 200 {object} response.Success
+// @Failure 404 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /publics [get]
 func (h *PublicHandler) FetchPublic(ctx *gin.Context) {
 	logId := utils.GenerateLogId(ctx)
 	logPrefix := fmt.Sprintf("[%s][PublicHandler][FetchPublic]", logId)
@@ -151,6 +207,18 @@ func (h *PublicHandler) FetchPublic(ctx *gin.Context) {
 
 }
 
+// DeletePublic godoc
+// @Summary Delete a public entity
+// @Description Delete public entity by ID
+// @Tags Publics
+// @Accept json
+// @Produce json
+// @Param id path string true "Public entity ID"
+// @Success 200 {object} response.Success
+// @Failure 400 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /public/{id} [delete]
 func (h *PublicHandler) DeletePublic(ctx *gin.Context) {
 	authData := utils.GetAuthData(ctx)
 	username := utils.InterfaceString(authData["username"])
@@ -178,6 +246,25 @@ func (h *PublicHandler) DeletePublic(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
+// GetEducationStats godoc
+// @Summary Get public education statistics
+// @Description Retrieve aggregated education statistics for public entities
+// @Tags Publics
+// @Accept json
+// @Produce json
+// @Param page query int false "Page number"
+// @Param limit query int false "Items per page"
+// @Param district_id query string false "Filter by district ID"
+// @Param city_id query string false "Filter by city ID"
+// @Param province_id query string false "Filter by province ID"
+// @Param category query string false "Filter by category"
+// @Param is_educated query string false "Filter by education flag"
+// @Param month query string false "Filter by month"
+// @Param year query string false "Filter by year"
+// @Success 200 {object} response.Success
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /publics/education-stats [get]
 func (h *PublicHandler) GetEducationStats(ctx *gin.Context) {
 	logId := utils.GenerateLogId(ctx)
 	logPrefix := fmt.Sprintf("[%s][PublicHandler][GetEducationStats]", logId)

@@ -23,7 +23,18 @@ func NewMenuHandler(s interfacemenu.ServiceMenuInterface) *MenuHandler {
 	return &MenuHandler{Service: s}
 }
 
-// Create creates a new menu item
+// Create godoc
+// @Summary Create a menu
+// @Description Create a new menu entry
+// @Tags Menus
+// @Accept json
+// @Produce json
+// @Param menu body dto.MenuItemCreate true "Menu payload"
+// @Success 201 {object} response.Success
+// @Failure 400 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /menu [post]
 func (h *MenuHandler) Create(ctx *gin.Context) {
 	var req dto.MenuItemCreate
 	logId := utils.GenerateLogId(ctx)
@@ -53,7 +64,17 @@ func (h *MenuHandler) Create(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, res)
 }
 
-// GetByID retrieves a menu item by ID
+// GetByID godoc
+// @Summary Get menu detail
+// @Description Retrieve menu information by ID
+// @Tags Menus
+// @Accept json
+// @Produce json
+// @Param id path string true "Menu ID"
+// @Success 200 {object} response.Success
+// @Failure 404 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /menu/{id} [get]
 func (h *MenuHandler) GetByID(ctx *gin.Context) {
 	id := ctx.Param("id")
 	logId := utils.GenerateLogId(ctx)
@@ -73,7 +94,21 @@ func (h *MenuHandler) GetByID(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
-// GetAll retrieves all menu items with pagination
+// GetAll godoc
+// @Summary List menus
+// @Description Retrieve paginated menus (admin only)
+// @Tags Menus
+// @Accept json
+// @Produce json
+// @Param page query int false "Page number"
+// @Param limit query int false "Items per page"
+// @Param sort query string false "Sort field"
+// @Param order query string false "Sort order (asc/desc)"
+// @Success 200 {object} response.Success
+// @Failure 400 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /menus [get]
 func (h *MenuHandler) GetAll(ctx *gin.Context) {
 	logId := utils.GenerateLogId(ctx)
 	logPrefix := fmt.Sprintf("[%s][MenuHandler][GetAll]", logId)
@@ -101,7 +136,16 @@ func (h *MenuHandler) GetAll(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
-// GetActiveMenus retrieves all active menu items
+// GetActiveMenus godoc
+// @Summary Get active menus
+// @Description Retrieve menus that are marked active for current user role
+// @Tags Menus
+// @Accept json
+// @Produce json
+// @Success 200 {object} response.Success
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /menus/active [get]
 func (h *MenuHandler) GetActiveMenus(ctx *gin.Context) {
 	logId := utils.GenerateLogId(ctx)
 	logPrefix := fmt.Sprintf("[%s][MenuHandler][GetActiveMenus]", logId)
@@ -120,7 +164,17 @@ func (h *MenuHandler) GetActiveMenus(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
-// GetUserMenus retrieves all menus for the current user
+// GetUserMenus godoc
+// @Summary Get menus for current user
+// @Description Retrieve menus based on authenticated user's role
+// @Tags Menus
+// @Accept json
+// @Produce json
+// @Success 200 {object} response.Success
+// @Failure 401 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /menus/me [get]
 func (h *MenuHandler) GetUserMenus(ctx *gin.Context) {
 	logId := utils.GenerateLogId(ctx)
 	logPrefix := fmt.Sprintf("[%s][MenuHandler][GetUserMenus]", logId)
@@ -170,7 +224,19 @@ func (h *MenuHandler) GetUserMenus(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
-// Update updates a menu item
+// Update godoc
+// @Summary Update a menu
+// @Description Update menu information by ID
+// @Tags Menus
+// @Accept json
+// @Produce json
+// @Param id path string true "Menu ID"
+// @Param menu body dto.MenuItemUpdate true "Menu payload"
+// @Success 200 {object} response.Success
+// @Failure 400 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /menu/{id} [put]
 func (h *MenuHandler) Update(ctx *gin.Context) {
 	id := ctx.Param("id")
 	var req dto.MenuItemUpdate
@@ -201,7 +267,17 @@ func (h *MenuHandler) Update(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
-// Delete deletes a menu item
+// Delete godoc
+// @Summary Delete a menu
+// @Description Delete menu by ID
+// @Tags Menus
+// @Accept json
+// @Produce json
+// @Param id path string true "Menu ID"
+// @Success 200 {object} response.Success
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /menu/{id} [delete]
 func (h *MenuHandler) Delete(ctx *gin.Context) {
 	id := ctx.Param("id")
 	logId := utils.GenerateLogId(ctx)

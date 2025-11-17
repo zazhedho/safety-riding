@@ -24,14 +24,14 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/booking": {
+        "/accident": {
             "post": {
                 "security": [
                     {
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Create a new booking with the provided details.",
+                "description": "Create a new accident record complete with location, reporter, and chronology information",
                 "consumes": [
                     "application/json"
                 ],
@@ -39,265 +39,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Bookings"
+                    "Accidents"
                 ],
-                "summary": "Create a new booking",
+                "summary": "Create a new accident record",
                 "parameters": [
                     {
-                        "description": "Booking details to be created",
-                        "name": "booking",
+                        "description": "Accident payload",
+                        "name": "accident",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.CreateBooking"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Booking created successfully",
-                        "schema": {
-                            "$ref": "#/definitions/response.Success"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid request body",
-                        "schema": {
-                            "$ref": "#/definitions/response.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/response.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/booking/{id}": {
-            "get": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Retrieve booking details using the booking ID.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Bookings"
-                ],
-                "summary": "Get a booking by ID",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Booking ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Booking details retrieved successfully",
-                        "schema": {
-                            "$ref": "#/definitions/response.Success"
-                        }
-                    },
-                    "404": {
-                        "description": "Booking not found",
-                        "schema": {
-                            "$ref": "#/definitions/response.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/response.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/booking/{id}/status": {
-            "put": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Update status a booking with the provided details.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Bookings"
-                ],
-                "summary": "Update status a booking",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Booking ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Booking details to be updated",
-                        "name": "booking",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.UpdateBookingStatus"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Booking updated successfully",
-                        "schema": {
-                            "$ref": "#/definitions/response.Success"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid request body",
-                        "schema": {
-                            "$ref": "#/definitions/response.Error"
-                        }
-                    },
-                    "404": {
-                        "description": "Booking not found",
-                        "schema": {
-                            "$ref": "#/definitions/response.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/response.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/bookings": {
-            "get": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Retrieve a list of bookings with optional filters and pagination.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Bookings"
-                ],
-                "summary": "Get a list of bookings",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Page number for pagination",
-                        "name": "page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Number of items per page",
-                        "name": "limit",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Field to sort by",
-                        "name": "order_by",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Sort direction (asc/desc)",
-                        "name": "order_direction",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Search query to filter bookings",
-                        "name": "search",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Filter by booking status",
-                        "name": "filters[status]",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Filter by user ID",
-                        "name": "filters[user_id]",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "List of bookings retrieved successfully",
-                        "schema": {
-                            "$ref": "#/definitions/response.Success"
-                        }
-                    },
-                    "404": {
-                        "description": "No bookings found",
-                        "schema": {
-                            "$ref": "#/definitions/response.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/response.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/service": {
-            "post": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Create a new service with the given information",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Services"
-                ],
-                "summary": "Create a new service",
-                "parameters": [
-                    {
-                        "description": "Service information",
-                        "name": "service",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.AddService"
+                            "$ref": "#/definitions/dto.AddAccident"
                         }
                     }
                 ],
@@ -323,9 +75,14 @@ const docTemplate = `{
                 }
             }
         },
-        "/service/{id}": {
-            "get": {
-                "description": "Get a service by its ID",
+        "/accident/photo/{photoId}": {
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Delete a single accident photo by photo ID",
                 "consumes": [
                     "application/json"
                 ],
@@ -333,13 +90,62 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Services"
+                    "Accidents"
                 ],
-                "summary": "Get a service by ID",
+                "summary": "Delete accident photo",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Service ID",
+                        "description": "Photo ID",
+                        "name": "photoId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/accident/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieve accident detail information by accident ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Accidents"
+                ],
+                "summary": "Get accident details",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Accident ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -372,7 +178,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Update a service with the given information",
+                "description": "Update accident record fields by accident ID",
                 "consumes": [
                     "application/json"
                 ],
@@ -380,24 +186,24 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Services"
+                    "Accidents"
                 ],
-                "summary": "Update a service",
+                "summary": "Update accident data",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Service ID",
+                        "description": "Accident ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "Service information",
-                        "name": "service",
+                        "description": "Accident payload",
+                        "name": "accident",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.UpdateService"
+                            "$ref": "#/definitions/dto.UpdateAccident"
                         }
                     }
                 ],
@@ -410,12 +216,6 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/response.Error"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/response.Error"
                         }
@@ -434,7 +234,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Delete a service by its ID",
+                "description": "Delete accident by ID",
                 "consumes": [
                     "application/json"
                 ],
@@ -442,16 +242,186 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Services"
+                    "Accidents"
                 ],
-                "summary": "Delete a service",
+                "summary": "Delete an accident",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Service ID",
+                        "description": "Accident ID",
                         "name": "id",
                         "in": "path",
                         "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/accident/{id}/photos": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Upload one or more accident photos and metadata",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Accidents"
+                ],
+                "summary": "Upload accident photos",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Accident ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Accident photos",
+                        "name": "photos",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Photo captions (repeat per photo)",
+                        "name": "captions",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Photo order (repeat per photo)",
+                        "name": "photo_orders",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/accidents": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get paginated accidents with optional filters (district, city, province, type, etc.)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Accidents"
+                ],
+                "summary": "List accidents with pagination",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Items per page",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort field",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort order (asc/desc)",
+                        "name": "order",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by district ID",
+                        "name": "district_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by city ID",
+                        "name": "city_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by province ID",
+                        "name": "province_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by accident type",
+                        "name": "accident_type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by vehicle type",
+                        "name": "vehicle_type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by police station",
+                        "name": "police_station",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -476,9 +446,14 @@ const docTemplate = `{
                 }
             }
         },
-        "/services": {
-            "get": {
-                "description": "Fetch services with optional filters",
+        "/budget": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Create a new event budget record",
                 "consumes": [
                     "application/json"
                 ],
@@ -486,44 +461,3360 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Services"
+                    "Budgets"
                 ],
-                "summary": "Fetch services",
+                "summary": "Create a new budget entry",
+                "parameters": [
+                    {
+                        "description": "Budget payload",
+                        "name": "budget",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AddEventBudget"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/budget/summary/event/{eventId}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieve aggregated budget summary for a specific event",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Budgets"
+                ],
+                "summary": "Get event budget summary",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "eventId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/budget/summary/monthly": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieve aggregated monthly budget summary data",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Budgets"
+                ],
+                "summary": "Get monthly budget summary",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Page number for pagination",
+                        "description": "Month number (1-12)",
+                        "name": "month",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/budget/summary/yearly": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieve aggregated yearly budget summary data",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Budgets"
+                ],
+                "summary": "Get yearly budget summary",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/budget/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieve a single budget entry by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Budgets"
+                ],
+                "summary": "Get budget detail",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Budget ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Update budget information by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Budgets"
+                ],
+                "summary": "Update a budget entry",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Budget ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Budget payload",
+                        "name": "budget",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateEventBudget"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Delete budget by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Budgets"
+                ],
+                "summary": "Delete a budget entry",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Budget ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/budgets": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieve paginated budgets with optional filters",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Budgets"
+                ],
+                "summary": "List budgets with pagination",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number",
                         "name": "page",
                         "in": "query"
                     },
                     {
                         "type": "integer",
-                        "description": "Number of items per page",
+                        "description": "Items per page",
                         "name": "limit",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "Field to sort by",
-                        "name": "order_by",
+                        "description": "Sort field",
+                        "name": "sort",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "Sort direction (asc/desc)",
-                        "name": "order_direction",
+                        "description": "Sort order (asc/desc)",
+                        "name": "order",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "Search query to filter services",
-                        "name": "search",
+                        "description": "Filter by event ID",
+                        "name": "event_id",
                         "in": "query"
                     },
                     {
                         "type": "string",
-                        "description": "Filter by price",
-                        "name": "filters[price]",
+                        "description": "Filter by month",
+                        "name": "budget_month",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by year",
+                        "name": "budget_year",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by category",
+                        "name": "category",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by status",
+                        "name": "status",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/budgets/event/{eventId}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieve all budgets grouped by a specific event ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Budgets"
+                ],
+                "summary": "List budgets for an event",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "eventId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/budgets/month-year": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieve budgets filtered by month and year",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Budgets"
+                ],
+                "summary": "List budgets by month and year",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Month number (1-12)",
+                        "name": "month",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Year",
+                        "name": "year",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/city": {
+            "get": {
+                "description": "Retrieve list of cities filtered by province",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Cities"
+                ],
+                "summary": "Get cities",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Reference year (default from env)",
+                        "name": "thn",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Level code (default 11)",
+                        "name": "lvl",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Province code",
+                        "name": "pro",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/district": {
+            "get": {
+                "description": "Retrieve list of districts filtered by province and city",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Districts"
+                ],
+                "summary": "Get districts",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Reference year (default from env)",
+                        "name": "thn",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Level code (default 12)",
+                        "name": "lvl",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Province code",
+                        "name": "pro",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "City code",
+                        "name": "kab",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/event": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Create a new safety riding event",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Events"
+                ],
+                "summary": "Create a new event",
+                "parameters": [
+                    {
+                        "description": "Event payload",
+                        "name": "event",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AddEvent"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/event/photo/{photoId}": {
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Delete a single event photo by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Events"
+                ],
+                "summary": "Delete event photo",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Photo ID",
+                        "name": "photoId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/event/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieve event information by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Events"
+                ],
+                "summary": "Get event detail",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Update event information by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Events"
+                ],
+                "summary": "Update an event",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Event payload",
+                        "name": "event",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateEvent"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Delete event by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Events"
+                ],
+                "summary": "Delete an event",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/event/{id}/photos": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Upload one or more event photos and metadata",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Events"
+                ],
+                "summary": "Upload event photos",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Event photos",
+                        "name": "photos",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Photo captions (repeat per photo)",
+                        "name": "captions",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Photo order (repeat per photo)",
+                        "name": "photo_orders",
+                        "in": "formData"
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/events": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieve paginated list of events with optional filters",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Events"
+                ],
+                "summary": "List events",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Items per page",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort field",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort order (asc/desc)",
+                        "name": "order",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by school ID",
+                        "name": "school_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by district ID",
+                        "name": "district_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by city ID",
+                        "name": "city_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by province ID",
+                        "name": "province_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by event type",
+                        "name": "event_type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by status",
+                        "name": "status",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/marketshare": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Create a new market share record",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MarketShare"
+                ],
+                "summary": "Create market share entry",
+                "parameters": [
+                    {
+                        "description": "Market share payload",
+                        "name": "marketshare",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AddMarketShare"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/marketshare/dashboard-suggestions": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieve top cities and districts suggestions for dashboard insights",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MarketShare"
+                ],
+                "summary": "Get dashboard suggestions",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year filter",
+                        "name": "year",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Month filter (1-12)",
+                        "name": "month",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of cities to return (default 5)",
+                        "name": "city_limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of districts to return (default 5)",
+                        "name": "district_limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/marketshare/summary": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieve aggregated market share summary by hierarchy level",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MarketShare"
+                ],
+                "summary": "Get market share summary",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Aggregation level (province/city/district)",
+                        "name": "level",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Year filter",
+                        "name": "year",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Month filter (1-12)",
+                        "name": "month",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Province ID filter",
+                        "name": "province_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "City ID filter",
+                        "name": "city_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "District ID filter",
+                        "name": "district_id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/marketshare/top-districts": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieve top districts ranked by sales",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MarketShare"
+                ],
+                "summary": "Get top districts",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Year filter",
+                        "name": "year",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Month filter (1-12)",
+                        "name": "month",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Number of records (default 5)",
+                        "name": "limit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/marketshare/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieve market share data by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MarketShare"
+                ],
+                "summary": "Get market share detail",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Market share ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Update market share record by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MarketShare"
+                ],
+                "summary": "Update market share entry",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Market share ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Market share payload",
+                        "name": "marketshare",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateMarketShare"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Delete market share record by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MarketShare"
+                ],
+                "summary": "Delete a market share entry",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Market share ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/marketshares": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieve paginated market share entries with optional filters",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "MarketShare"
+                ],
+                "summary": "List market share data",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Items per page",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort field",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort order (asc/desc)",
+                        "name": "order",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by province ID",
+                        "name": "province_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by city ID",
+                        "name": "city_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by district ID",
+                        "name": "district_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by month",
+                        "name": "month",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by year",
+                        "name": "year",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/menu": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Create a new menu entry",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Menus"
+                ],
+                "summary": "Create a menu",
+                "parameters": [
+                    {
+                        "description": "Menu payload",
+                        "name": "menu",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.MenuItemCreate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/menu/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieve menu information by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Menus"
+                ],
+                "summary": "Get menu detail",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Menu ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Update menu information by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Menus"
+                ],
+                "summary": "Update a menu",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Menu ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Menu payload",
+                        "name": "menu",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.MenuItemUpdate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Delete menu by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Menus"
+                ],
+                "summary": "Delete a menu",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Menu ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/menus": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieve paginated menus (admin only)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Menus"
+                ],
+                "summary": "List menus",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Items per page",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort field",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort order (asc/desc)",
+                        "name": "order",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/menus/active": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieve menus that are marked active for current user role",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Menus"
+                ],
+                "summary": "Get active menus",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/menus/me": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieve menus based on authenticated user's role",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Menus"
+                ],
+                "summary": "Get menus for current user",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/permission": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Create a new permission definition",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Permissions"
+                ],
+                "summary": "Create a permission",
+                "parameters": [
+                    {
+                        "description": "Permission payload",
+                        "name": "permission",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.PermissionCreate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/permission/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieve permission by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Permissions"
+                ],
+                "summary": "Get permission detail",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Permission ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Update permission definition by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Permissions"
+                ],
+                "summary": "Update a permission",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Permission ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Permission payload",
+                        "name": "permission",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.PermissionUpdate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Delete permission by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Permissions"
+                ],
+                "summary": "Delete a permission",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Permission ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/permissions": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieve paginated permission list",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Permissions"
+                ],
+                "summary": "List permissions",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Items per page",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort field",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort order (asc/desc)",
+                        "name": "order",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/permissions/me": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieve permissions for the authenticated user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Permissions"
+                ],
+                "summary": "Get current user permissions",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/province": {
+            "get": {
+                "description": "Retrieve list of provinces for a given year",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Provinces"
+                ],
+                "summary": "Get provinces",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Reference year (default from env)",
+                        "name": "thn",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/public": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Create a new public entity record",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Publics"
+                ],
+                "summary": "Create a public entity",
+                "parameters": [
+                    {
+                        "description": "Public payload",
+                        "name": "public",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AddPublic"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/public/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieve public entity by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Publics"
+                ],
+                "summary": "Get public entity detail",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Public entity ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Update public entity information by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Publics"
+                ],
+                "summary": "Update a public entity",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Public entity ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Public payload",
+                        "name": "public",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdatePublic"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Delete public entity by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Publics"
+                ],
+                "summary": "Delete a public entity",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Public entity ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/publics": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieve paginated public entities with optional filters",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Publics"
+                ],
+                "summary": "List public entities",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Items per page",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort field",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort order (asc/desc)",
+                        "name": "order",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by district ID",
+                        "name": "district_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by city ID",
+                        "name": "city_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by province ID",
+                        "name": "province_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by category",
+                        "name": "category",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/publics/education-stats": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieve aggregated education statistics for public entities",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Publics"
+                ],
+                "summary": "Get public education statistics",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Items per page",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by district ID",
+                        "name": "district_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by city ID",
+                        "name": "city_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by province ID",
+                        "name": "province_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by category",
+                        "name": "category",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by education flag",
+                        "name": "is_educated",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by month",
+                        "name": "month",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by year",
+                        "name": "year",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/role": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Create a new role",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Roles"
+                ],
+                "summary": "Create a role",
+                "parameters": [
+                    {
+                        "description": "Role payload",
+                        "name": "role",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.RoleCreate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/role/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieve role information by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Roles"
+                ],
+                "summary": "Get role detail",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Role ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Update role information by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Roles"
+                ],
+                "summary": "Update a role",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Role ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Role payload",
+                        "name": "role",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.RoleUpdate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Delete role by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Roles"
+                ],
+                "summary": "Delete a role",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Role ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/role/{id}/menus": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Assign menus list to a role",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Roles"
+                ],
+                "summary": "Assign menus to role",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Role ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Menu assignments",
+                        "name": "menus",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AssignMenus"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/role/{id}/permissions": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Assign permissions list to a role",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Roles"
+                ],
+                "summary": "Assign permissions to role",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Role ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Permission assignments",
+                        "name": "permissions",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AssignPermissions"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/roles": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieve paginated role list",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Roles"
+                ],
+                "summary": "List roles",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Items per page",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort field",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort order (asc/desc)",
+                        "name": "order",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/school": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Create a new school record",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Schools"
+                ],
+                "summary": "Create a new school",
+                "parameters": [
+                    {
+                        "description": "School payload",
+                        "name": "school",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.AddSchool"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/school/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieve school information by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Schools"
+                ],
+                "summary": "Get school detail",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "School ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Update school information by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Schools"
+                ],
+                "summary": "Update a school",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "School ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "School payload",
+                        "name": "school",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateSchool"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Delete school by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Schools"
+                ],
+                "summary": "Delete a school",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "School ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/schools": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieve paginated schools with optional filters",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Schools"
+                ],
+                "summary": "List schools",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Items per page",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort field",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort order (asc/desc)",
+                        "name": "order",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by district ID",
+                        "name": "district_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by city ID",
+                        "name": "city_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by province ID",
+                        "name": "province_id",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/schools/education-stats": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieve aggregated school education statistics with optional filters",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Schools"
+                ],
+                "summary": "Get school education statistics",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Items per page",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by district ID",
+                        "name": "district_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by city ID",
+                        "name": "city_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by province ID",
+                        "name": "province_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by education completion flag",
+                        "name": "is_educated",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by month",
+                        "name": "month",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filter by year",
+                        "name": "year",
                         "in": "query"
                     }
                 ],
@@ -588,7 +3879,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Update a user",
+                "description": "Update current authenticated user",
                 "consumes": [
                     "application/json"
                 ],
@@ -598,15 +3889,8 @@ const docTemplate = `{
                 "tags": [
                     "Users"
                 ],
-                "summary": "Update a user",
+                "summary": "Update current user",
                 "parameters": [
-                    {
-                        "type": "string",
-                        "description": "User ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
                     {
                         "description": "User update details",
                         "name": "user",
@@ -882,6 +4166,141 @@ const docTemplate = `{
                 }
             }
         },
+        "/user/session/{session_id}": {
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Revoke/logout a specific session by session ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Sessions"
+                ],
+                "summary": "Revoke a specific session",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Session ID",
+                        "name": "session_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/sessions": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Get all active sessions for the current user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Sessions"
+                ],
+                "summary": "Get all active sessions for the current user",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/user/sessions/revoke-others": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Logout from all devices except the current one",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Sessions"
+                ],
+                "summary": "Revoke all other sessions except current",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/user/{id}": {
             "get": {
                 "security": [
@@ -914,6 +4333,121 @@ const docTemplate = `{
                         "description": "OK",
                         "schema": {
                             "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Update a user by ID (Admin only)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Update a user by ID (Admin only)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "User update details",
+                        "name": "user",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UserUpdate"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Delete a user by ID (Admin only)",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Delete a user by ID (Admin only)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.Success"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.Error"
                         }
                     },
                     "404": {
@@ -996,612 +4530,535 @@ const docTemplate = `{
                     }
                 }
             }
-        },
-        "/vehicle": {
-            "post": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Create a new vehicle with the provided details.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Vehicles"
-                ],
-                "summary": "Create a new vehicle",
-                "parameters": [
-                    {
-                        "description": "Vehicle details to be created",
-                        "name": "vehicle",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.AddVehicle"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Vehicle created successfully",
-                        "schema": {
-                            "$ref": "#/definitions/response.Success"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid request body",
-                        "schema": {
-                            "$ref": "#/definitions/response.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/response.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/vehicle/{id}": {
-            "get": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Retrieve vehicle details using the vehicle ID.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Vehicles"
-                ],
-                "summary": "Get a vehicle by ID",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Vehicle ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Vehicle details retrieved successfully",
-                        "schema": {
-                            "$ref": "#/definitions/response.Success"
-                        }
-                    },
-                    "404": {
-                        "description": "Vehicle not found",
-                        "schema": {
-                            "$ref": "#/definitions/response.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/response.Error"
-                        }
-                    }
-                }
-            },
-            "put": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Update an existing vehicle's details.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Vehicles"
-                ],
-                "summary": "Update a vehicle",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Vehicle ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Updated vehicle details",
-                        "name": "vehicle",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.UpdateVehicle"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Vehicle updated successfully",
-                        "schema": {
-                            "$ref": "#/definitions/response.Success"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid request body",
-                        "schema": {
-                            "$ref": "#/definitions/response.Error"
-                        }
-                    },
-                    "404": {
-                        "description": "Vehicle not found",
-                        "schema": {
-                            "$ref": "#/definitions/response.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/response.Error"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Delete a vehicle by its ID.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Vehicles"
-                ],
-                "summary": "Delete a vehicle",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Vehicle ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Vehicle deleted successfully",
-                        "schema": {
-                            "$ref": "#/definitions/response.Success"
-                        }
-                    },
-                    "404": {
-                        "description": "Vehicle not found",
-                        "schema": {
-                            "$ref": "#/definitions/response.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/response.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/vehicles": {
-            "get": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Retrieve a list of vehicles with optional filters and pagination.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Vehicles"
-                ],
-                "summary": "Get a list of vehicles",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Page number for pagination",
-                        "name": "page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Number of items per page",
-                        "name": "limit",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Field to sort by",
-                        "name": "order_by",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Sort direction (asc/desc)",
-                        "name": "order_direction",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Search query to filter vehicles",
-                        "name": "search",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "List of vehicles retrieved successfully",
-                        "schema": {
-                            "$ref": "#/definitions/response.Success"
-                        }
-                    },
-                    "404": {
-                        "description": "No vehicles found",
-                        "schema": {
-                            "$ref": "#/definitions/response.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/response.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/workorder/{id}": {
-            "get": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Get a work order by ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Work Orders"
-                ],
-                "summary": "Get a work order by ID",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Work Order ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/response.Success"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/response.Error"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/response.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/response.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/workorders": {
-            "get": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Get all work orders",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Work Orders"
-                ],
-                "summary": "Get all work orders",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/response.Success"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/response.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/workorders/from-booking/{id}": {
-            "post": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Create a new work order from an existing booking ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Work Orders"
-                ],
-                "summary": "Create a work order from a booking",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Booking ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/response.Success"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/response.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/response.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/workorders/{id}/assign-mechanic": {
-            "put": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Assign a mechanic to an existing work order",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Work Orders"
-                ],
-                "summary": "Assign a mechanic to a work order",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Work Order ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Mechanic information",
-                        "name": "mechanic",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.AssignMechanic"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/response.Success"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/response.Error"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/response.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/response.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/workorders/{id}/status": {
-            "put": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "Update the status of an existing work order",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Work Orders"
-                ],
-                "summary": "Update a work order status",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Work Order ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "New status",
-                        "name": "status",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/dto.UpdateStatus"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/response.Success"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/response.Error"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/response.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/response.Error"
-                        }
-                    }
-                }
-            }
         }
     },
     "definitions": {
-        "dto.AddService": {
+        "dto.AddAccident": {
             "type": "object",
             "required": [
-                "name"
+                "accident_date",
+                "accident_time",
+                "accident_type",
+                "city_id",
+                "city_name",
+                "district_id",
+                "district_name",
+                "location",
+                "police_report_no",
+                "province_id",
+                "province_name",
+                "vehicle_type"
             ],
             "properties": {
+                "accident_date": {
+                    "type": "string"
+                },
+                "accident_time": {
+                    "type": "string"
+                },
+                "accident_type": {
+                    "type": "string"
+                },
+                "cause_of_accident": {
+                    "type": "string"
+                },
+                "city_id": {
+                    "type": "string"
+                },
+                "city_name": {
+                    "type": "string"
+                },
+                "death_count": {
+                    "type": "integer"
+                },
                 "description": {
                     "type": "string"
                 },
-                "name": {
+                "district_id": {
                     "type": "string"
                 },
-                "price": {
+                "district_name": {
+                    "type": "string"
+                },
+                "injured_count": {
+                    "type": "integer"
+                },
+                "latitude": {
                     "type": "number"
+                },
+                "location": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 5
+                },
+                "longitude": {
+                    "type": "number"
+                },
+                "minor_injured_count": {
+                    "type": "integer"
+                },
+                "officer_name": {
+                    "type": "string"
+                },
+                "police_report_no": {
+                    "type": "string"
+                },
+                "police_station": {
+                    "type": "string"
+                },
+                "province_id": {
+                    "type": "string"
+                },
+                "province_name": {
+                    "type": "string"
+                },
+                "road_condition": {
+                    "type": "string"
+                },
+                "road_type": {
+                    "type": "string"
+                },
+                "vehicle_count": {
+                    "type": "integer"
+                },
+                "vehicle_type": {
+                    "type": "string"
+                },
+                "weather_condition": {
+                    "type": "string"
                 }
             }
         },
-        "dto.AddVehicle": {
+        "dto.AddEvent": {
             "type": "object",
             "required": [
-                "brand",
-                "color",
-                "license_plate",
-                "model",
-                "year"
+                "city_id",
+                "description",
+                "district_id",
+                "end_time",
+                "event_date",
+                "event_type",
+                "location",
+                "province_id",
+                "start_time",
+                "title"
             ],
             "properties": {
-                "brand": {
+                "apps_downloaded": {
+                    "type": "integer"
+                },
+                "apps_name": {
                     "type": "string"
                 },
-                "color": {
+                "attendees_count": {
+                    "type": "integer"
+                },
+                "city_id": {
                     "type": "string"
                 },
-                "license_plate": {
+                "description": {
+                    "type": "string"
+                },
+                "district_id": {
+                    "type": "string"
+                },
+                "end_time": {
+                    "type": "string"
+                },
+                "event_date": {
+                    "type": "string"
+                },
+                "event_type": {
+                    "type": "string"
+                },
+                "instructor_name": {
+                    "type": "string"
+                },
+                "instructor_phone": {
+                    "type": "string"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "on_the_spot_sales": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.OnTheSpotSaleItem"
+                    }
+                },
+                "photos": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.AddEventPhoto"
+                    }
+                },
+                "province_id": {
+                    "type": "string"
+                },
+                "public_id": {
+                    "type": "string"
+                },
+                "school_id": {
+                    "type": "string"
+                },
+                "start_time": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "target_attendees": {
+                    "type": "integer"
+                },
+                "target_audience": {
+                    "type": "string"
+                },
+                "title": {
                     "type": "string",
-                    "maxLength": 10,
+                    "maxLength": 200,
                     "minLength": 3
                 },
-                "model": {
+                "visiting_service_profit": {
+                    "type": "number"
+                },
+                "visiting_service_unit_entry": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.AddEventBudget": {
+            "type": "object",
+            "required": [
+                "budget_amount",
+                "budget_date",
+                "category",
+                "event_id"
+            ],
+            "properties": {
+                "actual_spent": {
+                    "type": "number"
+                },
+                "budget_amount": {
+                    "type": "number"
+                },
+                "budget_date": {
+                    "type": "string"
+                },
+                "category": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "event_id": {
+                    "type": "string"
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.AddEventPhoto": {
+            "type": "object",
+            "required": [
+                "photo_url"
+            ],
+            "properties": {
+                "caption": {
+                    "type": "string"
+                },
+                "photo_order": {
+                    "type": "integer"
+                },
+                "photo_url": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.AddMarketShare": {
+            "type": "object",
+            "required": [
+                "city_id",
+                "city_name",
+                "district_id",
+                "district_name",
+                "month",
+                "monthly_competitor_percentage",
+                "monthly_competitor_sales",
+                "monthly_sales",
+                "monthly_sales_percentage",
+                "province_id",
+                "province_name",
+                "year",
+                "yearly_competitor_percentage",
+                "yearly_competitor_sales",
+                "yearly_sales",
+                "yearly_sales_percentage"
+            ],
+            "properties": {
+                "city_id": {
+                    "type": "string"
+                },
+                "city_name": {
+                    "type": "string"
+                },
+                "district_id": {
+                    "type": "string"
+                },
+                "district_name": {
+                    "type": "string"
+                },
+                "month": {
+                    "type": "integer",
+                    "maximum": 12,
+                    "minimum": 1
+                },
+                "monthly_competitor_percentage": {
+                    "type": "number",
+                    "maximum": 100,
+                    "minimum": 0
+                },
+                "monthly_competitor_sales": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "monthly_sales": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "monthly_sales_percentage": {
+                    "type": "number",
+                    "maximum": 100,
+                    "minimum": 0
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "province_id": {
+                    "type": "string"
+                },
+                "province_name": {
                     "type": "string"
                 },
                 "year": {
-                    "type": "string",
-                    "maxLength": 5,
-                    "minLength": 4
+                    "type": "integer",
+                    "minimum": 2000
+                },
+                "yearly_competitor_percentage": {
+                    "type": "number",
+                    "maximum": 100,
+                    "minimum": 0
+                },
+                "yearly_competitor_sales": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "yearly_sales": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "yearly_sales_percentage": {
+                    "type": "number",
+                    "maximum": 100,
+                    "minimum": 0
                 }
             }
         },
-        "dto.AssignMechanic": {
+        "dto.AddPublic": {
             "type": "object",
             "required": [
-                "mechanic_id"
+                "address",
+                "category",
+                "city_id",
+                "city_name",
+                "district_id",
+                "district_name",
+                "name",
+                "province_id",
+                "province_name"
             ],
             "properties": {
-                "mechanic_id": {
+                "address": {
+                    "type": "string",
+                    "maxLength": 500,
+                    "minLength": 3
+                },
+                "category": {
                     "type": "string"
+                },
+                "city_id": {
+                    "type": "string"
+                },
+                "city_name": {
+                    "type": "string"
+                },
+                "district_id": {
+                    "type": "string"
+                },
+                "district_name": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "employee_count": {
+                    "type": "integer"
+                },
+                "is_educated": {
+                    "type": "boolean"
+                },
+                "last_visit_at": {
+                    "type": "string"
+                },
+                "latitude": {
+                    "type": "number"
+                },
+                "longitude": {
+                    "type": "number"
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 200,
+                    "minLength": 3
+                },
+                "phone": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 5
+                },
+                "postal_code": {
+                    "type": "string"
+                },
+                "province_id": {
+                    "type": "string"
+                },
+                "province_name": {
+                    "type": "string"
+                },
+                "visit_count": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.AddSchool": {
+            "type": "object",
+            "required": [
+                "address",
+                "city_id",
+                "city_name",
+                "district_id",
+                "district_name",
+                "email",
+                "name",
+                "npsn",
+                "phone",
+                "province_id",
+                "province_name"
+            ],
+            "properties": {
+                "address": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 3
+                },
+                "city_id": {
+                    "type": "string"
+                },
+                "city_name": {
+                    "type": "string"
+                },
+                "district_id": {
+                    "type": "string"
+                },
+                "district_name": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "is_educated": {
+                    "type": "boolean"
+                },
+                "last_visit_at": {
+                    "type": "string"
+                },
+                "latitude": {
+                    "type": "number"
+                },
+                "longitude": {
+                    "type": "number"
+                },
+                "major_count": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 3
+                },
+                "npsn": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 3
+                },
+                "phone": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 5
+                },
+                "postal_code": {
+                    "type": "string"
+                },
+                "province_id": {
+                    "type": "string"
+                },
+                "province_name": {
+                    "type": "string"
+                },
+                "student_count": {
+                    "type": "integer"
+                },
+                "teacher_count": {
+                    "type": "integer"
+                },
+                "visit_count": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.AssignMenus": {
+            "type": "object",
+            "required": [
+                "menu_ids"
+            ],
+            "properties": {
+                "menu_ids": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "dto.AssignPermissions": {
+            "type": "object",
+            "required": [
+                "permission_ids"
+            ],
+            "properties": {
+                "permission_ids": {
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },
@@ -1624,31 +5081,6 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.CreateBooking": {
-            "type": "object",
-            "required": [
-                "booking_date",
-                "service_ids",
-                "vehicle_id"
-            ],
-            "properties": {
-                "booking_date": {
-                    "type": "string"
-                },
-                "notes": {
-                    "type": "string"
-                },
-                "service_ids": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "vehicle_id": {
-                    "type": "string"
-                }
-            }
-        },
         "dto.Login": {
             "type": "object",
             "required": [
@@ -1666,63 +5098,564 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.UpdateBookingStatus": {
+        "dto.MenuItemCreate": {
             "type": "object",
             "required": [
-                "status"
+                "display_name",
+                "name",
+                "path"
             ],
             "properties": {
+                "display_name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 3
+                },
+                "icon": {
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 3
+                },
+                "order_index": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "parent_id": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 1
+                }
+            }
+        },
+        "dto.MenuItemUpdate": {
+            "type": "object",
+            "properties": {
+                "display_name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 3
+                },
+                "icon": {
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "is_active": {
+                    "type": "boolean"
+                },
+                "order_index": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "parent_id": {
+                    "type": "string"
+                },
+                "path": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 1
+                }
+            }
+        },
+        "dto.OnTheSpotSaleItem": {
+            "type": "object",
+            "properties": {
+                "payment_method": {
+                    "type": "string"
+                },
+                "quantity": {
+                    "type": "integer"
+                },
+                "vehicle_type": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.PermissionCreate": {
+            "type": "object",
+            "required": [
+                "action",
+                "display_name",
+                "name",
+                "resource"
+            ],
+            "properties": {
+                "action": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 2
+                },
+                "description": {
+                    "type": "string",
+                    "maxLength": 500
+                },
+                "display_name": {
+                    "type": "string",
+                    "maxLength": 150,
+                    "minLength": 3
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 3
+                },
+                "resource": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 2
+                }
+            }
+        },
+        "dto.PermissionUpdate": {
+            "type": "object",
+            "properties": {
+                "action": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 2
+                },
+                "description": {
+                    "type": "string",
+                    "maxLength": 500
+                },
+                "display_name": {
+                    "type": "string",
+                    "maxLength": 150,
+                    "minLength": 3
+                },
+                "resource": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 2
+                }
+            }
+        },
+        "dto.RoleCreate": {
+            "type": "object",
+            "required": [
+                "display_name",
+                "name"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "maxLength": 500
+                },
+                "display_name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 3
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 3
+                }
+            }
+        },
+        "dto.RoleUpdate": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string",
+                    "maxLength": 500
+                },
+                "display_name": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 3
+                }
+            }
+        },
+        "dto.UpdateAccident": {
+            "type": "object",
+            "properties": {
+                "accident_date": {
+                    "type": "string"
+                },
+                "accident_time": {
+                    "type": "string"
+                },
+                "accident_type": {
+                    "type": "string"
+                },
+                "cause_of_accident": {
+                    "type": "string"
+                },
+                "city_id": {
+                    "type": "string"
+                },
+                "city_name": {
+                    "type": "string"
+                },
+                "death_count": {
+                    "type": "integer"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "district_id": {
+                    "type": "string"
+                },
+                "district_name": {
+                    "type": "string"
+                },
+                "injured_count": {
+                    "type": "integer"
+                },
+                "latitude": {
+                    "type": "number"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "longitude": {
+                    "type": "number"
+                },
+                "minor_injured_count": {
+                    "type": "integer"
+                },
+                "officer_name": {
+                    "type": "string"
+                },
+                "police_report_no": {
+                    "type": "string"
+                },
+                "police_station": {
+                    "type": "string"
+                },
+                "province_id": {
+                    "type": "string"
+                },
+                "province_name": {
+                    "type": "string"
+                },
+                "road_condition": {
+                    "type": "string"
+                },
+                "road_type": {
+                    "type": "string"
+                },
+                "vehicle_count": {
+                    "type": "integer"
+                },
+                "vehicle_type": {
+                    "type": "string"
+                },
+                "weather_condition": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.UpdateEvent": {
+            "type": "object",
+            "properties": {
+                "apps_downloaded": {
+                    "type": "integer"
+                },
+                "apps_name": {
+                    "type": "string"
+                },
+                "attendees_count": {
+                    "type": "integer"
+                },
+                "city_id": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "district_id": {
+                    "type": "string"
+                },
+                "end_time": {
+                    "type": "string"
+                },
+                "event_date": {
+                    "type": "string"
+                },
+                "event_type": {
+                    "type": "string"
+                },
+                "instructor_name": {
+                    "type": "string"
+                },
+                "instructor_phone": {
+                    "type": "string"
+                },
+                "location": {
+                    "type": "string"
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "on_the_spot_sales": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.OnTheSpotSaleItem"
+                    }
+                },
+                "province_id": {
+                    "type": "string"
+                },
+                "public_id": {
+                    "type": "string"
+                },
+                "school_id": {
+                    "type": "string"
+                },
+                "start_time": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "target_attendees": {
+                    "type": "integer"
+                },
+                "target_audience": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "visiting_service_profit": {
+                    "type": "number"
+                },
+                "visiting_service_unit_entry": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.UpdateEventBudget": {
+            "type": "object",
+            "properties": {
+                "actual_spent": {
+                    "type": "number"
+                },
+                "budget_amount": {
+                    "type": "number"
+                },
+                "budget_date": {
+                    "type": "string"
+                },
+                "category": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "event_id": {
+                    "type": "string"
+                },
+                "notes": {
+                    "type": "string"
+                },
                 "status": {
                     "type": "string"
                 }
             }
         },
-        "dto.UpdateService": {
+        "dto.UpdateMarketShare": {
             "type": "object",
             "properties": {
-                "description": {
+                "city_id": {
                     "type": "string"
                 },
-                "name": {
+                "city_name": {
                     "type": "string"
                 },
-                "price": {
+                "district_id": {
+                    "type": "string"
+                },
+                "district_name": {
+                    "type": "string"
+                },
+                "month": {
+                    "type": "integer"
+                },
+                "monthly_competitor_percentage": {
+                    "type": "number"
+                },
+                "monthly_competitor_sales": {
+                    "type": "number"
+                },
+                "monthly_sales": {
+                    "type": "number"
+                },
+                "monthly_sales_percentage": {
+                    "type": "number"
+                },
+                "notes": {
+                    "type": "string"
+                },
+                "province_id": {
+                    "type": "string"
+                },
+                "province_name": {
+                    "type": "string"
+                },
+                "year": {
+                    "type": "integer"
+                },
+                "yearly_competitor_percentage": {
+                    "type": "number"
+                },
+                "yearly_competitor_sales": {
+                    "type": "number"
+                },
+                "yearly_sales": {
+                    "type": "number"
+                },
+                "yearly_sales_percentage": {
                     "type": "number"
                 }
             }
         },
-        "dto.UpdateStatus": {
+        "dto.UpdatePublic": {
             "type": "object",
-            "required": [
-                "status"
-            ],
             "properties": {
-                "status": {
+                "address": {
+                    "type": "string",
+                    "maxLength": 500,
+                    "minLength": 3
+                },
+                "category": {
                     "type": "string"
+                },
+                "city_id": {
+                    "type": "string"
+                },
+                "city_name": {
+                    "type": "string"
+                },
+                "district_id": {
+                    "type": "string"
+                },
+                "district_name": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "employee_count": {
+                    "type": "integer"
+                },
+                "is_educated": {
+                    "type": "boolean"
+                },
+                "last_visit_at": {
+                    "type": "string"
+                },
+                "latitude": {
+                    "type": "number"
+                },
+                "longitude": {
+                    "type": "number"
+                },
+                "name": {
+                    "type": "string",
+                    "maxLength": 200,
+                    "minLength": 3
+                },
+                "phone": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 5
+                },
+                "postal_code": {
+                    "type": "string"
+                },
+                "province_id": {
+                    "type": "string"
+                },
+                "province_name": {
+                    "type": "string"
+                },
+                "visit_count": {
+                    "type": "integer"
                 }
             }
         },
-        "dto.UpdateVehicle": {
+        "dto.UpdateSchool": {
             "type": "object",
             "properties": {
-                "brand": {
-                    "type": "string"
-                },
-                "color": {
-                    "type": "string"
-                },
-                "license_plate": {
+                "address": {
                     "type": "string",
-                    "maxLength": 10,
+                    "maxLength": 100,
                     "minLength": 3
                 },
-                "model": {
+                "city_id": {
                     "type": "string"
                 },
-                "year": {
+                "city_name": {
+                    "type": "string"
+                },
+                "district_id": {
+                    "type": "string"
+                },
+                "district_name": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "is_educated": {
+                    "type": "boolean"
+                },
+                "last_visit_at": {
+                    "type": "string"
+                },
+                "latitude": {
+                    "type": "number"
+                },
+                "longitude": {
+                    "type": "number"
+                },
+                "major_count": {
+                    "type": "integer"
+                },
+                "name": {
                     "type": "string",
-                    "maxLength": 5,
-                    "minLength": 4
+                    "maxLength": 100,
+                    "minLength": 3
+                },
+                "npsn": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 3
+                },
+                "phone": {
+                    "type": "string",
+                    "maxLength": 20,
+                    "minLength": 5
+                },
+                "postal_code": {
+                    "type": "string"
+                },
+                "province_id": {
+                    "type": "string"
+                },
+                "province_name": {
+                    "type": "string"
+                },
+                "student_count": {
+                    "type": "integer"
+                },
+                "teacher_count": {
+                    "type": "integer"
+                },
+                "visit_count": {
+                    "type": "integer"
                 }
             }
         },
@@ -1752,6 +5685,9 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 15,
                     "minLength": 9
+                },
+                "role": {
+                    "type": "string"
                 }
             }
         },
@@ -1770,6 +5706,9 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 15,
                     "minLength": 9
+                },
+                "role": {
+                    "type": "string"
                 }
             }
         },
@@ -1827,8 +5766,8 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "localhost:8080",
 	BasePath:         "/api",
 	Schemes:          []string{"http"},
-	Title:            "Workshop Management API",
-	Description:      "This is a sample server for a workshop management service.",
+	Title:            "Safety Riding API",
+	Description:      "This is a sample server for a safety riding service.",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

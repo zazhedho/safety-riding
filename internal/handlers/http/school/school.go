@@ -27,6 +27,18 @@ func NewSchoolHandler(s interfaceschool.ServiceSchoolInterface) *SchoolHandler {
 	}
 }
 
+// AddSchool godoc
+// @Summary Create a new school
+// @Description Create a new school record
+// @Tags Schools
+// @Accept json
+// @Produce json
+// @Param school body dto.AddSchool true "School payload"
+// @Success 201 {object} response.Success
+// @Failure 400 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /school [post]
 func (h *SchoolHandler) AddSchool(ctx *gin.Context) {
 	authData := utils.GetAuthData(ctx)
 	username := utils.InterfaceString(authData["username"])
@@ -57,6 +69,18 @@ func (h *SchoolHandler) AddSchool(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, res)
 }
 
+// GetSchoolById godoc
+// @Summary Get school detail
+// @Description Retrieve school information by ID
+// @Tags Schools
+// @Accept json
+// @Produce json
+// @Param id path string true "School ID"
+// @Success 200 {object} response.Success
+// @Failure 404 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /school/{id} [get]
 func (h *SchoolHandler) GetSchoolById(ctx *gin.Context) {
 	logId := utils.GenerateLogId(ctx)
 	logPrefix := fmt.Sprintf("[%s][SchoolHandler][GetSchoolById]", logId)
@@ -87,6 +111,19 @@ func (h *SchoolHandler) GetSchoolById(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
+// UpdateSchool godoc
+// @Summary Update a school
+// @Description Update school information by ID
+// @Tags Schools
+// @Accept json
+// @Produce json
+// @Param id path string true "School ID"
+// @Param school body dto.UpdateSchool true "School payload"
+// @Success 200 {object} response.Success
+// @Failure 400 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /school/{id} [put]
 func (h *SchoolHandler) UpdateSchool(ctx *gin.Context) {
 	authData := utils.GetAuthData(ctx)
 	username := utils.InterfaceString(authData["username"])
@@ -122,6 +159,24 @@ func (h *SchoolHandler) UpdateSchool(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
+// FetchSchool godoc
+// @Summary List schools
+// @Description Retrieve paginated schools with optional filters
+// @Tags Schools
+// @Accept json
+// @Produce json
+// @Param page query int false "Page number"
+// @Param limit query int false "Items per page"
+// @Param sort query string false "Sort field"
+// @Param order query string false "Sort order (asc/desc)"
+// @Param district_id query string false "Filter by district ID"
+// @Param city_id query string false "Filter by city ID"
+// @Param province_id query string false "Filter by province ID"
+// @Success 200 {object} response.Success
+// @Failure 404 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /schools [get]
 func (h *SchoolHandler) FetchSchool(ctx *gin.Context) {
 	logId := utils.GenerateLogId(ctx)
 	logPrefix := fmt.Sprintf("[%s][SchoolHandler][FetchSchool]", logId)
@@ -151,6 +206,18 @@ func (h *SchoolHandler) FetchSchool(ctx *gin.Context) {
 
 }
 
+// DeleteSchool godoc
+// @Summary Delete a school
+// @Description Delete school by ID
+// @Tags Schools
+// @Accept json
+// @Produce json
+// @Param id path string true "School ID"
+// @Success 200 {object} response.Success
+// @Failure 400 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /school/{id} [delete]
 func (h *SchoolHandler) DeleteSchool(ctx *gin.Context) {
 	authData := utils.GetAuthData(ctx)
 	username := utils.InterfaceString(authData["username"])
@@ -178,6 +245,24 @@ func (h *SchoolHandler) DeleteSchool(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
+// GetEducationStats godoc
+// @Summary Get school education statistics
+// @Description Retrieve aggregated school education statistics with optional filters
+// @Tags Schools
+// @Accept json
+// @Produce json
+// @Param page query int false "Page number"
+// @Param limit query int false "Items per page"
+// @Param district_id query string false "Filter by district ID"
+// @Param city_id query string false "Filter by city ID"
+// @Param province_id query string false "Filter by province ID"
+// @Param is_educated query string false "Filter by education completion flag"
+// @Param month query string false "Filter by month"
+// @Param year query string false "Filter by year"
+// @Success 200 {object} response.Success
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /schools/education-stats [get]
 func (h *SchoolHandler) GetEducationStats(ctx *gin.Context) {
 	logId := utils.GenerateLogId(ctx)
 	logPrefix := fmt.Sprintf("[%s][SchoolHandler][GetEducationStats]", logId)

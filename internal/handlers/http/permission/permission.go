@@ -23,7 +23,18 @@ func NewPermissionHandler(s interfacepermission.ServicePermissionInterface) *Per
 	return &PermissionHandler{Service: s}
 }
 
-// Create creates a new permission
+// Create godoc
+// @Summary Create a permission
+// @Description Create a new permission definition
+// @Tags Permissions
+// @Accept json
+// @Produce json
+// @Param permission body dto.PermissionCreate true "Permission payload"
+// @Success 201 {object} response.Success
+// @Failure 400 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /permission [post]
 func (h *PermissionHandler) Create(ctx *gin.Context) {
 	var req dto.PermissionCreate
 	logId := utils.GenerateLogId(ctx)
@@ -53,7 +64,17 @@ func (h *PermissionHandler) Create(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, res)
 }
 
-// GetByID retrieves a permission by ID
+// GetByID godoc
+// @Summary Get permission detail
+// @Description Retrieve permission by ID
+// @Tags Permissions
+// @Accept json
+// @Produce json
+// @Param id path string true "Permission ID"
+// @Success 200 {object} response.Success
+// @Failure 404 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /permission/{id} [get]
 func (h *PermissionHandler) GetByID(ctx *gin.Context) {
 	id := ctx.Param("id")
 	logId := utils.GenerateLogId(ctx)
@@ -73,7 +94,21 @@ func (h *PermissionHandler) GetByID(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
-// GetAll retrieves all permissions with pagination
+// GetAll godoc
+// @Summary List permissions
+// @Description Retrieve paginated permission list
+// @Tags Permissions
+// @Accept json
+// @Produce json
+// @Param page query int false "Page number"
+// @Param limit query int false "Items per page"
+// @Param sort query string false "Sort field"
+// @Param order query string false "Sort order (asc/desc)"
+// @Success 200 {object} response.Success
+// @Failure 400 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /permissions [get]
 func (h *PermissionHandler) GetAll(ctx *gin.Context) {
 	logId := utils.GenerateLogId(ctx)
 	logPrefix := fmt.Sprintf("[%s][PermissionHandler][GetAll]", logId)
@@ -101,7 +136,19 @@ func (h *PermissionHandler) GetAll(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
-// Update updates a permission
+// Update godoc
+// @Summary Update a permission
+// @Description Update permission definition by ID
+// @Tags Permissions
+// @Accept json
+// @Produce json
+// @Param id path string true "Permission ID"
+// @Param permission body dto.PermissionUpdate true "Permission payload"
+// @Success 200 {object} response.Success
+// @Failure 400 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /permission/{id} [put]
 func (h *PermissionHandler) Update(ctx *gin.Context) {
 	id := ctx.Param("id")
 	var req dto.PermissionUpdate
@@ -132,7 +179,17 @@ func (h *PermissionHandler) Update(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
-// Delete deletes a permission
+// Delete godoc
+// @Summary Delete a permission
+// @Description Delete permission by ID
+// @Tags Permissions
+// @Accept json
+// @Produce json
+// @Param id path string true "Permission ID"
+// @Success 200 {object} response.Success
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /permission/{id} [delete]
 func (h *PermissionHandler) Delete(ctx *gin.Context) {
 	id := ctx.Param("id")
 	logId := utils.GenerateLogId(ctx)
@@ -151,7 +208,17 @@ func (h *PermissionHandler) Delete(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
-// GetUserPermissions retrieves all permissions for the current user
+// GetUserPermissions godoc
+// @Summary Get current user permissions
+// @Description Retrieve permissions for the authenticated user
+// @Tags Permissions
+// @Accept json
+// @Produce json
+// @Success 200 {object} response.Success
+// @Failure 401 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /permissions/me [get]
 func (h *PermissionHandler) GetUserPermissions(ctx *gin.Context) {
 	logId := utils.GenerateLogId(ctx)
 	logPrefix := fmt.Sprintf("[%s][PermissionHandler][GetUserPermissions]", logId)

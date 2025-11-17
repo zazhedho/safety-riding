@@ -29,6 +29,18 @@ func NewMarketShareHandler(s interfacemarketshare.ServiceMarketShareInterface) *
 	}
 }
 
+// AddMarketShare godoc
+// @Summary Create market share entry
+// @Description Create a new market share record
+// @Tags MarketShare
+// @Accept json
+// @Produce json
+// @Param marketshare body dto.AddMarketShare true "Market share payload"
+// @Success 201 {object} response.Success
+// @Failure 400 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /marketshare [post]
 func (h *MarketShareHandler) AddMarketShare(ctx *gin.Context) {
 	authData := utils.GetAuthData(ctx)
 	username := utils.InterfaceString(authData["username"])
@@ -59,6 +71,18 @@ func (h *MarketShareHandler) AddMarketShare(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, res)
 }
 
+// GetMarketShareById godoc
+// @Summary Get market share detail
+// @Description Retrieve market share data by ID
+// @Tags MarketShare
+// @Accept json
+// @Produce json
+// @Param id path string true "Market share ID"
+// @Success 200 {object} response.Success
+// @Failure 404 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /marketshare/{id} [get]
 func (h *MarketShareHandler) GetMarketShareById(ctx *gin.Context) {
 	logId := utils.GenerateLogId(ctx)
 	logPrefix := fmt.Sprintf("[%s][MarketShareHandler][GetMarketShareById]", logId)
@@ -89,6 +113,19 @@ func (h *MarketShareHandler) GetMarketShareById(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
+// UpdateMarketShare godoc
+// @Summary Update market share entry
+// @Description Update market share record by ID
+// @Tags MarketShare
+// @Accept json
+// @Produce json
+// @Param id path string true "Market share ID"
+// @Param marketshare body dto.UpdateMarketShare true "Market share payload"
+// @Success 200 {object} response.Success
+// @Failure 400 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /marketshare/{id} [put]
 func (h *MarketShareHandler) UpdateMarketShare(ctx *gin.Context) {
 	authData := utils.GetAuthData(ctx)
 	username := utils.InterfaceString(authData["username"])
@@ -124,6 +161,26 @@ func (h *MarketShareHandler) UpdateMarketShare(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
+// FetchMarketShare godoc
+// @Summary List market share data
+// @Description Retrieve paginated market share entries with optional filters
+// @Tags MarketShare
+// @Accept json
+// @Produce json
+// @Param page query int false "Page number"
+// @Param limit query int false "Items per page"
+// @Param sort query string false "Sort field"
+// @Param order query string false "Sort order (asc/desc)"
+// @Param province_id query string false "Filter by province ID"
+// @Param city_id query string false "Filter by city ID"
+// @Param district_id query string false "Filter by district ID"
+// @Param month query string false "Filter by month"
+// @Param year query string false "Filter by year"
+// @Success 200 {object} response.Success
+// @Failure 404 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /marketshares [get]
 func (h *MarketShareHandler) FetchMarketShare(ctx *gin.Context) {
 	logId := utils.GenerateLogId(ctx)
 	logPrefix := fmt.Sprintf("[%s][MarketShareHandler][FetchMarketShare]", logId)
@@ -152,6 +209,18 @@ func (h *MarketShareHandler) FetchMarketShare(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
+// DeleteMarketShare godoc
+// @Summary Delete a market share entry
+// @Description Delete market share record by ID
+// @Tags MarketShare
+// @Accept json
+// @Produce json
+// @Param id path string true "Market share ID"
+// @Success 200 {object} response.Success
+// @Failure 400 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /marketshare/{id} [delete]
 func (h *MarketShareHandler) DeleteMarketShare(ctx *gin.Context) {
 	authData := utils.GetAuthData(ctx)
 	username := utils.InterfaceString(authData["username"])
@@ -179,7 +248,20 @@ func (h *MarketShareHandler) DeleteMarketShare(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
-// GetTopDistricts returns top districts by sales for dashboard
+// GetTopDistricts godoc
+// @Summary Get top districts
+// @Description Retrieve top districts ranked by sales
+// @Tags MarketShare
+// @Accept json
+// @Produce json
+// @Param year query int false "Year filter"
+// @Param month query int false "Month filter (1-12)"
+// @Param limit query int false "Number of records (default 5)"
+// @Success 200 {object} response.Success
+// @Failure 400 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /marketshare/top-districts [get]
 func (h *MarketShareHandler) GetTopDistricts(ctx *gin.Context) {
 	logId := utils.GenerateLogId(ctx)
 	logPrefix := fmt.Sprintf("[%s][MarketShareHandler][GetTopDistricts]", logId)
@@ -227,7 +309,23 @@ func (h *MarketShareHandler) GetTopDistricts(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
-// GetSummary returns aggregated summaries by level (province/city/district)
+// GetSummary godoc
+// @Summary Get market share summary
+// @Description Retrieve aggregated market share summary by hierarchy level
+// @Tags MarketShare
+// @Accept json
+// @Produce json
+// @Param level query string false "Aggregation level (province/city/district)"
+// @Param year query int false "Year filter"
+// @Param month query int false "Month filter (1-12)"
+// @Param province_id query string false "Province ID filter"
+// @Param city_id query string false "City ID filter"
+// @Param district_id query string false "District ID filter"
+// @Success 200 {object} response.Success
+// @Failure 400 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /marketshare/summary [get]
 func (h *MarketShareHandler) GetSummary(ctx *gin.Context) {
 	logId := utils.GenerateLogId(ctx)
 	logPrefix := fmt.Sprintf("[%s][MarketShareHandler][GetSummary]", logId)
@@ -276,7 +374,20 @@ func (h *MarketShareHandler) GetSummary(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
-// GetDashboardSuggestions returns top cities and districts for dashboard insights
+// GetDashboardSuggestions godoc
+// @Summary Get dashboard suggestions
+// @Description Retrieve top cities and districts suggestions for dashboard insights
+// @Tags MarketShare
+// @Accept json
+// @Produce json
+// @Param year query int false "Year filter"
+// @Param month query int false "Month filter (1-12)"
+// @Param city_limit query int false "Number of cities to return (default 5)"
+// @Param district_limit query int false "Number of districts to return (default 5)"
+// @Success 200 {object} response.Success
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /marketshare/dashboard-suggestions [get]
 func (h *MarketShareHandler) GetDashboardSuggestions(ctx *gin.Context) {
 	logId := utils.GenerateLogId(ctx)
 	logPrefix := fmt.Sprintf("[%s][MarketShareHandler][GetDashboardSuggestions]", logId)

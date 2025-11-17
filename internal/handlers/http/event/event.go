@@ -27,6 +27,18 @@ func NewEventHandler(s interfaceevent.ServiceEventInterface) *EventHandler {
 	}
 }
 
+// AddEvent godoc
+// @Summary Create a new event
+// @Description Create a new safety riding event
+// @Tags Events
+// @Accept json
+// @Produce json
+// @Param event body dto.AddEvent true "Event payload"
+// @Success 201 {object} response.Success
+// @Failure 400 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /event [post]
 func (h *EventHandler) AddEvent(ctx *gin.Context) {
 	authData := utils.GetAuthData(ctx)
 	username := utils.InterfaceString(authData["username"])
@@ -57,6 +69,18 @@ func (h *EventHandler) AddEvent(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, res)
 }
 
+// GetEventById godoc
+// @Summary Get event detail
+// @Description Retrieve event information by ID
+// @Tags Events
+// @Accept json
+// @Produce json
+// @Param id path string true "Event ID"
+// @Success 200 {object} response.Success
+// @Failure 404 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /event/{id} [get]
 func (h *EventHandler) GetEventById(ctx *gin.Context) {
 	logId := utils.GenerateLogId(ctx)
 	logPrefix := fmt.Sprintf("[%s][EventHandler][GetEventById]", logId)
@@ -87,6 +111,19 @@ func (h *EventHandler) GetEventById(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
+// UpdateEvent godoc
+// @Summary Update an event
+// @Description Update event information by ID
+// @Tags Events
+// @Accept json
+// @Produce json
+// @Param id path string true "Event ID"
+// @Param event body dto.UpdateEvent true "Event payload"
+// @Success 200 {object} response.Success
+// @Failure 400 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /event/{id} [put]
 func (h *EventHandler) UpdateEvent(ctx *gin.Context) {
 	authData := utils.GetAuthData(ctx)
 	username := utils.InterfaceString(authData["username"])
@@ -123,6 +160,27 @@ func (h *EventHandler) UpdateEvent(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
+// FetchEvent godoc
+// @Summary List events
+// @Description Retrieve paginated list of events with optional filters
+// @Tags Events
+// @Accept json
+// @Produce json
+// @Param page query int false "Page number"
+// @Param limit query int false "Items per page"
+// @Param sort query string false "Sort field"
+// @Param order query string false "Sort order (asc/desc)"
+// @Param school_id query string false "Filter by school ID"
+// @Param district_id query string false "Filter by district ID"
+// @Param city_id query string false "Filter by city ID"
+// @Param province_id query string false "Filter by province ID"
+// @Param event_type query string false "Filter by event type"
+// @Param status query string false "Filter by status"
+// @Success 200 {object} response.Success
+// @Failure 404 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /events [get]
 func (h *EventHandler) FetchEvent(ctx *gin.Context) {
 	logId := utils.GenerateLogId(ctx)
 	logPrefix := fmt.Sprintf("[%s][EventHandler][FetchEvent]", logId)
@@ -151,6 +209,18 @@ func (h *EventHandler) FetchEvent(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
+// DeleteEvent godoc
+// @Summary Delete an event
+// @Description Delete event by ID
+// @Tags Events
+// @Accept json
+// @Produce json
+// @Param id path string true "Event ID"
+// @Success 200 {object} response.Success
+// @Failure 400 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /event/{id} [delete]
 func (h *EventHandler) DeleteEvent(ctx *gin.Context) {
 	authData := utils.GetAuthData(ctx)
 	username := utils.InterfaceString(authData["username"])
@@ -178,7 +248,21 @@ func (h *EventHandler) DeleteEvent(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
-// Photo handlers
+// AddEventPhotos godoc
+// @Summary Upload event photos
+// @Description Upload one or more event photos and metadata
+// @Tags Events
+// @Accept multipart/form-data
+// @Produce json
+// @Param id path string true "Event ID"
+// @Param photos formData file true "Event photos"
+// @Param captions formData string false "Photo captions (repeat per photo)"
+// @Param photo_orders formData int false "Photo order (repeat per photo)"
+// @Success 201 {object} response.Success
+// @Failure 400 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /event/{id}/photos [post]
 func (h *EventHandler) AddEventPhotos(ctx *gin.Context) {
 	authData := utils.GetAuthData(ctx)
 	username := utils.InterfaceString(authData["username"])
@@ -231,6 +315,18 @@ func (h *EventHandler) AddEventPhotos(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, res)
 }
 
+// DeleteEventPhoto godoc
+// @Summary Delete event photo
+// @Description Delete a single event photo by ID
+// @Tags Events
+// @Accept json
+// @Produce json
+// @Param photoId path string true "Photo ID"
+// @Success 200 {object} response.Success
+// @Failure 400 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /event/photo/{photoId} [delete]
 func (h *EventHandler) DeleteEventPhoto(ctx *gin.Context) {
 	authData := utils.GetAuthData(ctx)
 	username := utils.InterfaceString(authData["username"])

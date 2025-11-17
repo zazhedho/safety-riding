@@ -27,6 +27,18 @@ func NewAccidentHandler(s interfaceaccident.ServiceAccidentInterface) *AccidentH
 	}
 }
 
+// AddAccident godoc
+// @Summary Create a new accident record
+// @Description Create a new accident record complete with location, reporter, and chronology information
+// @Tags Accidents
+// @Accept json
+// @Produce json
+// @Param accident body dto.AddAccident true "Accident payload"
+// @Success 201 {object} response.Success
+// @Failure 400 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /accident [post]
 func (h *AccidentHandler) AddAccident(ctx *gin.Context) {
 	authData := utils.GetAuthData(ctx)
 	username := utils.InterfaceString(authData["username"])
@@ -57,6 +69,18 @@ func (h *AccidentHandler) AddAccident(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, res)
 }
 
+// GetAccidentById godoc
+// @Summary Get accident details
+// @Description Retrieve accident detail information by accident ID
+// @Tags Accidents
+// @Accept json
+// @Produce json
+// @Param id path string true "Accident ID"
+// @Success 200 {object} response.Success
+// @Failure 404 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /accident/{id} [get]
 func (h *AccidentHandler) GetAccidentById(ctx *gin.Context) {
 	logId := utils.GenerateLogId(ctx)
 	logPrefix := fmt.Sprintf("[%s][AccidentHandler][GetAccidentById]", logId)
@@ -87,6 +111,19 @@ func (h *AccidentHandler) GetAccidentById(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
+// UpdateAccident godoc
+// @Summary Update accident data
+// @Description Update accident record fields by accident ID
+// @Tags Accidents
+// @Accept json
+// @Produce json
+// @Param id path string true "Accident ID"
+// @Param accident body dto.UpdateAccident true "Accident payload"
+// @Success 200 {object} response.Success
+// @Failure 400 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /accident/{id} [put]
 func (h *AccidentHandler) UpdateAccident(ctx *gin.Context) {
 	authData := utils.GetAuthData(ctx)
 	username := utils.InterfaceString(authData["username"])
@@ -122,6 +159,27 @@ func (h *AccidentHandler) UpdateAccident(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
+// FetchAccident godoc
+// @Summary List accidents with pagination
+// @Description Get paginated accidents with optional filters (district, city, province, type, etc.)
+// @Tags Accidents
+// @Accept json
+// @Produce json
+// @Param page query int false "Page number"
+// @Param limit query int false "Items per page"
+// @Param sort query string false "Sort field"
+// @Param order query string false "Sort order (asc/desc)"
+// @Param district_id query string false "Filter by district ID"
+// @Param city_id query string false "Filter by city ID"
+// @Param province_id query string false "Filter by province ID"
+// @Param accident_type query string false "Filter by accident type"
+// @Param vehicle_type query string false "Filter by vehicle type"
+// @Param police_station query string false "Filter by police station"
+// @Success 200 {object} response.Success
+// @Failure 404 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /accidents [get]
 func (h *AccidentHandler) FetchAccident(ctx *gin.Context) {
 	logId := utils.GenerateLogId(ctx)
 	logPrefix := fmt.Sprintf("[%s][AccidentHandler][FetchAccident]", logId)
@@ -150,6 +208,18 @@ func (h *AccidentHandler) FetchAccident(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
+// DeleteAccident godoc
+// @Summary Delete an accident
+// @Description Delete accident by ID
+// @Tags Accidents
+// @Accept json
+// @Produce json
+// @Param id path string true "Accident ID"
+// @Success 200 {object} response.Success
+// @Failure 400 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /accident/{id} [delete]
 func (h *AccidentHandler) DeleteAccident(ctx *gin.Context) {
 	authData := utils.GetAuthData(ctx)
 	username := utils.InterfaceString(authData["username"])
@@ -177,7 +247,21 @@ func (h *AccidentHandler) DeleteAccident(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
-// Photo handlers
+// AddAccidentPhotos godoc
+// @Summary Upload accident photos
+// @Description Upload one or more accident photos and metadata
+// @Tags Accidents
+// @Accept multipart/form-data
+// @Produce json
+// @Param id path string true "Accident ID"
+// @Param photos formData file true "Accident photos"
+// @Param captions formData string false "Photo captions (repeat per photo)"
+// @Param photo_orders formData int false "Photo order (repeat per photo)"
+// @Success 201 {object} response.Success
+// @Failure 400 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /accident/{id}/photos [post]
 func (h *AccidentHandler) AddAccidentPhotos(ctx *gin.Context) {
 	authData := utils.GetAuthData(ctx)
 	username := utils.InterfaceString(authData["username"])
@@ -230,6 +314,18 @@ func (h *AccidentHandler) AddAccidentPhotos(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, res)
 }
 
+// DeleteAccidentPhoto godoc
+// @Summary Delete accident photo
+// @Description Delete a single accident photo by photo ID
+// @Tags Accidents
+// @Accept json
+// @Produce json
+// @Param photoId path string true "Photo ID"
+// @Success 200 {object} response.Success
+// @Failure 400 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /accident/photo/{photoId} [delete]
 func (h *AccidentHandler) DeleteAccidentPhoto(ctx *gin.Context) {
 	authData := utils.GetAuthData(ctx)
 	username := utils.InterfaceString(authData["username"])

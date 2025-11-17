@@ -22,6 +22,19 @@ func NewKabupatenHandler(s interfacecity.ServiceCityInterface) *CityHandler {
 	}
 }
 
+// GetCity godoc
+// @Summary Get cities
+// @Description Retrieve list of cities filtered by province
+// @Tags Cities
+// @Accept json
+// @Produce json
+// @Param thn query string false "Reference year (default from env)"
+// @Param lvl query string false "Level code (default 11)"
+// @Param pro query string true "Province code"
+// @Success 200 {object} response.Success
+// @Failure 400 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Router /city [get]
 func (h *CityHandler) GetCity(ctx *gin.Context) {
 	logId := utils.GenerateLogId(ctx)
 	logPrefix := fmt.Sprintf("[%s][CityHandler][GetCity]", logId)

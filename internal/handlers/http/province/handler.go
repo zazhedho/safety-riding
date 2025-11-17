@@ -22,6 +22,16 @@ func NewProvinceHandler(s interfaceprovince.ServiceProvinceInterface) *ProvinceH
 	}
 }
 
+// GetProvince godoc
+// @Summary Get provinces
+// @Description Retrieve list of provinces for a given year
+// @Tags Provinces
+// @Accept json
+// @Produce json
+// @Param thn query string false "Reference year (default from env)"
+// @Success 200 {object} response.Success
+// @Failure 500 {object} response.Error
+// @Router /province [get]
 func (h *ProvinceHandler) GetProvince(ctx *gin.Context) {
 	logId := utils.GenerateLogId(ctx)
 	logPrefix := fmt.Sprintf("[%s][ProvinceHandler][GetProvince]", logId)

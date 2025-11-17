@@ -1,45 +1,384 @@
 basePath: /api
 definitions:
-  dto.AddService:
+  dto.AddAccident:
     properties:
+      accident_date:
+        type: string
+      accident_time:
+        type: string
+      accident_type:
+        type: string
+      cause_of_accident:
+        type: string
+      city_id:
+        type: string
+      city_name:
+        type: string
+      death_count:
+        type: integer
       description:
         type: string
-      name:
+      district_id:
         type: string
-      price:
+      district_name:
+        type: string
+      injured_count:
+        type: integer
+      latitude:
         type: number
+      location:
+        maxLength: 255
+        minLength: 5
+        type: string
+      longitude:
+        type: number
+      minor_injured_count:
+        type: integer
+      officer_name:
+        type: string
+      police_report_no:
+        type: string
+      police_station:
+        type: string
+      province_id:
+        type: string
+      province_name:
+        type: string
+      road_condition:
+        type: string
+      road_type:
+        type: string
+      vehicle_count:
+        type: integer
+      vehicle_type:
+        type: string
+      weather_condition:
+        type: string
     required:
-    - name
+    - accident_date
+    - accident_time
+    - accident_type
+    - city_id
+    - city_name
+    - district_id
+    - district_name
+    - location
+    - police_report_no
+    - province_id
+    - province_name
+    - vehicle_type
     type: object
-  dto.AddVehicle:
+  dto.AddEvent:
     properties:
-      brand:
+      apps_downloaded:
+        type: integer
+      apps_name:
         type: string
-      color:
+      attendees_count:
+        type: integer
+      city_id:
         type: string
-      license_plate:
-        maxLength: 10
+      description:
+        type: string
+      district_id:
+        type: string
+      end_time:
+        type: string
+      event_date:
+        type: string
+      event_type:
+        type: string
+      instructor_name:
+        type: string
+      instructor_phone:
+        type: string
+      location:
+        type: string
+      notes:
+        type: string
+      on_the_spot_sales:
+        items:
+          $ref: '#/definitions/dto.OnTheSpotSaleItem'
+        type: array
+      photos:
+        items:
+          $ref: '#/definitions/dto.AddEventPhoto'
+        type: array
+      province_id:
+        type: string
+      public_id:
+        type: string
+      school_id:
+        type: string
+      start_time:
+        type: string
+      status:
+        type: string
+      target_attendees:
+        type: integer
+      target_audience:
+        type: string
+      title:
+        maxLength: 200
         minLength: 3
         type: string
-      model:
+      visiting_service_profit:
+        type: number
+      visiting_service_unit_entry:
+        type: integer
+    required:
+    - city_id
+    - description
+    - district_id
+    - end_time
+    - event_date
+    - event_type
+    - location
+    - province_id
+    - start_time
+    - title
+    type: object
+  dto.AddEventBudget:
+    properties:
+      actual_spent:
+        type: number
+      budget_amount:
+        type: number
+      budget_date:
+        type: string
+      category:
+        type: string
+      description:
+        type: string
+      event_id:
+        type: string
+      notes:
+        type: string
+      status:
+        type: string
+    required:
+    - budget_amount
+    - budget_date
+    - category
+    - event_id
+    type: object
+  dto.AddEventPhoto:
+    properties:
+      caption:
+        type: string
+      photo_order:
+        type: integer
+      photo_url:
+        type: string
+    required:
+    - photo_url
+    type: object
+  dto.AddMarketShare:
+    properties:
+      city_id:
+        type: string
+      city_name:
+        type: string
+      district_id:
+        type: string
+      district_name:
+        type: string
+      month:
+        maximum: 12
+        minimum: 1
+        type: integer
+      monthly_competitor_percentage:
+        maximum: 100
+        minimum: 0
+        type: number
+      monthly_competitor_sales:
+        minimum: 0
+        type: number
+      monthly_sales:
+        minimum: 0
+        type: number
+      monthly_sales_percentage:
+        maximum: 100
+        minimum: 0
+        type: number
+      notes:
+        type: string
+      province_id:
+        type: string
+      province_name:
         type: string
       year:
-        maxLength: 5
-        minLength: 4
-        type: string
+        minimum: 2000
+        type: integer
+      yearly_competitor_percentage:
+        maximum: 100
+        minimum: 0
+        type: number
+      yearly_competitor_sales:
+        minimum: 0
+        type: number
+      yearly_sales:
+        minimum: 0
+        type: number
+      yearly_sales_percentage:
+        maximum: 100
+        minimum: 0
+        type: number
     required:
-    - brand
-    - color
-    - license_plate
-    - model
+    - city_id
+    - city_name
+    - district_id
+    - district_name
+    - month
+    - monthly_competitor_percentage
+    - monthly_competitor_sales
+    - monthly_sales
+    - monthly_sales_percentage
+    - province_id
+    - province_name
     - year
+    - yearly_competitor_percentage
+    - yearly_competitor_sales
+    - yearly_sales
+    - yearly_sales_percentage
     type: object
-  dto.AssignMechanic:
+  dto.AddPublic:
     properties:
-      mechanic_id:
+      address:
+        maxLength: 500
+        minLength: 3
         type: string
+      category:
+        type: string
+      city_id:
+        type: string
+      city_name:
+        type: string
+      district_id:
+        type: string
+      district_name:
+        type: string
+      email:
+        type: string
+      employee_count:
+        type: integer
+      is_educated:
+        type: boolean
+      last_visit_at:
+        type: string
+      latitude:
+        type: number
+      longitude:
+        type: number
+      name:
+        maxLength: 200
+        minLength: 3
+        type: string
+      phone:
+        maxLength: 20
+        minLength: 5
+        type: string
+      postal_code:
+        type: string
+      province_id:
+        type: string
+      province_name:
+        type: string
+      visit_count:
+        type: integer
     required:
-    - mechanic_id
+    - address
+    - category
+    - city_id
+    - city_name
+    - district_id
+    - district_name
+    - name
+    - province_id
+    - province_name
+    type: object
+  dto.AddSchool:
+    properties:
+      address:
+        maxLength: 100
+        minLength: 3
+        type: string
+      city_id:
+        type: string
+      city_name:
+        type: string
+      district_id:
+        type: string
+      district_name:
+        type: string
+      email:
+        type: string
+      is_educated:
+        type: boolean
+      last_visit_at:
+        type: string
+      latitude:
+        type: number
+      longitude:
+        type: number
+      major_count:
+        type: integer
+      name:
+        maxLength: 100
+        minLength: 3
+        type: string
+      npsn:
+        maxLength: 100
+        minLength: 3
+        type: string
+      phone:
+        maxLength: 20
+        minLength: 5
+        type: string
+      postal_code:
+        type: string
+      province_id:
+        type: string
+      province_name:
+        type: string
+      student_count:
+        type: integer
+      teacher_count:
+        type: integer
+      visit_count:
+        type: integer
+    required:
+    - address
+    - city_id
+    - city_name
+    - district_id
+    - district_name
+    - email
+    - name
+    - npsn
+    - phone
+    - province_id
+    - province_name
+    type: object
+  dto.AssignMenus:
+    properties:
+      menu_ids:
+        items:
+          type: string
+        minItems: 1
+        type: array
+    required:
+    - menu_ids
+    type: object
+  dto.AssignPermissions:
+    properties:
+      permission_ids:
+        items:
+          type: string
+        minItems: 1
+        type: array
+    required:
+    - permission_ids
     type: object
   dto.ChangePassword:
     properties:
@@ -55,23 +394,6 @@ definitions:
     - current_password
     - new_password
     type: object
-  dto.CreateBooking:
-    properties:
-      booking_date:
-        type: string
-      notes:
-        type: string
-      service_ids:
-        items:
-          type: string
-        type: array
-      vehicle_id:
-        type: string
-    required:
-    - booking_date
-    - service_ids
-    - vehicle_id
-    type: object
   dto.Login:
     properties:
       email:
@@ -84,45 +406,394 @@ definitions:
     - email
     - password
     type: object
-  dto.UpdateBookingStatus:
+  dto.MenuItemCreate:
     properties:
-      status:
-        type: string
-    required:
-    - status
-    type: object
-  dto.UpdateService:
-    properties:
-      description:
-        type: string
-      name:
-        type: string
-      price:
-        type: number
-    type: object
-  dto.UpdateStatus:
-    properties:
-      status:
-        type: string
-    required:
-    - status
-    type: object
-  dto.UpdateVehicle:
-    properties:
-      brand:
-        type: string
-      color:
-        type: string
-      license_plate:
-        maxLength: 10
+      display_name:
+        maxLength: 100
         minLength: 3
         type: string
-      model:
+      icon:
+        maxLength: 50
+        type: string
+      is_active:
+        type: boolean
+      name:
+        maxLength: 50
+        minLength: 3
+        type: string
+      order_index:
+        minimum: 0
+        type: integer
+      parent_id:
+        type: string
+      path:
+        maxLength: 255
+        minLength: 1
+        type: string
+    required:
+    - display_name
+    - name
+    - path
+    type: object
+  dto.MenuItemUpdate:
+    properties:
+      display_name:
+        maxLength: 100
+        minLength: 3
+        type: string
+      icon:
+        maxLength: 50
+        type: string
+      is_active:
+        type: boolean
+      order_index:
+        minimum: 0
+        type: integer
+      parent_id:
+        type: string
+      path:
+        maxLength: 255
+        minLength: 1
+        type: string
+    type: object
+  dto.OnTheSpotSaleItem:
+    properties:
+      payment_method:
+        type: string
+      quantity:
+        type: integer
+      vehicle_type:
+        type: string
+    type: object
+  dto.PermissionCreate:
+    properties:
+      action:
+        maxLength: 50
+        minLength: 2
+        type: string
+      description:
+        maxLength: 500
+        type: string
+      display_name:
+        maxLength: 150
+        minLength: 3
+        type: string
+      name:
+        maxLength: 100
+        minLength: 3
+        type: string
+      resource:
+        maxLength: 50
+        minLength: 2
+        type: string
+    required:
+    - action
+    - display_name
+    - name
+    - resource
+    type: object
+  dto.PermissionUpdate:
+    properties:
+      action:
+        maxLength: 50
+        minLength: 2
+        type: string
+      description:
+        maxLength: 500
+        type: string
+      display_name:
+        maxLength: 150
+        minLength: 3
+        type: string
+      resource:
+        maxLength: 50
+        minLength: 2
+        type: string
+    type: object
+  dto.RoleCreate:
+    properties:
+      description:
+        maxLength: 500
+        type: string
+      display_name:
+        maxLength: 100
+        minLength: 3
+        type: string
+      name:
+        maxLength: 50
+        minLength: 3
+        type: string
+    required:
+    - display_name
+    - name
+    type: object
+  dto.RoleUpdate:
+    properties:
+      description:
+        maxLength: 500
+        type: string
+      display_name:
+        maxLength: 100
+        minLength: 3
+        type: string
+    type: object
+  dto.UpdateAccident:
+    properties:
+      accident_date:
+        type: string
+      accident_time:
+        type: string
+      accident_type:
+        type: string
+      cause_of_accident:
+        type: string
+      city_id:
+        type: string
+      city_name:
+        type: string
+      death_count:
+        type: integer
+      description:
+        type: string
+      district_id:
+        type: string
+      district_name:
+        type: string
+      injured_count:
+        type: integer
+      latitude:
+        type: number
+      location:
+        type: string
+      longitude:
+        type: number
+      minor_injured_count:
+        type: integer
+      officer_name:
+        type: string
+      police_report_no:
+        type: string
+      police_station:
+        type: string
+      province_id:
+        type: string
+      province_name:
+        type: string
+      road_condition:
+        type: string
+      road_type:
+        type: string
+      vehicle_count:
+        type: integer
+      vehicle_type:
+        type: string
+      weather_condition:
+        type: string
+    type: object
+  dto.UpdateEvent:
+    properties:
+      apps_downloaded:
+        type: integer
+      apps_name:
+        type: string
+      attendees_count:
+        type: integer
+      city_id:
+        type: string
+      description:
+        type: string
+      district_id:
+        type: string
+      end_time:
+        type: string
+      event_date:
+        type: string
+      event_type:
+        type: string
+      instructor_name:
+        type: string
+      instructor_phone:
+        type: string
+      location:
+        type: string
+      notes:
+        type: string
+      on_the_spot_sales:
+        items:
+          $ref: '#/definitions/dto.OnTheSpotSaleItem'
+        type: array
+      province_id:
+        type: string
+      public_id:
+        type: string
+      school_id:
+        type: string
+      start_time:
+        type: string
+      status:
+        type: string
+      target_attendees:
+        type: integer
+      target_audience:
+        type: string
+      title:
+        type: string
+      visiting_service_profit:
+        type: number
+      visiting_service_unit_entry:
+        type: integer
+    type: object
+  dto.UpdateEventBudget:
+    properties:
+      actual_spent:
+        type: number
+      budget_amount:
+        type: number
+      budget_date:
+        type: string
+      category:
+        type: string
+      description:
+        type: string
+      event_id:
+        type: string
+      notes:
+        type: string
+      status:
+        type: string
+    type: object
+  dto.UpdateMarketShare:
+    properties:
+      city_id:
+        type: string
+      city_name:
+        type: string
+      district_id:
+        type: string
+      district_name:
+        type: string
+      month:
+        type: integer
+      monthly_competitor_percentage:
+        type: number
+      monthly_competitor_sales:
+        type: number
+      monthly_sales:
+        type: number
+      monthly_sales_percentage:
+        type: number
+      notes:
+        type: string
+      province_id:
+        type: string
+      province_name:
         type: string
       year:
-        maxLength: 5
-        minLength: 4
+        type: integer
+      yearly_competitor_percentage:
+        type: number
+      yearly_competitor_sales:
+        type: number
+      yearly_sales:
+        type: number
+      yearly_sales_percentage:
+        type: number
+    type: object
+  dto.UpdatePublic:
+    properties:
+      address:
+        maxLength: 500
+        minLength: 3
         type: string
+      category:
+        type: string
+      city_id:
+        type: string
+      city_name:
+        type: string
+      district_id:
+        type: string
+      district_name:
+        type: string
+      email:
+        type: string
+      employee_count:
+        type: integer
+      is_educated:
+        type: boolean
+      last_visit_at:
+        type: string
+      latitude:
+        type: number
+      longitude:
+        type: number
+      name:
+        maxLength: 200
+        minLength: 3
+        type: string
+      phone:
+        maxLength: 20
+        minLength: 5
+        type: string
+      postal_code:
+        type: string
+      province_id:
+        type: string
+      province_name:
+        type: string
+      visit_count:
+        type: integer
+    type: object
+  dto.UpdateSchool:
+    properties:
+      address:
+        maxLength: 100
+        minLength: 3
+        type: string
+      city_id:
+        type: string
+      city_name:
+        type: string
+      district_id:
+        type: string
+      district_name:
+        type: string
+      email:
+        type: string
+      is_educated:
+        type: boolean
+      last_visit_at:
+        type: string
+      latitude:
+        type: number
+      longitude:
+        type: number
+      major_count:
+        type: integer
+      name:
+        maxLength: 100
+        minLength: 3
+        type: string
+      npsn:
+        maxLength: 100
+        minLength: 3
+        type: string
+      phone:
+        maxLength: 20
+        minLength: 5
+        type: string
+      postal_code:
+        type: string
+      province_id:
+        type: string
+      province_name:
+        type: string
+      student_count:
+        type: integer
+      teacher_count:
+        type: integer
+      visit_count:
+        type: integer
     type: object
   dto.UserRegister:
     properties:
@@ -139,6 +810,8 @@ definitions:
       phone:
         maxLength: 15
         minLength: 9
+        type: string
+      role:
         type: string
     required:
     - email
@@ -157,6 +830,8 @@ definitions:
       phone:
         maxLength: 15
         minLength: 9
+        type: string
+      role:
         type: string
     type: object
   response.Error:
@@ -191,184 +866,27 @@ info:
     email: zaiduszhuhur@gmail.com
     name: API Support
     url: https://www.linkedin.com/in/zaidus-zhuhur/
-  description: This is a sample server for a workshop management service.
+  description: This is a sample server for a safety riding service.
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   termsOfService: http://swagger.io/terms/
-  title: Workshop Management API
+  title: Safety Riding API
   version: "1.0"
 paths:
-  /booking:
+  /accident:
     post:
       consumes:
       - application/json
-      description: Create a new booking with the provided details.
+      description: Create a new accident record complete with location, reporter,
+        and chronology information
       parameters:
-      - description: Booking details to be created
+      - description: Accident payload
         in: body
-        name: booking
+        name: accident
         required: true
         schema:
-          $ref: '#/definitions/dto.CreateBooking'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Booking created successfully
-          schema:
-            $ref: '#/definitions/response.Success'
-        "400":
-          description: Invalid request body
-          schema:
-            $ref: '#/definitions/response.Error'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/response.Error'
-      security:
-      - ApiKeyAuth: []
-      summary: Create a new booking
-      tags:
-      - Bookings
-  /booking/{id}:
-    get:
-      consumes:
-      - application/json
-      description: Retrieve booking details using the booking ID.
-      parameters:
-      - description: Booking ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Booking details retrieved successfully
-          schema:
-            $ref: '#/definitions/response.Success'
-        "404":
-          description: Booking not found
-          schema:
-            $ref: '#/definitions/response.Error'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/response.Error'
-      security:
-      - ApiKeyAuth: []
-      summary: Get a booking by ID
-      tags:
-      - Bookings
-  /booking/{id}/status:
-    put:
-      consumes:
-      - application/json
-      description: Update status a booking with the provided details.
-      parameters:
-      - description: Booking ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Booking details to be updated
-        in: body
-        name: booking
-        required: true
-        schema:
-          $ref: '#/definitions/dto.UpdateBookingStatus'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Booking updated successfully
-          schema:
-            $ref: '#/definitions/response.Success'
-        "400":
-          description: Invalid request body
-          schema:
-            $ref: '#/definitions/response.Error'
-        "404":
-          description: Booking not found
-          schema:
-            $ref: '#/definitions/response.Error'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/response.Error'
-      security:
-      - ApiKeyAuth: []
-      summary: Update status a booking
-      tags:
-      - Bookings
-  /bookings:
-    get:
-      consumes:
-      - application/json
-      description: Retrieve a list of bookings with optional filters and pagination.
-      parameters:
-      - description: Page number for pagination
-        in: query
-        name: page
-        type: integer
-      - description: Number of items per page
-        in: query
-        name: limit
-        type: integer
-      - description: Field to sort by
-        in: query
-        name: order_by
-        type: string
-      - description: Sort direction (asc/desc)
-        in: query
-        name: order_direction
-        type: string
-      - description: Search query to filter bookings
-        in: query
-        name: search
-        type: string
-      - description: Filter by booking status
-        in: query
-        name: filters[status]
-        type: string
-      - description: Filter by user ID
-        in: query
-        name: filters[user_id]
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: List of bookings retrieved successfully
-          schema:
-            $ref: '#/definitions/response.Success'
-        "404":
-          description: No bookings found
-          schema:
-            $ref: '#/definitions/response.Error'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/response.Error'
-      security:
-      - ApiKeyAuth: []
-      summary: Get a list of bookings
-      tags:
-      - Bookings
-  /service:
-    post:
-      consumes:
-      - application/json
-      description: Create a new service with the given information
-      parameters:
-      - description: Service information
-        in: body
-        name: service
-        required: true
-        schema:
-          $ref: '#/definitions/dto.AddService'
+          $ref: '#/definitions/dto.AddAccident'
       produces:
       - application/json
       responses:
@@ -386,84 +904,20 @@ paths:
             $ref: '#/definitions/response.Error'
       security:
       - ApiKeyAuth: []
-      summary: Create a new service
+      summary: Create a new accident record
       tags:
-      - Services
-  /service/{id}:
+      - Accidents
+  /accident/{id}:
     delete:
       consumes:
       - application/json
-      description: Delete a service by its ID
+      description: Delete accident by ID
       parameters:
-      - description: Service ID
+      - description: Accident ID
         in: path
         name: id
         required: true
         type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/response.Success'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/response.Error'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/response.Error'
-      security:
-      - ApiKeyAuth: []
-      summary: Delete a service
-      tags:
-      - Services
-    get:
-      consumes:
-      - application/json
-      description: Get a service by its ID
-      parameters:
-      - description: Service ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/response.Success'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/response.Error'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/response.Error'
-      summary: Get a service by ID
-      tags:
-      - Services
-    put:
-      consumes:
-      - application/json
-      description: Update a service with the given information
-      parameters:
-      - description: Service ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Service information
-        in: body
-        name: service
-        required: true
-        schema:
-          $ref: '#/definitions/dto.UpdateService'
       produces:
       - application/json
       responses:
@@ -475,6 +929,32 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete an accident
+      tags:
+      - Accidents
+    get:
+      consumes:
+      - application/json
+      description: Retrieve accident detail information by accident ID
+      parameters:
+      - description: Accident ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
         "404":
           description: Not Found
           schema:
@@ -485,38 +965,1251 @@ paths:
             $ref: '#/definitions/response.Error'
       security:
       - ApiKeyAuth: []
-      summary: Update a service
+      summary: Get accident details
       tags:
-      - Services
-  /services:
+      - Accidents
+    put:
+      consumes:
+      - application/json
+      description: Update accident record fields by accident ID
+      parameters:
+      - description: Accident ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Accident payload
+        in: body
+        name: accident
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateAccident'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Update accident data
+      tags:
+      - Accidents
+  /accident/{id}/photos:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload one or more accident photos and metadata
+      parameters:
+      - description: Accident ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Accident photos
+        in: formData
+        name: photos
+        required: true
+        type: file
+      - description: Photo captions (repeat per photo)
+        in: formData
+        name: captions
+        type: string
+      - description: Photo order (repeat per photo)
+        in: formData
+        name: photo_orders
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/response.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Upload accident photos
+      tags:
+      - Accidents
+  /accident/photo/{photoId}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a single accident photo by photo ID
+      parameters:
+      - description: Photo ID
+        in: path
+        name: photoId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete accident photo
+      tags:
+      - Accidents
+  /accidents:
     get:
       consumes:
       - application/json
-      description: Fetch services with optional filters
+      description: Get paginated accidents with optional filters (district, city,
+        province, type, etc.)
       parameters:
-      - description: Page number for pagination
+      - description: Page number
         in: query
         name: page
         type: integer
-      - description: Number of items per page
+      - description: Items per page
         in: query
         name: limit
         type: integer
-      - description: Field to sort by
+      - description: Sort field
         in: query
-        name: order_by
+        name: sort
         type: string
-      - description: Sort direction (asc/desc)
+      - description: Sort order (asc/desc)
         in: query
-        name: order_direction
+        name: order
         type: string
-      - description: Search query to filter services
+      - description: Filter by district ID
         in: query
-        name: search
+        name: district_id
         type: string
-      - description: Filter by price
+      - description: Filter by city ID
         in: query
-        name: filters[price]
+        name: city_id
+        type: string
+      - description: Filter by province ID
+        in: query
+        name: province_id
+        type: string
+      - description: Filter by accident type
+        in: query
+        name: accident_type
+        type: string
+      - description: Filter by vehicle type
+        in: query
+        name: vehicle_type
+        type: string
+      - description: Filter by police station
+        in: query
+        name: police_station
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: List accidents with pagination
+      tags:
+      - Accidents
+  /budget:
+    post:
+      consumes:
+      - application/json
+      description: Create a new event budget record
+      parameters:
+      - description: Budget payload
+        in: body
+        name: budget
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AddEventBudget'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/response.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Create a new budget entry
+      tags:
+      - Budgets
+  /budget/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete budget by ID
+      parameters:
+      - description: Budget ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete a budget entry
+      tags:
+      - Budgets
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a single budget entry by ID
+      parameters:
+      - description: Budget ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get budget detail
+      tags:
+      - Budgets
+    put:
+      consumes:
+      - application/json
+      description: Update budget information by ID
+      parameters:
+      - description: Budget ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Budget payload
+        in: body
+        name: budget
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateEventBudget'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Update a budget entry
+      tags:
+      - Budgets
+  /budget/summary/event/{eventId}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve aggregated budget summary for a specific event
+      parameters:
+      - description: Event ID
+        in: path
+        name: eventId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get event budget summary
+      tags:
+      - Budgets
+  /budget/summary/monthly:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve aggregated monthly budget summary data
+      parameters:
+      - description: Month number (1-12)
+        in: query
+        name: month
+        required: true
+        type: integer
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get monthly budget summary
+      tags:
+      - Budgets
+  /budget/summary/yearly:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve aggregated yearly budget summary data
+      parameters:
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get yearly budget summary
+      tags:
+      - Budgets
+  /budgets:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve paginated budgets with optional filters
+      parameters:
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Items per page
+        in: query
+        name: limit
+        type: integer
+      - description: Sort field
+        in: query
+        name: sort
+        type: string
+      - description: Sort order (asc/desc)
+        in: query
+        name: order
+        type: string
+      - description: Filter by event ID
+        in: query
+        name: event_id
+        type: string
+      - description: Filter by month
+        in: query
+        name: budget_month
+        type: string
+      - description: Filter by year
+        in: query
+        name: budget_year
+        type: string
+      - description: Filter by category
+        in: query
+        name: category
+        type: string
+      - description: Filter by status
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: List budgets with pagination
+      tags:
+      - Budgets
+  /budgets/event/{eventId}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve all budgets grouped by a specific event ID
+      parameters:
+      - description: Event ID
+        in: path
+        name: eventId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: List budgets for an event
+      tags:
+      - Budgets
+  /budgets/month-year:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve budgets filtered by month and year
+      parameters:
+      - description: Month number (1-12)
+        in: query
+        name: month
+        required: true
+        type: integer
+      - description: Year
+        in: query
+        name: year
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: List budgets by month and year
+      tags:
+      - Budgets
+  /city:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve list of cities filtered by province
+      parameters:
+      - description: Reference year (default from env)
+        in: query
+        name: thn
+        type: string
+      - description: Level code (default 11)
+        in: query
+        name: lvl
+        type: string
+      - description: Province code
+        in: query
+        name: pro
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      summary: Get cities
+      tags:
+      - Cities
+  /district:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve list of districts filtered by province and city
+      parameters:
+      - description: Reference year (default from env)
+        in: query
+        name: thn
+        type: string
+      - description: Level code (default 12)
+        in: query
+        name: lvl
+        type: string
+      - description: Province code
+        in: query
+        name: pro
+        required: true
+        type: string
+      - description: City code
+        in: query
+        name: kab
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      summary: Get districts
+      tags:
+      - Districts
+  /event:
+    post:
+      consumes:
+      - application/json
+      description: Create a new safety riding event
+      parameters:
+      - description: Event payload
+        in: body
+        name: event
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AddEvent'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/response.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Create a new event
+      tags:
+      - Events
+  /event/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete event by ID
+      parameters:
+      - description: Event ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete an event
+      tags:
+      - Events
+    get:
+      consumes:
+      - application/json
+      description: Retrieve event information by ID
+      parameters:
+      - description: Event ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get event detail
+      tags:
+      - Events
+    put:
+      consumes:
+      - application/json
+      description: Update event information by ID
+      parameters:
+      - description: Event ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Event payload
+        in: body
+        name: event
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateEvent'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Update an event
+      tags:
+      - Events
+  /event/{id}/photos:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Upload one or more event photos and metadata
+      parameters:
+      - description: Event ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Event photos
+        in: formData
+        name: photos
+        required: true
+        type: file
+      - description: Photo captions (repeat per photo)
+        in: formData
+        name: captions
+        type: string
+      - description: Photo order (repeat per photo)
+        in: formData
+        name: photo_orders
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/response.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Upload event photos
+      tags:
+      - Events
+  /event/photo/{photoId}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a single event photo by ID
+      parameters:
+      - description: Photo ID
+        in: path
+        name: photoId
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete event photo
+      tags:
+      - Events
+  /events:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve paginated list of events with optional filters
+      parameters:
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Items per page
+        in: query
+        name: limit
+        type: integer
+      - description: Sort field
+        in: query
+        name: sort
+        type: string
+      - description: Sort order (asc/desc)
+        in: query
+        name: order
+        type: string
+      - description: Filter by school ID
+        in: query
+        name: school_id
+        type: string
+      - description: Filter by district ID
+        in: query
+        name: district_id
+        type: string
+      - description: Filter by city ID
+        in: query
+        name: city_id
+        type: string
+      - description: Filter by province ID
+        in: query
+        name: province_id
+        type: string
+      - description: Filter by event type
+        in: query
+        name: event_type
+        type: string
+      - description: Filter by status
+        in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: List events
+      tags:
+      - Events
+  /marketshare:
+    post:
+      consumes:
+      - application/json
+      description: Create a new market share record
+      parameters:
+      - description: Market share payload
+        in: body
+        name: marketshare
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AddMarketShare'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/response.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Create market share entry
+      tags:
+      - MarketShare
+  /marketshare/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete market share record by ID
+      parameters:
+      - description: Market share ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete a market share entry
+      tags:
+      - MarketShare
+    get:
+      consumes:
+      - application/json
+      description: Retrieve market share data by ID
+      parameters:
+      - description: Market share ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get market share detail
+      tags:
+      - MarketShare
+    put:
+      consumes:
+      - application/json
+      description: Update market share record by ID
+      parameters:
+      - description: Market share ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Market share payload
+        in: body
+        name: marketshare
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateMarketShare'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Update market share entry
+      tags:
+      - MarketShare
+  /marketshare/dashboard-suggestions:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve top cities and districts suggestions for dashboard insights
+      parameters:
+      - description: Year filter
+        in: query
+        name: year
+        type: integer
+      - description: Month filter (1-12)
+        in: query
+        name: month
+        type: integer
+      - description: Number of cities to return (default 5)
+        in: query
+        name: city_limit
+        type: integer
+      - description: Number of districts to return (default 5)
+        in: query
+        name: district_limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get dashboard suggestions
+      tags:
+      - MarketShare
+  /marketshare/summary:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve aggregated market share summary by hierarchy level
+      parameters:
+      - description: Aggregation level (province/city/district)
+        in: query
+        name: level
+        type: string
+      - description: Year filter
+        in: query
+        name: year
+        type: integer
+      - description: Month filter (1-12)
+        in: query
+        name: month
+        type: integer
+      - description: Province ID filter
+        in: query
+        name: province_id
+        type: string
+      - description: City ID filter
+        in: query
+        name: city_id
+        type: string
+      - description: District ID filter
+        in: query
+        name: district_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get market share summary
+      tags:
+      - MarketShare
+  /marketshare/top-districts:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve top districts ranked by sales
+      parameters:
+      - description: Year filter
+        in: query
+        name: year
+        type: integer
+      - description: Month filter (1-12)
+        in: query
+        name: month
+        type: integer
+      - description: Number of records (default 5)
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get top districts
+      tags:
+      - MarketShare
+  /marketshares:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve paginated market share entries with optional filters
+      parameters:
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Items per page
+        in: query
+        name: limit
+        type: integer
+      - description: Sort field
+        in: query
+        name: sort
+        type: string
+      - description: Sort order (asc/desc)
+        in: query
+        name: order
+        type: string
+      - description: Filter by province ID
+        in: query
+        name: province_id
+        type: string
+      - description: Filter by city ID
+        in: query
+        name: city_id
+        type: string
+      - description: Filter by district ID
+        in: query
+        name: district_id
+        type: string
+      - description: Filter by month
+        in: query
+        name: month
+        type: string
+      - description: Filter by year
+        in: query
+        name: year
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: List market share data
+      tags:
+      - MarketShare
+  /menu:
+    post:
+      consumes:
+      - application/json
+      description: Create a new menu entry
+      parameters:
+      - description: Menu payload
+        in: body
+        name: menu
+        required: true
+        schema:
+          $ref: '#/definitions/dto.MenuItemCreate'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/response.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Create a menu
+      tags:
+      - Menus
+  /menu/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete menu by ID
+      parameters:
+      - description: Menu ID
+        in: path
+        name: id
+        required: true
         type: string
       produces:
       - application/json
@@ -529,9 +2222,1092 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/response.Error'
-      summary: Fetch services
+      security:
+      - ApiKeyAuth: []
+      summary: Delete a menu
       tags:
-      - Services
+      - Menus
+    get:
+      consumes:
+      - application/json
+      description: Retrieve menu information by ID
+      parameters:
+      - description: Menu ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get menu detail
+      tags:
+      - Menus
+    put:
+      consumes:
+      - application/json
+      description: Update menu information by ID
+      parameters:
+      - description: Menu ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Menu payload
+        in: body
+        name: menu
+        required: true
+        schema:
+          $ref: '#/definitions/dto.MenuItemUpdate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Update a menu
+      tags:
+      - Menus
+  /menus:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve paginated menus (admin only)
+      parameters:
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Items per page
+        in: query
+        name: limit
+        type: integer
+      - description: Sort field
+        in: query
+        name: sort
+        type: string
+      - description: Sort order (asc/desc)
+        in: query
+        name: order
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: List menus
+      tags:
+      - Menus
+  /menus/active:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve menus that are marked active for current user role
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get active menus
+      tags:
+      - Menus
+  /menus/me:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve menus based on authenticated user's role
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get menus for current user
+      tags:
+      - Menus
+  /permission:
+    post:
+      consumes:
+      - application/json
+      description: Create a new permission definition
+      parameters:
+      - description: Permission payload
+        in: body
+        name: permission
+        required: true
+        schema:
+          $ref: '#/definitions/dto.PermissionCreate'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/response.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Create a permission
+      tags:
+      - Permissions
+  /permission/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete permission by ID
+      parameters:
+      - description: Permission ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete a permission
+      tags:
+      - Permissions
+    get:
+      consumes:
+      - application/json
+      description: Retrieve permission by ID
+      parameters:
+      - description: Permission ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get permission detail
+      tags:
+      - Permissions
+    put:
+      consumes:
+      - application/json
+      description: Update permission definition by ID
+      parameters:
+      - description: Permission ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Permission payload
+        in: body
+        name: permission
+        required: true
+        schema:
+          $ref: '#/definitions/dto.PermissionUpdate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Update a permission
+      tags:
+      - Permissions
+  /permissions:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve paginated permission list
+      parameters:
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Items per page
+        in: query
+        name: limit
+        type: integer
+      - description: Sort field
+        in: query
+        name: sort
+        type: string
+      - description: Sort order (asc/desc)
+        in: query
+        name: order
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: List permissions
+      tags:
+      - Permissions
+  /permissions/me:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve permissions for the authenticated user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get current user permissions
+      tags:
+      - Permissions
+  /province:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve list of provinces for a given year
+      parameters:
+      - description: Reference year (default from env)
+        in: query
+        name: thn
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      summary: Get provinces
+      tags:
+      - Provinces
+  /public:
+    post:
+      consumes:
+      - application/json
+      description: Create a new public entity record
+      parameters:
+      - description: Public payload
+        in: body
+        name: public
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AddPublic'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/response.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Create a public entity
+      tags:
+      - Publics
+  /public/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete public entity by ID
+      parameters:
+      - description: Public entity ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete a public entity
+      tags:
+      - Publics
+    get:
+      consumes:
+      - application/json
+      description: Retrieve public entity by ID
+      parameters:
+      - description: Public entity ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get public entity detail
+      tags:
+      - Publics
+    put:
+      consumes:
+      - application/json
+      description: Update public entity information by ID
+      parameters:
+      - description: Public entity ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Public payload
+        in: body
+        name: public
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdatePublic'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Update a public entity
+      tags:
+      - Publics
+  /publics:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve paginated public entities with optional filters
+      parameters:
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Items per page
+        in: query
+        name: limit
+        type: integer
+      - description: Sort field
+        in: query
+        name: sort
+        type: string
+      - description: Sort order (asc/desc)
+        in: query
+        name: order
+        type: string
+      - description: Filter by district ID
+        in: query
+        name: district_id
+        type: string
+      - description: Filter by city ID
+        in: query
+        name: city_id
+        type: string
+      - description: Filter by province ID
+        in: query
+        name: province_id
+        type: string
+      - description: Filter by category
+        in: query
+        name: category
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: List public entities
+      tags:
+      - Publics
+  /publics/education-stats:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve aggregated education statistics for public entities
+      parameters:
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Items per page
+        in: query
+        name: limit
+        type: integer
+      - description: Filter by district ID
+        in: query
+        name: district_id
+        type: string
+      - description: Filter by city ID
+        in: query
+        name: city_id
+        type: string
+      - description: Filter by province ID
+        in: query
+        name: province_id
+        type: string
+      - description: Filter by category
+        in: query
+        name: category
+        type: string
+      - description: Filter by education flag
+        in: query
+        name: is_educated
+        type: string
+      - description: Filter by month
+        in: query
+        name: month
+        type: string
+      - description: Filter by year
+        in: query
+        name: year
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get public education statistics
+      tags:
+      - Publics
+  /role:
+    post:
+      consumes:
+      - application/json
+      description: Create a new role
+      parameters:
+      - description: Role payload
+        in: body
+        name: role
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RoleCreate'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/response.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Create a role
+      tags:
+      - Roles
+  /role/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete role by ID
+      parameters:
+      - description: Role ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete a role
+      tags:
+      - Roles
+    get:
+      consumes:
+      - application/json
+      description: Retrieve role information by ID
+      parameters:
+      - description: Role ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get role detail
+      tags:
+      - Roles
+    put:
+      consumes:
+      - application/json
+      description: Update role information by ID
+      parameters:
+      - description: Role ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Role payload
+        in: body
+        name: role
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RoleUpdate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Update a role
+      tags:
+      - Roles
+  /role/{id}/menus:
+    post:
+      consumes:
+      - application/json
+      description: Assign menus list to a role
+      parameters:
+      - description: Role ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Menu assignments
+        in: body
+        name: menus
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AssignMenus'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Assign menus to role
+      tags:
+      - Roles
+  /role/{id}/permissions:
+    post:
+      consumes:
+      - application/json
+      description: Assign permissions list to a role
+      parameters:
+      - description: Role ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Permission assignments
+        in: body
+        name: permissions
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AssignPermissions'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Assign permissions to role
+      tags:
+      - Roles
+  /roles:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve paginated role list
+      parameters:
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Items per page
+        in: query
+        name: limit
+        type: integer
+      - description: Sort field
+        in: query
+        name: sort
+        type: string
+      - description: Sort order (asc/desc)
+        in: query
+        name: order
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: List roles
+      tags:
+      - Roles
+  /school:
+    post:
+      consumes:
+      - application/json
+      description: Create a new school record
+      parameters:
+      - description: School payload
+        in: body
+        name: school
+        required: true
+        schema:
+          $ref: '#/definitions/dto.AddSchool'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/response.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Create a new school
+      tags:
+      - Schools
+  /school/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete school by ID
+      parameters:
+      - description: School ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete a school
+      tags:
+      - Schools
+    get:
+      consumes:
+      - application/json
+      description: Retrieve school information by ID
+      parameters:
+      - description: School ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get school detail
+      tags:
+      - Schools
+    put:
+      consumes:
+      - application/json
+      description: Update school information by ID
+      parameters:
+      - description: School ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: School payload
+        in: body
+        name: school
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateSchool'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Update a school
+      tags:
+      - Schools
+  /schools:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve paginated schools with optional filters
+      parameters:
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Items per page
+        in: query
+        name: limit
+        type: integer
+      - description: Sort field
+        in: query
+        name: sort
+        type: string
+      - description: Sort order (asc/desc)
+        in: query
+        name: order
+        type: string
+      - description: Filter by district ID
+        in: query
+        name: district_id
+        type: string
+      - description: Filter by city ID
+        in: query
+        name: city_id
+        type: string
+      - description: Filter by province ID
+        in: query
+        name: province_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: List schools
+      tags:
+      - Schools
+  /schools/education-stats:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve aggregated school education statistics with optional filters
+      parameters:
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Items per page
+        in: query
+        name: limit
+        type: integer
+      - description: Filter by district ID
+        in: query
+        name: district_id
+        type: string
+      - description: Filter by city ID
+        in: query
+        name: city_id
+        type: string
+      - description: Filter by province ID
+        in: query
+        name: province_id
+        type: string
+      - description: Filter by education completion flag
+        in: query
+        name: is_educated
+        type: string
+      - description: Filter by month
+        in: query
+        name: month
+        type: string
+      - description: Filter by year
+        in: query
+        name: year
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get school education statistics
+      tags:
+      - Schools
   /user:
     delete:
       consumes:
@@ -590,7 +3366,107 @@ paths:
     put:
       consumes:
       - application/json
-      description: Update a user
+      description: Update current authenticated user
+      parameters:
+      - description: User update details
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UserUpdate'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Update current user
+      tags:
+      - Users
+  /user/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a user by ID (Admin only)
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Delete a user by ID (Admin only)
+      tags:
+      - Users
+    get:
+      consumes:
+      - application/json
+      description: Get a user by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get a user by ID
+      tags:
+      - Users
+    put:
+      consumes:
+      - application/json
+      description: Update a user by ID (Admin only)
       parameters:
       - description: User ID
         in: path
@@ -624,38 +3500,7 @@ paths:
             $ref: '#/definitions/response.Error'
       security:
       - ApiKeyAuth: []
-      summary: Update a user
-      tags:
-      - Users
-  /user/{id}:
-    get:
-      consumes:
-      - application/json
-      description: Get a user by ID
-      parameters:
-      - description: User ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/response.Success'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/response.Error'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/response.Error'
-      security:
-      - ApiKeyAuth: []
-      summary: Get a user by ID
+      summary: Update a user by ID (Admin only)
       tags:
       - Users
   /user/change/password:
@@ -780,6 +3625,91 @@ paths:
       summary: Register a new user
       tags:
       - Users
+  /user/session/{session_id}:
+    delete:
+      consumes:
+      - application/json
+      description: Revoke/logout a specific session by session ID
+      parameters:
+      - description: Session ID
+        in: path
+        name: session_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Revoke a specific session
+      tags:
+      - Sessions
+  /user/sessions:
+    get:
+      consumes:
+      - application/json
+      description: Get all active sessions for the current user
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get all active sessions for the current user
+      tags:
+      - Sessions
+  /user/sessions/revoke-others:
+    post:
+      consumes:
+      - application/json
+      description: Logout from all devices except the current one
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Revoke all other sessions except current
+      tags:
+      - Sessions
   /users:
     get:
       consumes:
@@ -822,354 +3752,6 @@ paths:
       summary: Get all users
       tags:
       - Users
-  /vehicle:
-    post:
-      consumes:
-      - application/json
-      description: Create a new vehicle with the provided details.
-      parameters:
-      - description: Vehicle details to be created
-        in: body
-        name: vehicle
-        required: true
-        schema:
-          $ref: '#/definitions/dto.AddVehicle'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Vehicle created successfully
-          schema:
-            $ref: '#/definitions/response.Success'
-        "400":
-          description: Invalid request body
-          schema:
-            $ref: '#/definitions/response.Error'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/response.Error'
-      security:
-      - ApiKeyAuth: []
-      summary: Create a new vehicle
-      tags:
-      - Vehicles
-  /vehicle/{id}:
-    delete:
-      consumes:
-      - application/json
-      description: Delete a vehicle by its ID.
-      parameters:
-      - description: Vehicle ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Vehicle deleted successfully
-          schema:
-            $ref: '#/definitions/response.Success'
-        "404":
-          description: Vehicle not found
-          schema:
-            $ref: '#/definitions/response.Error'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/response.Error'
-      security:
-      - ApiKeyAuth: []
-      summary: Delete a vehicle
-      tags:
-      - Vehicles
-    get:
-      consumes:
-      - application/json
-      description: Retrieve vehicle details using the vehicle ID.
-      parameters:
-      - description: Vehicle ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Vehicle details retrieved successfully
-          schema:
-            $ref: '#/definitions/response.Success'
-        "404":
-          description: Vehicle not found
-          schema:
-            $ref: '#/definitions/response.Error'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/response.Error'
-      security:
-      - ApiKeyAuth: []
-      summary: Get a vehicle by ID
-      tags:
-      - Vehicles
-    put:
-      consumes:
-      - application/json
-      description: Update an existing vehicle's details.
-      parameters:
-      - description: Vehicle ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Updated vehicle details
-        in: body
-        name: vehicle
-        required: true
-        schema:
-          $ref: '#/definitions/dto.UpdateVehicle'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Vehicle updated successfully
-          schema:
-            $ref: '#/definitions/response.Success'
-        "400":
-          description: Invalid request body
-          schema:
-            $ref: '#/definitions/response.Error'
-        "404":
-          description: Vehicle not found
-          schema:
-            $ref: '#/definitions/response.Error'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/response.Error'
-      security:
-      - ApiKeyAuth: []
-      summary: Update a vehicle
-      tags:
-      - Vehicles
-  /vehicles:
-    get:
-      consumes:
-      - application/json
-      description: Retrieve a list of vehicles with optional filters and pagination.
-      parameters:
-      - description: Page number for pagination
-        in: query
-        name: page
-        type: integer
-      - description: Number of items per page
-        in: query
-        name: limit
-        type: integer
-      - description: Field to sort by
-        in: query
-        name: order_by
-        type: string
-      - description: Sort direction (asc/desc)
-        in: query
-        name: order_direction
-        type: string
-      - description: Search query to filter vehicles
-        in: query
-        name: search
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: List of vehicles retrieved successfully
-          schema:
-            $ref: '#/definitions/response.Success'
-        "404":
-          description: No vehicles found
-          schema:
-            $ref: '#/definitions/response.Error'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/response.Error'
-      security:
-      - ApiKeyAuth: []
-      summary: Get a list of vehicles
-      tags:
-      - Vehicles
-  /workorder/{id}:
-    get:
-      consumes:
-      - application/json
-      description: Get a work order by ID
-      parameters:
-      - description: Work Order ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/response.Success'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/response.Error'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/response.Error'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/response.Error'
-      security:
-      - Bearer: []
-      summary: Get a work order by ID
-      tags:
-      - Work Orders
-  /workorders:
-    get:
-      consumes:
-      - application/json
-      description: Get all work orders
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/response.Success'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/response.Error'
-      security:
-      - Bearer: []
-      summary: Get all work orders
-      tags:
-      - Work Orders
-  /workorders/{id}/assign-mechanic:
-    put:
-      consumes:
-      - application/json
-      description: Assign a mechanic to an existing work order
-      parameters:
-      - description: Work Order ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Mechanic information
-        in: body
-        name: mechanic
-        required: true
-        schema:
-          $ref: '#/definitions/dto.AssignMechanic'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/response.Success'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/response.Error'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/response.Error'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/response.Error'
-      security:
-      - Bearer: []
-      summary: Assign a mechanic to a work order
-      tags:
-      - Work Orders
-  /workorders/{id}/status:
-    put:
-      consumes:
-      - application/json
-      description: Update the status of an existing work order
-      parameters:
-      - description: Work Order ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: New status
-        in: body
-        name: status
-        required: true
-        schema:
-          $ref: '#/definitions/dto.UpdateStatus'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/response.Success'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/response.Error'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/response.Error'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/response.Error'
-      security:
-      - Bearer: []
-      summary: Update a work order status
-      tags:
-      - Work Orders
-  /workorders/from-booking/{id}:
-    post:
-      consumes:
-      - application/json
-      description: Create a new work order from an existing booking ID
-      parameters:
-      - description: Booking ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/response.Success'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/response.Error'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/response.Error'
-      security:
-      - Bearer: []
-      summary: Create a work order from a booking
-      tags:
-      - Work Orders
 schemes:
 - http
 securityDefinitions:

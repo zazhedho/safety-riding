@@ -23,7 +23,18 @@ func NewRoleHandler(s interfacerole.ServiceRoleInterface) *RoleHandler {
 	return &RoleHandler{Service: s}
 }
 
-// Create creates a new role
+// Create godoc
+// @Summary Create a role
+// @Description Create a new role
+// @Tags Roles
+// @Accept json
+// @Produce json
+// @Param role body dto.RoleCreate true "Role payload"
+// @Success 201 {object} response.Success
+// @Failure 400 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /role [post]
 func (h *RoleHandler) Create(ctx *gin.Context) {
 	var req dto.RoleCreate
 	logId := utils.GenerateLogId(ctx)
@@ -53,7 +64,17 @@ func (h *RoleHandler) Create(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, res)
 }
 
-// GetByID retrieves a role by ID with full details
+// GetByID godoc
+// @Summary Get role detail
+// @Description Retrieve role information by ID
+// @Tags Roles
+// @Accept json
+// @Produce json
+// @Param id path string true "Role ID"
+// @Success 200 {object} response.Success
+// @Failure 404 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /role/{id} [get]
 func (h *RoleHandler) GetByID(ctx *gin.Context) {
 	id := ctx.Param("id")
 	logId := utils.GenerateLogId(ctx)
@@ -73,7 +94,21 @@ func (h *RoleHandler) GetByID(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
-// GetAll retrieves all roles with pagination
+// GetAll godoc
+// @Summary List roles
+// @Description Retrieve paginated role list
+// @Tags Roles
+// @Accept json
+// @Produce json
+// @Param page query int false "Page number"
+// @Param limit query int false "Items per page"
+// @Param sort query string false "Sort field"
+// @Param order query string false "Sort order (asc/desc)"
+// @Success 200 {object} response.Success
+// @Failure 400 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /roles [get]
 func (h *RoleHandler) GetAll(ctx *gin.Context) {
 	logId := utils.GenerateLogId(ctx)
 	logPrefix := fmt.Sprintf("[%s][RoleHandler][GetAll]", logId)
@@ -105,7 +140,19 @@ func (h *RoleHandler) GetAll(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
-// Update updates a role
+// Update godoc
+// @Summary Update a role
+// @Description Update role information by ID
+// @Tags Roles
+// @Accept json
+// @Produce json
+// @Param id path string true "Role ID"
+// @Param role body dto.RoleUpdate true "Role payload"
+// @Success 200 {object} response.Success
+// @Failure 400 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /role/{id} [put]
 func (h *RoleHandler) Update(ctx *gin.Context) {
 	id := ctx.Param("id")
 	var req dto.RoleUpdate
@@ -136,7 +183,17 @@ func (h *RoleHandler) Update(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
-// Delete deletes a role
+// Delete godoc
+// @Summary Delete a role
+// @Description Delete role by ID
+// @Tags Roles
+// @Accept json
+// @Produce json
+// @Param id path string true "Role ID"
+// @Success 200 {object} response.Success
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /role/{id} [delete]
 func (h *RoleHandler) Delete(ctx *gin.Context) {
 	id := ctx.Param("id")
 	logId := utils.GenerateLogId(ctx)
@@ -155,7 +212,19 @@ func (h *RoleHandler) Delete(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
-// AssignPermissions assigns permissions to a role
+// AssignPermissions godoc
+// @Summary Assign permissions to role
+// @Description Assign permissions list to a role
+// @Tags Roles
+// @Accept json
+// @Produce json
+// @Param id path string true "Role ID"
+// @Param permissions body dto.AssignPermissions true "Permission assignments"
+// @Success 200 {object} response.Success
+// @Failure 400 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /role/{id}/permissions [post]
 func (h *RoleHandler) AssignPermissions(ctx *gin.Context) {
 	id := ctx.Param("id")
 	var req dto.AssignPermissions
@@ -185,7 +254,19 @@ func (h *RoleHandler) AssignPermissions(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
-// AssignMenus assigns menus to a role
+// AssignMenus godoc
+// @Summary Assign menus to role
+// @Description Assign menus list to a role
+// @Tags Roles
+// @Accept json
+// @Produce json
+// @Param id path string true "Role ID"
+// @Param menus body dto.AssignMenus true "Menu assignments"
+// @Success 200 {object} response.Success
+// @Failure 400 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /role/{id}/menus [post]
 func (h *RoleHandler) AssignMenus(ctx *gin.Context) {
 	id := ctx.Param("id")
 	var req dto.AssignMenus

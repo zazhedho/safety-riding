@@ -28,6 +28,18 @@ func NewBudgetHandler(s interfacebudget.ServiceBudgetInterface) *BudgetHandler {
 	}
 }
 
+// AddBudget godoc
+// @Summary Create a new budget entry
+// @Description Create a new event budget record
+// @Tags Budgets
+// @Accept json
+// @Produce json
+// @Param budget body dto.AddEventBudget true "Budget payload"
+// @Success 201 {object} response.Success
+// @Failure 400 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /budget [post]
 func (h *BudgetHandler) AddBudget(ctx *gin.Context) {
 	authData := utils.GetAuthData(ctx)
 	username := utils.InterfaceString(authData["username"])
@@ -58,6 +70,18 @@ func (h *BudgetHandler) AddBudget(ctx *gin.Context) {
 	ctx.JSON(http.StatusCreated, res)
 }
 
+// GetBudgetById godoc
+// @Summary Get budget detail
+// @Description Retrieve a single budget entry by ID
+// @Tags Budgets
+// @Accept json
+// @Produce json
+// @Param id path string true "Budget ID"
+// @Success 200 {object} response.Success
+// @Failure 404 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /budget/{id} [get]
 func (h *BudgetHandler) GetBudgetById(ctx *gin.Context) {
 	logId := utils.GenerateLogId(ctx)
 	logPrefix := fmt.Sprintf("[%s][BudgetHandler][GetBudgetById]", logId)
@@ -88,6 +112,19 @@ func (h *BudgetHandler) GetBudgetById(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
+// UpdateBudget godoc
+// @Summary Update a budget entry
+// @Description Update budget information by ID
+// @Tags Budgets
+// @Accept json
+// @Produce json
+// @Param id path string true "Budget ID"
+// @Param budget body dto.UpdateEventBudget true "Budget payload"
+// @Success 200 {object} response.Success
+// @Failure 400 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /budget/{id} [put]
 func (h *BudgetHandler) UpdateBudget(ctx *gin.Context) {
 	authData := utils.GetAuthData(ctx)
 	username := utils.InterfaceString(authData["username"])
@@ -124,6 +161,26 @@ func (h *BudgetHandler) UpdateBudget(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
+// FetchBudget godoc
+// @Summary List budgets with pagination
+// @Description Retrieve paginated budgets with optional filters
+// @Tags Budgets
+// @Accept json
+// @Produce json
+// @Param page query int false "Page number"
+// @Param limit query int false "Items per page"
+// @Param sort query string false "Sort field"
+// @Param order query string false "Sort order (asc/desc)"
+// @Param event_id query string false "Filter by event ID"
+// @Param budget_month query string false "Filter by month"
+// @Param budget_year query string false "Filter by year"
+// @Param category query string false "Filter by category"
+// @Param status query string false "Filter by status"
+// @Success 200 {object} response.Success
+// @Failure 404 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /budgets [get]
 func (h *BudgetHandler) FetchBudget(ctx *gin.Context) {
 	logId := utils.GenerateLogId(ctx)
 	logPrefix := fmt.Sprintf("[%s][BudgetHandler][FetchBudget]", logId)
@@ -152,6 +209,18 @@ func (h *BudgetHandler) FetchBudget(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
+// DeleteBudget godoc
+// @Summary Delete a budget entry
+// @Description Delete budget by ID
+// @Tags Budgets
+// @Accept json
+// @Produce json
+// @Param id path string true "Budget ID"
+// @Success 200 {object} response.Success
+// @Failure 400 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /budget/{id} [delete]
 func (h *BudgetHandler) DeleteBudget(ctx *gin.Context) {
 	authData := utils.GetAuthData(ctx)
 	username := utils.InterfaceString(authData["username"])
@@ -179,7 +248,18 @@ func (h *BudgetHandler) DeleteBudget(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
-// Aggregation handlers
+// GetBudgetsByEvent godoc
+// @Summary List budgets for an event
+// @Description Retrieve all budgets grouped by a specific event ID
+// @Tags Budgets
+// @Accept json
+// @Produce json
+// @Param eventId path string true "Event ID"
+// @Success 200 {object} response.Success
+// @Failure 400 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /budgets/event/{eventId} [get]
 func (h *BudgetHandler) GetBudgetsByEvent(ctx *gin.Context) {
 	logId := utils.GenerateLogId(ctx)
 	logPrefix := fmt.Sprintf("[%s][BudgetHandler][GetBudgetsByEvent]", logId)
@@ -205,6 +285,19 @@ func (h *BudgetHandler) GetBudgetsByEvent(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
+// GetBudgetsByMonthYear godoc
+// @Summary List budgets by month and year
+// @Description Retrieve budgets filtered by month and year
+// @Tags Budgets
+// @Accept json
+// @Produce json
+// @Param month query int true "Month number (1-12)"
+// @Param year query int true "Year"
+// @Success 200 {object} response.Success
+// @Failure 400 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /budgets/month-year [get]
 func (h *BudgetHandler) GetBudgetsByMonthYear(ctx *gin.Context) {
 	logId := utils.GenerateLogId(ctx)
 	logPrefix := fmt.Sprintf("[%s][BudgetHandler][GetBudgetsByMonthYear]", logId)
@@ -246,6 +339,19 @@ func (h *BudgetHandler) GetBudgetsByMonthYear(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
+// GetMonthlySummary godoc
+// @Summary Get monthly budget summary
+// @Description Retrieve aggregated monthly budget summary data
+// @Tags Budgets
+// @Accept json
+// @Produce json
+// @Param month query int true "Month number (1-12)"
+// @Param year query int true "Year"
+// @Success 200 {object} response.Success
+// @Failure 400 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /budget/summary/monthly [get]
 func (h *BudgetHandler) GetMonthlySummary(ctx *gin.Context) {
 	logId := utils.GenerateLogId(ctx)
 	logPrefix := fmt.Sprintf("[%s][BudgetHandler][GetMonthlySummary]", logId)
@@ -287,6 +393,18 @@ func (h *BudgetHandler) GetMonthlySummary(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
+// GetYearlySummary godoc
+// @Summary Get yearly budget summary
+// @Description Retrieve aggregated yearly budget summary data
+// @Tags Budgets
+// @Accept json
+// @Produce json
+// @Param year query int true "Year"
+// @Success 200 {object} response.Success
+// @Failure 400 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /budget/summary/yearly [get]
 func (h *BudgetHandler) GetYearlySummary(ctx *gin.Context) {
 	logId := utils.GenerateLogId(ctx)
 	logPrefix := fmt.Sprintf("[%s][BudgetHandler][GetYearlySummary]", logId)
@@ -320,6 +438,18 @@ func (h *BudgetHandler) GetYearlySummary(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
+// GetEventSummary godoc
+// @Summary Get event budget summary
+// @Description Retrieve aggregated budget summary for a specific event
+// @Tags Budgets
+// @Accept json
+// @Produce json
+// @Param eventId path string true "Event ID"
+// @Success 200 {object} response.Success
+// @Failure 400 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /budget/summary/event/{eventId} [get]
 func (h *BudgetHandler) GetEventSummary(ctx *gin.Context) {
 	logId := utils.GenerateLogId(ctx)
 	logPrefix := fmt.Sprintf("[%s][BudgetHandler][GetEventSummary]", logId)

@@ -22,6 +22,20 @@ func NewDistrictHandler(s interfacedistrict.ServiceDistrictInterface) *DistrictH
 	}
 }
 
+// GetDistrict godoc
+// @Summary Get districts
+// @Description Retrieve list of districts filtered by province and city
+// @Tags Districts
+// @Accept json
+// @Produce json
+// @Param thn query string false "Reference year (default from env)"
+// @Param lvl query string false "Level code (default 12)"
+// @Param pro query string true "Province code"
+// @Param kab query string true "City code"
+// @Success 200 {object} response.Success
+// @Failure 400 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Router /district [get]
 func (h *DistrictHandler) GetDistrict(ctx *gin.Context) {
 	logId := utils.GenerateLogId(ctx)
 	logPrefix := fmt.Sprintf("[%s][DistrictHandler][GetDistrict]", logId)
