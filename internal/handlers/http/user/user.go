@@ -6,6 +6,10 @@ import (
 	"fmt"
 	"net/http"
 	"reflect"
+	"strconv"
+	"strings"
+	"time"
+
 	"safety-riding/infrastructure/database"
 	"safety-riding/internal/dto"
 	interfaceuser "safety-riding/internal/interfaces/user"
@@ -15,18 +19,24 @@ import (
 	"safety-riding/pkg/logger"
 	"safety-riding/pkg/messages"
 	"safety-riding/pkg/response"
+	"safety-riding/pkg/security"
 	"safety-riding/utils"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type HandlerUser struct {
-	Service interfaceuser.ServiceUserInterface
+	Service      interfaceuser.ServiceUserInterface
+	LoginLimiter security.LoginLimiter
 }
 
-func NewUserHandler(s interfaceuser.ServiceUserInterface) *HandlerUser {
-	return &HandlerUser{Service: s}
+func NewUserHandler(s interfaceuser.ServiceUserInterface, limiter security.LoginLimiter) *HandlerUser {
+	return &HandlerUser{
+		Service:      s,
+		LoginLimiter: limiter,
+	}
 }
 
 // Register godoc
@@ -103,10 +113,34 @@ func (h *HandlerUser) Login(ctx *gin.Context) {
 	}
 	logger.WriteLog(logger.LogLevelDebug, fmt.Sprintf("%s; Request: %+v;", logPrefix, utils.JsonEncode(req)))
 
+	loginIdentifier := fmt.Sprintf("%s:%s", ctx.ClientIP(), strings.ToLower(req.Email))
+	if h.LoginLimiter != nil {
+		blocked, ttl, limiterErr := h.LoginLimiter.IsBlocked(ctx.Request.Context(), loginIdentifier)
+		if limiterErr != nil {
+			logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; LoginLimiter.IsBlocked error: %v", logPrefix, limiterErr))
+		} else if blocked {
+			logger.WriteLog(logger.LogLevelWarn, fmt.Sprintf("%s; Too many attempts", logPrefix))
+			h.respondTooManyLoginAttempts(ctx, logId, ttl)
+			return
+		}
+	}
+
 	token, err := h.Service.LoginUser(req, logId.String())
 	if err != nil {
 		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; Service.LoginUser; ERROR: %s;", logPrefix, err))
 		if errors.Is(err, gorm.ErrRecordNotFound) || err.Error() == messages.ErrHashPassword {
+			if h.LoginLimiter != nil {
+				blocked, ttl, limiterErr := h.LoginLimiter.RegisterFailure(ctx.Request.Context(), loginIdentifier)
+				if limiterErr != nil {
+					logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; LoginLimiter.RegisterFailure error: %v", logPrefix, limiterErr))
+				}
+				if blocked {
+					logger.WriteLog(logger.LogLevelWarn, fmt.Sprintf("%s; Account temporarily locked after repeated failures", logPrefix))
+					h.respondTooManyLoginAttempts(ctx, logId, ttl)
+					return
+				}
+			}
+
 			res := response.Response(http.StatusBadRequest, messages.InvalidCred, logId, nil)
 			res.Error = response.Errors{Code: http.StatusBadRequest, Message: messages.MsgCredential}
 			ctx.JSON(http.StatusBadRequest, res)
@@ -117,6 +151,12 @@ func (h *HandlerUser) Login(ctx *gin.Context) {
 		res.Error = err.Error()
 		ctx.JSON(http.StatusInternalServerError, res)
 		return
+	}
+
+	if h.LoginLimiter != nil {
+		if err := h.LoginLimiter.Reset(ctx.Request.Context(), loginIdentifier); err != nil {
+			logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; LoginLimiter.Reset error: %v", logPrefix, err))
+		}
 	}
 
 	// Create session if Redis is available
@@ -139,6 +179,21 @@ func (h *HandlerUser) Login(ctx *gin.Context) {
 	res := response.Response(http.StatusOK, "success", logId, map[string]interface{}{"token": token})
 	logger.WriteLog(logger.LogLevelDebug, fmt.Sprintf("%s; Response: %+v;", logPrefix, utils.JsonEncode(token)))
 	ctx.JSON(http.StatusOK, res)
+}
+
+func (h *HandlerUser) respondTooManyLoginAttempts(ctx *gin.Context, logId uuid.UUID, ttl time.Duration) {
+	if ttl > 0 {
+		ctx.Header("Retry-After", strconv.Itoa(int(ttl.Seconds())))
+	}
+
+	message := "Too many login attempts. Please try again later."
+	if ttl > 0 {
+		message = fmt.Sprintf("Too many login attempts. Try again in %d seconds.", int(ttl.Seconds()))
+	}
+
+	res := response.Response(http.StatusTooManyRequests, messages.MsgFail, logId, nil)
+	res.Error = response.Errors{Code: http.StatusTooManyRequests, Message: message}
+	ctx.AbortWithStatusJSON(http.StatusTooManyRequests, res)
 }
 
 // Logout godoc

@@ -2,6 +2,7 @@ package router
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -52,6 +53,7 @@ import (
 	userSvc "safety-riding/internal/services/user"
 	"safety-riding/middlewares"
 	"safety-riding/pkg/logger"
+	"safety-riding/pkg/security"
 	"safety-riding/utils"
 )
 
@@ -87,12 +89,31 @@ func (r *Routes) UserRoutes() {
 	rRepo := roleRepo.NewRoleRepo(r.DB)
 	pRepo := permissionRepo.NewPermissionRepo(r.DB)
 	uc := userSvc.NewUserService(repo, blacklistRepo, rRepo, pRepo)
-	h := userHandler.NewUserHandler(uc)
+	redisClient := database.GetRedisClient()
+	loginLimiter := security.NewRedisLoginLimiter(
+		redisClient,
+		utils.GetEnv("LOGIN_ATTEMPT_LIMIT", 5).(int),
+		time.Duration(utils.GetEnv("LOGIN_ATTEMPT_WINDOW_SECONDS", 60).(int))*time.Second,
+		time.Duration(utils.GetEnv("LOGIN_BLOCK_DURATION_SECONDS", 300).(int))*time.Second,
+	)
+	h := userHandler.NewUserHandler(uc, loginLimiter)
 	mdw := middlewares.NewMiddleware(blacklistRepo)
+
+	registerLimit := utils.GetEnv("REGISTER_RATE_LIMIT", 5).(int)
+	registerWindowSeconds := utils.GetEnv("REGISTER_RATE_WINDOW_SECONDS", 60).(int)
+	if registerWindowSeconds <= 0 {
+		registerWindowSeconds = 60
+	}
+	registerLimiter := middlewares.IPRateLimitMiddleware(
+		redisClient,
+		"user_register",
+		registerLimit,
+		time.Duration(registerWindowSeconds)*time.Second,
+	)
 
 	user := r.App.Group("/api/user")
 	{
-		user.POST("/register", h.Register)
+		user.POST("/register", registerLimiter, h.Register)
 		user.POST("/login", h.Login)
 
 		userPriv := user.Group("").Use(mdw.AuthMiddleware())

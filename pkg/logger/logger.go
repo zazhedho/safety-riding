@@ -16,6 +16,7 @@ const (
 	LogLevelInfo  = 3
 	LogLevelData  = 4
 	LogLevelDebug = 5
+	LogLevelWarn  = 6
 )
 
 var logLevelMap = map[int]string{
@@ -25,6 +26,7 @@ var logLevelMap = map[int]string{
 	LogLevelInfo:  "INFO ",
 	LogLevelData:  "DATA ",
 	LogLevelDebug: "DEBUG",
+	LogLevelWarn:  "WARN ",
 }
 
 func WriteLog(level int, msg ...any) {
