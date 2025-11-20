@@ -355,7 +355,7 @@ const MarketShareList = () => {
                 <div className="spinner-border text-primary" role="status"></div>
               </div>
             ) : summaryData.length > 0 ? (
-              <table className="table table-bordered">
+              <table className="table table-bordered table-list">
                 <thead>
                   <tr>
                     <th>Location</th>
@@ -524,7 +524,7 @@ const MarketShareList = () => {
             <div className="text-center py-5"><div className="spinner-border"></div></div>
           ) : marketShares.length > 0 ? (
             <div className="table-responsive">
-              <table className="table table-hover">
+              <table className="table table-hover table-list">
                 <thead>
                   <tr>
                     <th>Period</th>

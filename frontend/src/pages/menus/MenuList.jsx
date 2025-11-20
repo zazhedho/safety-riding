@@ -104,7 +104,7 @@ const MenuList = () => {
           ) : menus.length > 0 ? (
             <>
               <div className="table-responsive">
-                <table className="table table-hover">
+                <table className="table table-hover table-list">
                   <thead>
                     <tr>
                       <th style={{ width: '50px' }}>Order</th>

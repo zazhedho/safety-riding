@@ -8,8 +8,8 @@
   --gray: #8b95a5;
   --dark-gray: #2d3748;
   --text-muted: #6c757d;
-  --shadow: 0 2px 4px 0 rgba(0,0,0,0.06);
-  --shadow-lg: 0 4px 12px 0 rgba(0,0,0,0.08);
+  --shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 4px 12px 0 rgba(0, 0, 0, 0.08);
 
   --background-color: #fafbfd;
   --text-color: #2d3748;
@@ -31,34 +31,34 @@
 }
 
 [data-theme='dark'] {
-    --primary-color: #89b4f8;
-    --primary-color-dark: #6a9ae0;
-    --primary-color-light: #2d4a6e;
-    --white: #1e293b;
-    --light-gray: #334155;
-    --gray: #94a3b8;
-    --dark-gray: #f1f5f9;
-    --text-muted: #94a3b8;
-    --shadow: 0 2px 4px 0 rgba(0,0,0,0.3);
-    --shadow-lg: 0 4px 12px 0 rgba(0,0,0,0.4);
+  --primary-color: #89b4f8;
+  --primary-color-dark: #6a9ae0;
+  --primary-color-light: #2d4a6e;
+  --white: #1e293b;
+  --light-gray: #334155;
+  --gray: #94a3b8;
+  --dark-gray: #f1f5f9;
+  --text-muted: #94a3b8;
+  --shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 4px 12px 0 rgba(0, 0, 0, 0.4);
 
-    --background-color: #0f172a;
-    --text-color: #f1f5f9;
-    --border-color: rgba(255, 255, 255, 0.1);
+  --background-color: #0f172a;
+  --text-color: #f1f5f9;
+  --border-color: rgba(255, 255, 255, 0.1);
 
-    /* Alert colors for dark mode */
-    --alert-info-bg: #1e3a5f;
-    --alert-info-border: #2d5a8f;
-    --alert-info-text: #93c5fd;
-    --alert-warning-bg: #4a3c1e;
-    --alert-warning-border: #6b5a2e;
-    --alert-warning-text: #fde047;
-    --alert-success-bg: #1e4a2e;
-    --alert-success-border: #2e6a3e;
-    --alert-success-text: #86efac;
-    --alert-danger-bg: #4a1e2e;
-    --alert-danger-border: #6a2e3e;
-    --alert-danger-text: #fca5a5;
+  /* Alert colors for dark mode */
+  --alert-info-bg: #1e3a5f;
+  --alert-info-border: #2d5a8f;
+  --alert-info-text: #93c5fd;
+  --alert-warning-bg: #4a3c1e;
+  --alert-warning-border: #6b5a2e;
+  --alert-warning-text: #fde047;
+  --alert-success-bg: #1e4a2e;
+  --alert-success-border: #2e6a3e;
+  --alert-success-text: #86efac;
+  --alert-danger-bg: #4a1e2e;
+  --alert-danger-border: #6a2e3e;
+  --alert-danger-text: #fca5a5;
 }
 
 body {
@@ -69,6 +69,20 @@ body {
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Compact Utilities Overrides */
+.mb-4 {
+  margin-bottom: 1rem !important;
+}
+
+.mb-3 {
+  margin-bottom: 0.75rem !important;
+}
+
+.py-5 {
+  padding-top: 1.5rem !important;
+  padding-bottom: 1.5rem !important;
 }
 
 /* Dashboard Layout */
@@ -92,7 +106,7 @@ body {
 }
 
 .sidebar-header {
-  padding: 1.75rem 1.25rem;
+  padding: 1.25rem 1rem;
   border-bottom: 1px solid rgba(137, 180, 248, 0.15);
   transition: all 0.3s ease;
 }
@@ -121,16 +135,16 @@ body {
 }
 
 .sidebar-menu-item {
-  padding: 0.85rem 1.25rem;
+  padding: 0.65rem 1rem;
   color: var(--dark-gray);
   text-decoration: none;
   display: flex;
   align-items: center;
   transition: all 0.2s ease;
   border-left: 4px solid transparent;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 500;
-  margin: 0.25rem 0;
+  margin: 0.1rem 0;
   white-space: nowrap;
 }
 
@@ -215,7 +229,7 @@ body {
 }
 
 .sidebar-collapsed .sidebar-menu-item {
-  padding: 0.85rem 0.5rem;
+  padding: 0.65rem 0.5rem;
   justify-content: center;
 }
 
@@ -305,7 +319,7 @@ body {
 /* Top Navigation */
 .top-nav {
   background: linear-gradient(135deg, #ffffff 0%, var(--light-gray) 50%);
-  padding: 1.25rem 2rem;
+  padding: 0.8rem 1.5rem;
   box-shadow: var(--shadow);
   display: flex;
   justify-content: space-between;
@@ -341,7 +355,7 @@ body {
 
 /* Content Area */
 .content-area {
-  padding: 2rem;
+  padding: 1.25rem;
 }
 
 /* Cards */
@@ -349,7 +363,7 @@ body {
   border: 1px solid rgba(137, 180, 248, 0.15);
   box-shadow: var(--shadow);
   border-radius: 12px;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1rem;
   background-color: var(--white);
   color: var(--text-color);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -368,9 +382,9 @@ body {
   background: linear-gradient(135deg, var(--primary-color-light) 0%, #f0f7ff 100%);
   color: var(--dark-gray);
   border-radius: 12px 12px 0 0;
-  padding: 1.25rem 1.5rem;
+  padding: 0.85rem 1.25rem;
   font-weight: 600;
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   border-bottom: 1px solid rgba(137, 180, 248, 0.2);
 }
 
@@ -533,19 +547,29 @@ body {
 .table {
   background-color: var(--white);
   color: var(--text-color);
-  font-size: 0.95rem;
-  line-height: 1.6;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+  margin-bottom: 0;
 }
 
 .table thead {
-  background: linear-gradient(135deg, var(--primary-color-light) 0%, #f0f7ff 100%);
-  color: var(--dark-gray);
-  font-weight: 600;
+  background-color: #f8f9fa;
+  color: var(--text-muted);
 }
 
 .table thead th {
-  padding: 1rem;
-  border-bottom: 2px solid rgba(137, 180, 248, 0.3);
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  font-weight: 800;
+  color: var(--dark-gray);
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+  vertical-align: middle;
+  white-space: nowrap;
 }
 
 .table tbody tr {
@@ -557,7 +581,13 @@ body {
 }
 
 .table tbody td {
-  padding: 0.9rem 1rem;
+  padding: 0.75rem 1rem;
+  vertical-align: middle;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.table tbody tr:last-child td {
+  border-bottom: none;
 }
 
 [data-theme='dark'] .table thead {
@@ -579,9 +609,9 @@ body {
   background-color: var(--white);
   color: var(--text-color);
   border: 1.5px solid rgba(139, 149, 165, 0.3);
-  border-radius: 8px;
-  padding: 0.65rem 0.9rem;
-  font-size: 1rem;
+  border-radius: 6px;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.95rem;
   line-height: 1.5;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -604,7 +634,7 @@ body {
 .stats-card {
   background: linear-gradient(135deg, #ffffff 0%, var(--light-gray) 100%);
   border-left: 5px solid var(--primary-color);
-  padding: 1.75rem;
+  padding: 1.25rem;
   border-radius: 12px;
   box-shadow: var(--shadow);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -617,7 +647,7 @@ body {
 }
 
 .stats-number {
-  font-size: 2.25rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: var(--primary-color-dark);
   line-height: 1.2;
@@ -746,9 +776,9 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 2rem;
+  padding: 0.75rem 1.5rem;
   gap: 1.5rem;
-  min-height: 70px;
+  min-height: 60px;
 }
 
 .topnav-main {
@@ -788,7 +818,7 @@ body {
   font-weight: 500;
 }
 
-.breadcrumb-item + .breadcrumb-item::before {
+.breadcrumb-item+.breadcrumb-item::before {
   content: "›";
   color: var(--gray);
   padding: 0 0.5rem;
@@ -974,6 +1004,7 @@ body {
     opacity: 0;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -1265,6 +1296,7 @@ body {
 
 /* Tablets and below (768px) */
 @media (max-width: 768px) {
+
   /* Hide sidebar toggle button on mobile */
   .sidebar-toggle-btn {
     display: none !important;
@@ -1317,7 +1349,8 @@ body {
   /* Top navigation responsive */
   .top-nav {
     padding: 1rem;
-    padding-left: 4.5rem; /* Space for hamburger menu */
+    padding-left: 4.5rem;
+    /* Space for hamburger menu */
     flex-direction: column;
     gap: 0.5rem;
     align-items: flex-start;
@@ -1342,7 +1375,8 @@ body {
   .topnav-main {
     flex: 1;
     min-width: 0;
-    max-width: calc(100% - 150px); /* Reserve space for right buttons */
+    max-width: calc(100% - 150px);
+    /* Reserve space for right buttons */
     gap: 0.65rem;
   }
 
@@ -1359,7 +1393,8 @@ body {
 
   .breadcrumb {
     font-size: 0.8rem;
-    display: none; /* Hide breadcrumb on mobile to save space */
+    display: none;
+    /* Hide breadcrumb on mobile to save space */
   }
 
   .topnav-right {
@@ -1384,7 +1419,8 @@ body {
   }
 
   .user-avatar-btn i.bi-chevron-down {
-    display: none; /* Hide chevron on mobile */
+    display: none;
+    /* Hide chevron on mobile */
   }
 
   .topnav-search-expanded {
@@ -1470,7 +1506,8 @@ body {
   /* Forms */
   .form-control,
   .form-select {
-    font-size: 16px; /* Prevents zoom on iOS */
+    font-size: 16px;
+    /* Prevents zoom on iOS */
   }
 
   /* Filter sections */
@@ -1500,6 +1537,7 @@ body {
 
 /* Small mobile devices (576px and below) */
 @media (max-width: 576px) {
+
   /* Even more compact layout */
   .content-area {
     padding: 0.75rem;
@@ -1520,7 +1558,8 @@ body {
   }
 
   .topnav-left {
-    max-width: calc(100% - 120px); /* Less space for right buttons on small screens */
+    max-width: calc(100% - 120px);
+    /* Less space for right buttons on small screens */
   }
 
   .page-title {
@@ -1733,6 +1772,7 @@ body {
 
 /* Print styles */
 @media print {
+
   .sidebar,
   .top-nav,
   .btn,
@@ -1780,6 +1820,7 @@ body {
 
 /* Responsive tables for detail pages */
 @media (max-width: 768px) {
+
   /* Fix content area padding on mobile */
   .content-area {
     padding: 0.75rem !important;
@@ -1873,7 +1914,7 @@ body {
     margin-right: 0;
   }
 
-  .row > * {
+  .row>* {
     padding-left: 0.5rem;
     padding-right: 0.5rem;
   }
@@ -1936,7 +1977,11 @@ body {
   }
 
   /* General text wrapping for all elements */
-  td, th, p, span, div {
+  td,
+  th,
+  p,
+  span,
+  div {
     word-wrap: break-word;
     overflow-wrap: break-word;
   }
@@ -2067,6 +2112,7 @@ body {
 
 /* Extra small screens (below 576px) */
 @media (max-width: 576px) {
+
   /* Further reduce content area padding */
   .content-area {
     padding: 0.5rem !important;
@@ -2087,7 +2133,7 @@ body {
   }
 
   /* Reduce row column padding more */
-  .row > * {
+  .row>* {
     padding-left: 0.35rem;
     padding-right: 0.35rem;
   }
@@ -2151,4 +2197,141 @@ body {
   .btn-sm.btn-outline-primary i {
     font-size: 0.7rem;
   }
+}
+/* =================================================================
+   COMPACT TABLES WITH TRUNCATION
+   ================================================================= */
+
+/* Make all tables compact */
+.table {
+  font-size: 0.875rem !important;
+}
+
+.table thead th {
+  padding: 0.5rem 0.75rem !important;
+  font-size: 0.8rem !important;
+  white-space: nowrap;
+}
+
+.table tbody td {
+  padding: 0.5rem 0.75rem !important;
+  vertical-align: middle;
+}
+
+/* Truncate long text ONLY in list view tables (add class "table-list" to table element) */
+.table-list tbody td {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Allow specific columns to wrap if needed */
+.table-list tbody td.wrap-text {
+  white-space: normal;
+  word-break: break-word;
+}
+
+/* Expandable cell with "Read More" (only for list views) */
+.table-list tbody td.expandable-cell {
+  position: relative;
+  cursor: pointer;
+}
+
+.table-list tbody td.expandable-cell.expanded {
+  white-space: normal;
+  word-break: break-word;
+  max-width: none;
+}
+
+.table-list tbody td.expandable-cell:not(.expanded)::after {
+  content: '...';
+  position: absolute;
+  right: 5px;
+  background: var(--white);
+  padding-left: 10px;
+}
+
+.table-list tbody td.expandable-cell:not(.expanded):hover {
+  background-color: rgba(137, 180, 248, 0.1);
+}
+
+/* Tooltip for truncated text on hover */
+.table-list tbody td[title] {
+  cursor: help;
+}
+
+/* Icon untuk menandakan ada lebih banyak konten */
+.table-list tbody td .expand-icon {
+  display: inline-block;
+  margin-left: 0.25rem;
+  color: var(--primary-color);
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+/* Compact action buttons in tables */
+.table .btn-sm {
+  padding: 0.25rem 0.5rem !important;
+  font-size: 0.75rem !important;
+}
+
+.table .btn-group .btn {
+  padding: 0.35rem 0.5rem !important;
+}
+
+/* Compact badges in tables */
+.table .badge {
+  padding: 0.25em 0.5em !important;
+  font-size: 0.75rem !important;
+}
+
+/* Fixed column widths for better control */
+.table .col-actions {
+  width: 120px;
+  min-width: 120px;
+}
+
+.table .col-date {
+  width: 100px;
+  min-width: 100px;
+}
+
+.table .col-status {
+  width: 100px;
+  min-width: 100px;
+}
+
+.table .col-name {
+  min-width: 150px;
+  max-width: 250px;
+}
+
+/* Make table responsive with horizontal scroll */
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Better spacing for table rows */
+.table tbody tr {
+  height: 45px;
+}
+
+/* Alternate row colors for better readability */
+.table tbody tr:nth-child(even) {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
+[data-theme='dark'] .table tbody tr:nth-child(even) {
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+/* Hover effect */
+.table tbody tr:hover {
+  background-color: rgba(137, 180, 248, 0.08) !important;
+}
+
+[data-theme='dark'] .table tbody tr:hover {
+  background-color: rgba(137, 180, 248, 0.15) !important;
 }

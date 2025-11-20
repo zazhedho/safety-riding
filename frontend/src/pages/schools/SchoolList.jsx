@@ -321,7 +321,7 @@ const SchoolList = () => {
             ) : schools.length > 0 ? (
               <>
               <div className="table-responsive">
-                <table className="table table-hover">
+                <table className="table table-hover table-list">
                   <thead>
                     <tr>
                       <th style={{ cursor: 'pointer' }} onClick={() => handleSort('npsn')}>
