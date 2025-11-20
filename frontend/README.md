@@ -1,4 +1,4 @@
-# Safety Riding Management System - Frontend
+# Promotion & Safety Riding Management - Frontend
 
 A comprehensive web application for managing safety riding programs, schools, events, accidents, and budgets with a white-red themed dashboard.
 

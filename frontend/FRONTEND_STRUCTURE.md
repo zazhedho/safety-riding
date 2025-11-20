@@ -1,4 +1,4 @@
-# Safety Riding Frontend - Complete Structure Guide
+# Promotion & Safety Riding Frontend - Complete Structure Guide
 
 ## ✅ Already Created
 
@@ -56,7 +56,7 @@ const DashboardLayout = ({ children }) => {
     <div className="dashboard-container">
       <div className="sidebar">
         <div className="sidebar-header">
-          <h3><i className="fas fa-motorcycle"></i> Safety Riding</h3>
+          <h3><i className="fas fa-motorcycle"></i> Promotion & Safety Riding</h3>
           <small>Dashboard Management</small>
         </div>
         <div className="sidebar-menu">

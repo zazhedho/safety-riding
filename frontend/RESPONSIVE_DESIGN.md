@@ -1,7 +1,7 @@
 # Responsive Design Documentation
 
 ## Overview
-The Safety Riding Management System frontend is fully responsive and optimized for all screen sizes, from small mobile phones to large desktop monitors.
+The Promotion & Safety Riding Management frontend is fully responsive and optimized for all screen sizes, from small mobile phones to large desktop monitors.
 
 ## Screen Size Breakpoints
 

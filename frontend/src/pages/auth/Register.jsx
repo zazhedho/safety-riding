@@ -289,8 +289,7 @@ const Register = () => {
               Create Account
             </h2>
             <p className="text-muted mb-0" style={{ fontSize: '0.95rem' }}>
-              Join Safety Riding Management System
-            </p>
+                                Join Promotion & Safety Riding Management            </p>
           </div>
 
           <form onSubmit={handleSubmit}>

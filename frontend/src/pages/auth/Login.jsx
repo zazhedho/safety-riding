@@ -213,7 +213,7 @@ const Login = () => {
               Welcome Back
             </h2>
             <p className="text-muted mb-0" style={{ fontSize: '0.95rem' }}>
-              Safety Riding Management System
+              Promotion & Safety Riding Management
             </p>
           </div>
 

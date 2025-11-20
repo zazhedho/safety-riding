@@ -138,8 +138,7 @@ const DashboardLayout = ({ children }) => {
       <div className="sidebar">
         <div className="sidebar-header">
           <img src="/astra-motor.png" alt="Astra Motor Logo" style={{ width: '150px', marginBottom: '10px' }} className="sidebar-logo" />
-          <h3 className="sidebar-title">Safety Riding</h3>
-          <small className="sidebar-subtitle">Management System</small>
+                      <h3 className="sidebar-title">Promotion & Safety Riding</h3>          <small className="sidebar-subtitle">Management System</small>
         </div>
         <div className="sidebar-menu">
           {menuItems.map(item => {
