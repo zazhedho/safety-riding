@@ -139,7 +139,10 @@ func (r *Routes) SchoolRoutes() {
 	mdw := middlewares.NewMiddleware(authRepo.NewBlacklistRepo(r.DB))
 
 	r.App.GET("/api/schools", mdw.AuthMiddleware(), h.FetchSchool)
-	r.App.GET("/api/schools/education-stats", mdw.AuthMiddleware(), h.GetEducationStats)
+
+	// Education endpoints (cross-domain analytics)
+	r.App.GET("/api/education/stats", mdw.AuthMiddleware(), h.GetEducationStats)
+	r.App.GET("/api/education/priority", mdw.AuthMiddleware(), h.GetEducationPriority)
 
 	school := r.App.Group("/api/school").Use(mdw.AuthMiddleware())
 	{

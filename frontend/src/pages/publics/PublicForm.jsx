@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import DashboardLayout from '../../components/common/DashboardLayout';
 import LocationPickerMap from '../../components/maps/LocationPickerMap';
 import publicService from '../../services/publicService';
 import locationService from '../../services/locationService';
@@ -315,11 +314,11 @@ const PublicForm = () => {
   };
 
   if (loading) {
-    return <DashboardLayout>Loading...</DashboardLayout>;
+    return <>Loading...</>;
   }
 
   return (
-    <DashboardLayout>
+    <>
       <h2>{id ? 'Edit Public Entity' : 'Add Public Entity'}</h2>
       <div className="card">
         <div className="card-body">
@@ -570,7 +569,7 @@ const PublicForm = () => {
           </form>
         </div>
       </div>
-    </DashboardLayout>
+    </>
   );
 };
 

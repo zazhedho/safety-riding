@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import DashboardLayout from '../../components/common/DashboardLayout';
 import ConfirmationModal from '../../components/common/ConfirmationModal';
 import budgetService from '../../services/budgetService';
 import eventService from '../../services/eventService';
@@ -250,7 +249,7 @@ const BudgetList = () => {
   );
 
   return (
-    <DashboardLayout>
+    <>
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2>Budget Management</h2>
         {hasPermission('create_budgets') && (
@@ -559,7 +558,7 @@ const BudgetList = () => {
         onConfirm={handleDeleteConfirm}
         onCancel={handleDeleteCancel}
       />
-    </DashboardLayout>
+    </>
   );
 };
 

@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import DashboardLayout from '../../components/common/DashboardLayout';
 import ConfirmationModal from '../../components/common/ConfirmationModal';
 import marketShareService from '../../services/marketShareService';
 import { toast } from 'react-toastify';
@@ -48,11 +47,11 @@ const MarketShareDetail = () => {
     }).format(value);
   };
 
-  if (loading) return <DashboardLayout><div className="text-center py-5"><div className="spinner-border"></div></div></DashboardLayout>;
-  if (!data) return <DashboardLayout><div className="alert alert-danger">Data not found</div></DashboardLayout>;
+  if (loading) return <><div className="text-center py-5"><div className="spinner-border"></div></div></>;
+  if (!data) return <><div className="alert alert-danger">Data not found</div></>;
 
   return (
-    <DashboardLayout>
+    <>
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2>Market Share Detail</h2>
         <div className="d-flex gap-2">
@@ -119,7 +118,7 @@ const MarketShareDetail = () => {
         onConfirm={handleDelete}
         onCancel={() => setShowDeleteModal(false)}
       />
-    </DashboardLayout>
+    </>
   );
 };
 

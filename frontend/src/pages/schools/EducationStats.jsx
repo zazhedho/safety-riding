@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import DashboardLayout from '../../components/common/DashboardLayout';
 import schoolService from '../../services/schoolService';
 import publicService from '../../services/publicService';
 import locationService from '../../services/locationService';
@@ -199,7 +198,7 @@ const EducationStats = () => {
   };
 
   return (
-    <DashboardLayout>
+    <>
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2>Education Statistics</h2>
       </div>
@@ -583,7 +582,7 @@ const EducationStats = () => {
           )}
         </div>
       </div>
-    </DashboardLayout>
+    </>
   );
 };
 

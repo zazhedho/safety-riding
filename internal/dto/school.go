@@ -73,3 +73,48 @@ type SchoolEducationStatsResponse struct {
 	TotalSchools         int                    `json:"total_schools"`
 	TotalEducatedSchools int                    `json:"total_educated_schools"`
 }
+
+// EducationPriorityItem represents a single item in the education priority matrix
+type EducationPriorityItem struct {
+	// Location information
+	ProvinceId   string `json:"province_id"`
+	ProvinceName string `json:"province_name"`
+	CityId       string `json:"city_id"`
+	CityName     string `json:"city_name"`
+	DistrictId   string `json:"district_id"`
+	DistrictName string `json:"district_name"`
+
+	// Market share data
+	MarketShare        float64 `json:"market_share"`
+	TotalSales         float64 `json:"total_sales"`
+	CompetitorShare    float64 `json:"competitor_share"`
+	IsBelowThreshold   bool    `json:"is_below_threshold"`   // true if market share < 87%
+	SafetyRidingStatus string  `json:"safety_riding_status"` // "Mandatory" or "Optional"
+
+	// School data
+	TotalSchools         int `json:"total_schools"`
+	TotalStudents        int `json:"total_students"`
+	EducatedSchools      int `json:"educated_schools"`
+	TotalStudentEducated int `json:"total_student_educated"`
+
+	// Accident data
+	TotalAccidents   int `json:"total_accidents"`
+	TotalDeaths      int `json:"total_deaths"`
+	TotalInjured     int `json:"total_injured"`
+	AccidentSeverity int `json:"accident_severity"` // weighted score
+
+	// Priority calculation
+	PriorityScore int    `json:"priority_score"` // 0-100, higher = more priority
+	PriorityLevel string `json:"priority_level"` // "Critical", "High", "Medium", "Low"
+}
+
+// EducationPriorityResponse represents the complete education priority matrix response
+type EducationPriorityResponse struct {
+	Items             []EducationPriorityItem `json:"items"`
+	TotalItems        int                     `json:"total_items"`
+	CriticalCount     int                     `json:"critical_count"`
+	HighPriorityCount int                     `json:"high_priority_count"`
+	MediumCount       int                     `json:"medium_count"`
+	LowCount          int                     `json:"low_count"`
+	MarketThreshold   float64                 `json:"market_threshold"` // 87%
+}

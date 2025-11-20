@@ -6,7 +6,9 @@ const schoolService = {
   create: (data) => api.post('/school', data),
   update: (id, data) => api.put(`/school/${id}`, data),
   delete: (id) => api.delete(`/school/${id}`),
-  getEducationStats: (params = {}) => api.get('/schools/education-stats', { params }),
+  // Education endpoints (cross-domain analytics)
+  getEducationStats: (params = {}) => api.get('/education/stats', { params }),
+  getEducationPriority: (params = {}) => api.get('/education/priority', { params }),
 };
 
 export default schoolService;

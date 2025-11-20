@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import DashboardLayout from '../../components/common/DashboardLayout';
 import userService from '../../services/userService';
 import roleService from '../../services/roleService';
 import { toast } from 'react-toastify';
@@ -148,11 +147,11 @@ const UserForm = () => {
   };
 
   if (loading) {
-    return <DashboardLayout>Loading...</DashboardLayout>;
+    return <>Loading...</>;
   }
 
   return (
-    <DashboardLayout>
+    <>
       <h2>{id ? 'Edit User' : 'Create User'}</h2>
       <div className="card">
         <div className="card-body">
@@ -322,7 +321,7 @@ const UserForm = () => {
         onConfirm={confirmDeleteUser}
         onCancel={cancelDeleteUser}
       />
-    </DashboardLayout>
+    </>
   );
 };
 

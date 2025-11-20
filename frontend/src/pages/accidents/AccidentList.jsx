@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import DashboardLayout from '../../components/common/DashboardLayout';
 import ConfirmationModal from '../../components/common/ConfirmationModal';
 import accidentService from '../../services/accidentService';
 import locationService from '../../services/locationService';
@@ -197,7 +196,7 @@ const AccidentList = () => {
   };
 
   return (
-    <DashboardLayout>
+    <>
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2>Accident Records</h2>
         {hasPermission('create_accidents') && (
@@ -453,7 +452,7 @@ const AccidentList = () => {
         onConfirm={handleDeleteConfirm}
         onCancel={handleDeleteCancel}
       />
-    </DashboardLayout>
+    </>
   );
 };
 

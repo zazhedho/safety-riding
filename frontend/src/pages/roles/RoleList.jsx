@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import DashboardLayout from '../../components/common/DashboardLayout';
 import ConfirmationModal from '../../components/common/ConfirmationModal';
 import roleService from '../../services/roleService';
 import { toast } from 'react-toastify';
@@ -79,7 +78,7 @@ const RoleList = () => {
   const totalPages = Math.ceil(pagination.total / pagination.limit);
 
   return (
-    <DashboardLayout>
+    <>
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2>Roles Management</h2>
         <Link to="/roles/new" className="btn btn-primary">
@@ -191,7 +190,7 @@ const RoleList = () => {
         onConfirm={handleDeleteConfirm}
         onCancel={handleDeleteCancel}
       />
-    </DashboardLayout>
+    </>
   );
 };
 

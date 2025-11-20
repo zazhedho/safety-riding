@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import DashboardLayout from '../../components/common/DashboardLayout';
 import ConfirmationModal from '../../components/common/ConfirmationModal';
 import PublicMap from '../../components/maps/PublicMap';
 import publicService from '../../services/publicService';
@@ -223,7 +222,7 @@ const PublicList = () => {
   };
 
   return (
-    <DashboardLayout>
+    <>
       <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
         <h2>Public Entities Management</h2>
         <div className="d-flex flex-wrap gap-2">
@@ -493,7 +492,7 @@ const PublicList = () => {
         onConfirm={handleDeleteConfirm}
         onCancel={handleDeleteCancel}
       />
-    </DashboardLayout>
+    </>
   );
 };
 

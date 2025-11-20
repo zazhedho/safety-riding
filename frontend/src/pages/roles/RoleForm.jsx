@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import DashboardLayout from '../../components/common/DashboardLayout';
 import roleService from '../../services/roleService';
 import permissionService from '../../services/permissionService';
 import menuService from '../../services/menuService';
@@ -113,11 +112,14 @@ const RoleForm = () => {
 
     try {
       if (id) {
-        // Update role
-        await roleService.update(id, {
-          display_name: formData.display_name,
-          description: formData.description,
-        });
+        // For system roles, only update permissions and menus (skip role update)
+        if (!isSystem) {
+          // Update role (only for non-system roles)
+          await roleService.update(id, {
+            display_name: formData.display_name,
+            description: formData.description,
+          });
+        }
         // Update permissions
         await roleService.assignPermissions(id, { permission_ids: selectedPermissions });
         // Update menus
@@ -149,11 +151,11 @@ const RoleForm = () => {
   }, {});
 
   if (loading) {
-    return <DashboardLayout>Loading...</DashboardLayout>;
+    return <>Loading...</>;
   }
 
   return (
-    <DashboardLayout>
+    <>
       <h2>{id ? 'Edit Role' : 'Add Role'}</h2>
       <div className="card">
         <div className="card-body">
@@ -284,7 +286,7 @@ const RoleForm = () => {
           </form>
         </div>
       </div>
-    </DashboardLayout>
+    </>
   );
 };
 

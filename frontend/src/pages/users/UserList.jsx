@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import DashboardLayout from '../../components/common/DashboardLayout';
 import api from '../../services/api';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../contexts/AuthContext';
@@ -127,7 +126,7 @@ const UserList = () => {
 
   if (currentUser?.role !== 'admin' && currentUser?.role !== 'superadmin') {
     return (
-      <DashboardLayout>
+      <>
         <div className="card">
           <div className="card-body text-center py-5">
             <i className="bi bi-lock fs-1 text-primary mb-3"></i>
@@ -135,12 +134,12 @@ const UserList = () => {
             <p className="text-muted">Only administrators can view this page.</p>
           </div>
         </div>
-      </DashboardLayout>
+      </>
     );
   }
 
   return (
-    <DashboardLayout>
+    <>
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2>Users Management</h2>
         <Link to="/users/new" className="btn btn-primary">
@@ -315,7 +314,7 @@ const UserList = () => {
           )}
         </div>
       </div>
-    </DashboardLayout>
+    </>
   );
 };
 

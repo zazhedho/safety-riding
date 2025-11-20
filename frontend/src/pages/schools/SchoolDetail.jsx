@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import DashboardLayout from '../../components/common/DashboardLayout';
 import ConfirmationModal from '../../components/common/ConfirmationModal';
 import schoolService from '../../services/schoolService';
 import { toast } from 'react-toastify';
@@ -57,26 +56,26 @@ const SchoolDetail = () => {
 
   if (loading) {
     return (
-      <DashboardLayout>
+      <>
         <div className="text-center py-5">
           <div className="spinner-border text-primary" role="status">
             <span className="visually-hidden">Loading...</span>
           </div>
         </div>
-      </DashboardLayout>
+      </>
     );
   }
 
   if (!school) {
     return (
-      <DashboardLayout>
+      <>
         <div className="alert alert-danger">School not found</div>
-      </DashboardLayout>
+      </>
     );
   }
 
   return (
-    <DashboardLayout>
+    <>
       {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -354,7 +353,7 @@ const SchoolDetail = () => {
         onConfirm={handleDeleteConfirm}
         onCancel={handleDeleteCancel}
       />
-    </DashboardLayout>
+    </>
   );
 };
 

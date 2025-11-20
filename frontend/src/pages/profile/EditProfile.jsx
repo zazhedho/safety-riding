@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import DashboardLayout from '../../components/common/DashboardLayout';
 import { useAuth } from '../../contexts/AuthContext';
 import { toast } from 'react-toastify';
 import 'bootstrap-icons/font/bootstrap-icons.css';
@@ -88,7 +87,7 @@ const EditProfile = () => {
   };
 
   return (
-    <DashboardLayout>
+    <>
       <h2>Edit Profile</h2>
       <div className="row">
         <div className="col-lg-7">
@@ -263,7 +262,7 @@ const EditProfile = () => {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    </>
   );
 };
 

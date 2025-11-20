@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import DashboardLayout from '../../components/common/DashboardLayout';
 import accidentService from '../../services/accidentService';
 import locationService from '../../services/locationService';
 import { toast } from 'react-toastify';
@@ -290,11 +289,11 @@ const AccidentForm = () => {
   };
 
   if (loading) {
-    return <DashboardLayout>Loading...</DashboardLayout>;
+    return <>Loading...</>;
   }
 
   return (
-    <DashboardLayout>
+    <>
       <h2>{id ? 'Edit Accident' : 'Add Accident'}</h2>
       <div className="card">
         <div className="card-body">
@@ -519,7 +518,7 @@ const AccidentForm = () => {
           </form>
         </div>
       </div>
-    </DashboardLayout>
+    </>
   );
 };
 

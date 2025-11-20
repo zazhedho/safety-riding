@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import DashboardLayout from '../../components/common/DashboardLayout';
 import menuService from '../../services/menuService';
 import { toast } from 'react-toastify';
 
@@ -139,11 +138,11 @@ const MenuForm = () => {
   };
 
   if (loading) {
-    return <DashboardLayout>Loading...</DashboardLayout>;
+    return <>Loading...</>;
   }
 
   return (
-    <DashboardLayout>
+    <>
       <h2>{id ? 'Edit Menu' : 'Add Menu'}</h2>
       <div className="card">
         <div className="card-body">
@@ -334,7 +333,7 @@ const MenuForm = () => {
           </form>
         </div>
       </div>
-    </DashboardLayout>
+    </>
   );
 };
 

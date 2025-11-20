@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import DashboardLayout from '../../components/common/DashboardLayout';
 import { useAuth } from '../../contexts/AuthContext';
 import { toast } from 'react-toastify';
 import ConfirmationModal from '../../components/common/ConfirmationModal';
@@ -126,7 +125,7 @@ const Profile = () => {
   };
 
   return (
-    <DashboardLayout>
+    <>
       {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -454,7 +453,7 @@ const Profile = () => {
         onConfirm={confirmDeleteAccount}
         onCancel={cancelDeleteAccount}
       />
-    </DashboardLayout>
+    </>
   );
 };
 

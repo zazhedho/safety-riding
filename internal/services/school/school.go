@@ -239,6 +239,163 @@ func (s *SchoolService) GetEducationStats(params filter.BaseParams) (dto.SchoolE
 	return response, nil
 }
 
+// GetEducationPriority returns the education priority matrix with calculated scores
+func (s *SchoolService) GetEducationPriority(params filter.BaseParams) (dto.EducationPriorityResponse, error) {
+	const marketThreshold = 87.0 // Market share threshold for mandatory safety riding
+
+	results, err := s.SchoolRepo.GetEducationPriorityData(params)
+	if err != nil {
+		return dto.EducationPriorityResponse{}, err
+	}
+
+	items := make([]dto.EducationPriorityItem, 0, len(results))
+	criticalCount := 0
+	highPriorityCount := 0
+	mediumCount := 0
+	lowCount := 0
+
+	for _, result := range results {
+		// Parse market share data
+		marketShare := getFloat64Value(result["market_share"])
+		totalSales := getFloat64Value(result["total_sales"])
+		competitorShare := getFloat64Value(result["competitor_share"])
+
+		// Parse school data
+		totalSchools := getIntValue(result["total_schools"])
+		totalStudents := getIntValue(result["total_students"])
+		educatedSchools := getIntValue(result["educated_schools"])
+		totalStudentEducated := getIntValue(result["total_student_educated"])
+
+		// Parse accident data
+		totalAccidents := getIntValue(result["total_accidents"])
+		totalDeaths := getIntValue(result["total_deaths"])
+		totalInjured := getIntValue(result["total_injured"])
+		totalMinorInjured := getIntValue(result["total_minor_injured"])
+
+		// Calculate accident severity score (weighted: deaths=10, injured=5, minor=1)
+		accidentSeverity := (totalDeaths * 10) + (totalInjured * 5) + (totalMinorInjured * 1)
+
+		// Determine if below threshold
+		isBelowThreshold := marketShare < marketThreshold
+		safetyRidingStatus := "Optional"
+		if isBelowThreshold {
+			safetyRidingStatus = "Mandatory"
+		}
+
+		// Calculate priority score (0-100)
+		priorityScore := calculatePriorityScore(marketShare, marketThreshold, totalStudents, accidentSeverity, totalAccidents)
+
+		// Determine priority level
+		priorityLevel := getPriorityLevel(priorityScore)
+
+		// Count by priority level
+		switch priorityLevel {
+		case "Critical":
+			criticalCount++
+		case "High":
+			highPriorityCount++
+		case "Medium":
+			mediumCount++
+		case "Low":
+			lowCount++
+		}
+
+		item := dto.EducationPriorityItem{
+			ProvinceId:           getStringValue(result["province_id"]),
+			ProvinceName:         getStringValue(result["province_name"]),
+			CityId:               getStringValue(result["city_id"]),
+			CityName:             getStringValue(result["city_name"]),
+			DistrictId:           getStringValue(result["district_id"]),
+			DistrictName:         getStringValue(result["district_name"]),
+			MarketShare:          marketShare,
+			TotalSales:           totalSales,
+			CompetitorShare:      competitorShare,
+			IsBelowThreshold:     isBelowThreshold,
+			SafetyRidingStatus:   safetyRidingStatus,
+			TotalSchools:         totalSchools,
+			TotalStudents:        totalStudents,
+			EducatedSchools:      educatedSchools,
+			TotalStudentEducated: totalStudentEducated,
+			TotalAccidents:       totalAccidents,
+			TotalDeaths:          totalDeaths,
+			TotalInjured:         totalInjured + totalMinorInjured,
+			AccidentSeverity:     accidentSeverity,
+			PriorityScore:        priorityScore,
+			PriorityLevel:        priorityLevel,
+		}
+
+		items = append(items, item)
+	}
+
+	response := dto.EducationPriorityResponse{
+		Items:             items,
+		TotalItems:        len(items),
+		CriticalCount:     criticalCount,
+		HighPriorityCount: highPriorityCount,
+		MediumCount:       mediumCount,
+		LowCount:          lowCount,
+		MarketThreshold:   marketThreshold,
+	}
+
+	return response, nil
+}
+
+// calculatePriorityScore calculates the priority score based on multiple factors
+func calculatePriorityScore(marketShare, threshold float64, totalStudents, accidentSeverity, totalAccidents int) int {
+	var score float64 = 0
+
+	// Factor 1: Market Share (40 points max)
+	// Below 87% = high priority, the lower the share, the higher the score
+	if marketShare < threshold {
+		// Scale: 0% market share = 40 points, 87% = 0 points
+		marketFactor := ((threshold - marketShare) / threshold) * 40
+		score += marketFactor
+	}
+
+	// Factor 2: Student Population (30 points max)
+	// More students = higher priority for education impact
+	// Assuming max ~10000 students per district for scaling
+	studentFactor := float64(totalStudents) / 10000.0 * 30
+	if studentFactor > 30 {
+		studentFactor = 30
+	}
+	score += studentFactor
+
+	// Factor 3: Accident Severity (30 points max)
+	// Higher severity = higher priority
+	// Assuming max severity score of 100 for scaling
+	accidentFactor := float64(accidentSeverity) / 100.0 * 30
+	if accidentFactor > 30 {
+		accidentFactor = 30
+	}
+	score += accidentFactor
+
+	// Round to nearest integer
+	finalScore := int(score + 0.5)
+	if finalScore > 100 {
+		finalScore = 100
+	}
+	if finalScore < 0 {
+		finalScore = 0
+	}
+
+	return finalScore
+}
+
+// getPriorityLevel returns the priority level based on score
+func getPriorityLevel(score int) string {
+	switch {
+	case score >= 75:
+		return "Critical"
+	case score >= 50:
+		return "High"
+	case score >= 25:
+		return "Medium"
+	default:
+		return "Low"
+	}
+}
+
 var _ interfaceschool.ServiceSchoolInterface = (*SchoolService)(nil)
 
 // Helper function to safely get string values
@@ -250,4 +407,44 @@ func getStringValue(val interface{}) string {
 		return str
 	}
 	return ""
+}
+
+// Helper function to safely get int values
+func getIntValue(val interface{}) int {
+	if val == nil {
+		return 0
+	}
+	switch v := val.(type) {
+	case int:
+		return v
+	case int32:
+		return int(v)
+	case int64:
+		return int(v)
+	case float64:
+		return int(v)
+	case float32:
+		return int(v)
+	}
+	return 0
+}
+
+// Helper function to safely get float64 values
+func getFloat64Value(val interface{}) float64 {
+	if val == nil {
+		return 0
+	}
+	switch v := val.(type) {
+	case float64:
+		return v
+	case float32:
+		return float64(v)
+	case int:
+		return float64(v)
+	case int64:
+		return float64(v)
+	case int32:
+		return float64(v)
+	}
+	return 0
 }

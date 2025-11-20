@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import DashboardLayout from '../../components/common/DashboardLayout';
 import budgetService from '../../services/budgetService';
 import eventService from '../../services/eventService';
 import { toast } from 'react-toastify';
@@ -110,7 +109,7 @@ const BudgetForm = () => {
   };
 
   if (loading) {
-    return <DashboardLayout>Loading...</DashboardLayout>;
+    return <>Loading...</>;
   }
 
   const isAdmin = hasRole(['admin']);
@@ -119,7 +118,7 @@ const BudgetForm = () => {
   const shouldDisable = isFinalized && !isAdminOrSuperadmin;
 
   return (
-    <DashboardLayout>
+    <>
       <h2>{id ? 'Edit Budget' : 'Add Budget'}</h2>
 
       {/* Warning for finalized budgets */}
@@ -198,7 +197,7 @@ const BudgetForm = () => {
           </form>
         </div>
       </div>
-    </DashboardLayout>
+    </>
   );
 };
 

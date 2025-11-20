@@ -12,4 +12,5 @@ type RepoSchoolInterface interface {
 	Fetch(params filter.BaseParams) ([]domainschool.School, int64, error)
 	Delete(id string) error
 	GetEducationStats(params filter.BaseParams) ([]map[string]interface{}, error)
+	GetEducationPriorityData(params filter.BaseParams) ([]map[string]interface{}, error)
 }

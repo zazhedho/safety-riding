@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import DashboardLayout from '../../components/common/DashboardLayout';
 import ConfirmationModal from '../../components/common/ConfirmationModal';
 import accidentService from '../../services/accidentService';
 import { toast } from 'react-toastify';
@@ -220,28 +219,28 @@ const AccidentDetail = () => {
 
   if (loading) {
     return (
-      <DashboardLayout>
+      <>
         <div className="text-center py-5">
           <div className="spinner-border text-primary" role="status">
             <span className="visually-hidden">Loading...</span>
           </div>
         </div>
-      </DashboardLayout>
+      </>
     );
   }
 
   if (!accident) {
     return (
-      <DashboardLayout>
+      <>
         <div className="alert alert-danger">Accident record not found</div>
-      </DashboardLayout>
+      </>
     );
   }
 
   const totalCasualties = accident.death_count + accident.injured_count + accident.minor_injured_count;
 
   return (
-    <DashboardLayout>
+    <>
       {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -726,7 +725,7 @@ const AccidentDetail = () => {
         onConfirm={handleDeleteConfirm}
         onCancel={handleDeleteCancel}
       />
-    </DashboardLayout>
+    </>
   );
 };
 

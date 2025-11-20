@@ -154,11 +154,24 @@ func (s *RoleService) Delete(id string) error {
 	return s.RoleRepo.Delete(id)
 }
 
-func (s *RoleService) AssignPermissions(roleId string, req dto.AssignPermissions) error {
+func (s *RoleService) AssignPermissions(roleId string, req dto.AssignPermissions, currentUserRole string) error {
 	// Verify role exists
-	_, err := s.RoleRepo.GetByID(roleId)
+	role, err := s.RoleRepo.GetByID(roleId)
 	if err != nil {
 		return err
+	}
+
+	// Check permissions for modifying system roles
+	if role.IsSystem {
+		// Only superadmin and admin can modify system roles
+		if currentUserRole != utils.RoleSuperAdmin && currentUserRole != utils.RoleAdmin {
+			return errors.New("access denied: only superadmin and admin can modify system roles")
+		}
+
+		// Admin cannot modify superadmin role
+		if role.Name == utils.RoleSuperAdmin && currentUserRole != utils.RoleSuperAdmin {
+			return errors.New("access denied: cannot modify superadmin role")
+		}
 	}
 
 	// Verify all permissions exist
@@ -171,11 +184,24 @@ func (s *RoleService) AssignPermissions(roleId string, req dto.AssignPermissions
 	return s.RoleRepo.AssignPermissions(roleId, req.PermissionIds)
 }
 
-func (s *RoleService) AssignMenus(roleId string, req dto.AssignMenus) error {
+func (s *RoleService) AssignMenus(roleId string, req dto.AssignMenus, currentUserRole string) error {
 	// Verify role exists
-	_, err := s.RoleRepo.GetByID(roleId)
+	role, err := s.RoleRepo.GetByID(roleId)
 	if err != nil {
 		return err
+	}
+
+	// Check permissions for modifying system roles
+	if role.IsSystem {
+		// Only superadmin and admin can modify system roles
+		if currentUserRole != utils.RoleSuperAdmin && currentUserRole != utils.RoleAdmin {
+			return errors.New("access denied: only superadmin and admin can modify system roles")
+		}
+
+		// Admin cannot modify superadmin role
+		if role.Name == utils.RoleSuperAdmin && currentUserRole != utils.RoleSuperAdmin {
+			return errors.New("access denied: cannot modify superadmin role")
+		}
 	}
 
 	// Verify all menus exist

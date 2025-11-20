@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import DashboardLayout from '../../components/common/DashboardLayout';
 import marketShareService from '../../services/marketShareService';
 import locationService from '../../services/locationService';
 import { toast } from 'react-toastify';
@@ -151,7 +150,7 @@ const MarketShareForm = () => {
   };
 
   return (
-    <DashboardLayout>
+    <>
       <h2>{id ? 'Edit' : 'Add'} Market Share</h2>
       <div className="card">
         <div className="card-body">
@@ -265,7 +264,7 @@ const MarketShareForm = () => {
           </form>
         </div>
       </div>
-    </DashboardLayout>
+    </>
   );
 };
 

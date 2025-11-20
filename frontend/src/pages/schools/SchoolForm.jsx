@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import DashboardLayout from '../../components/common/DashboardLayout';
 import LocationPickerMap from '../../components/maps/LocationPickerMap';
 import schoolService from '../../services/schoolService';
 import locationService from '../../services/locationService';
@@ -273,11 +272,11 @@ const SchoolForm = () => {
   };
 
   if (loading) {
-    return <DashboardLayout>Loading...</DashboardLayout>;
+    return <>Loading...</>;
   }
 
   return (
-    <DashboardLayout>
+    <>
       <h2>{id ? 'Edit School' : 'Add School'}</h2>
       <div className="card">
         <div className="card-body">
@@ -405,7 +404,7 @@ const SchoolForm = () => {
           </form>
         </div>
       </div>
-    </DashboardLayout>
+    </>
   );
 };
 

@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
-import DashboardLayout from '../../components/common/DashboardLayout';
 import ConfirmationModal from '../../components/common/ConfirmationModal';
 import budgetService from '../../services/budgetService';
 import { toast } from 'react-toastify';
@@ -72,21 +71,21 @@ const BudgetDetail = () => {
 
   if (loading) {
     return (
-      <DashboardLayout>
+      <>
         <div className="text-center py-5">
           <div className="spinner-border text-primary" role="status">
             <span className="visually-hidden">Loading...</span>
           </div>
         </div>
-      </DashboardLayout>
+      </>
     );
   }
 
   if (!budget) {
     return (
-      <DashboardLayout>
+      <>
         <div className="alert alert-danger">Budget not found</div>
-      </DashboardLayout>
+      </>
     );
   }
 
@@ -109,7 +108,7 @@ const BudgetDetail = () => {
   const isAdminOrSuperadmin = isAdmin || isSuperadmin;
 
   return (
-    <DashboardLayout>
+    <>
       {/* Warning for finalized budgets */}
       {isFinalized && !isAdminOrSuperadmin && (
         <div className="alert alert-warning mb-4" role="alert">
@@ -411,7 +410,7 @@ const BudgetDetail = () => {
         onConfirm={handleDeleteConfirm}
         onCancel={handleDeleteCancel}
       />
-    </DashboardLayout>
+    </>
   );
 };
 

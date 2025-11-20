@@ -231,6 +231,10 @@ func (h *RoleHandler) AssignPermissions(ctx *gin.Context) {
 	logId := utils.GenerateLogId(ctx)
 	logPrefix := fmt.Sprintf("[%s][RoleHandler][AssignPermissions]", logId)
 
+	// Get current user's role
+	authData := utils.GetAuthData(ctx)
+	currentUserRole := utils.InterfaceString(authData["role"])
+
 	if err := ctx.BindJSON(&req); err != nil {
 		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; BindJSON ERROR: %s;", logPrefix, err.Error()))
 		res := response.Response(http.StatusBadRequest, messages.InvalidRequest, logId, nil)
@@ -241,11 +245,15 @@ func (h *RoleHandler) AssignPermissions(ctx *gin.Context) {
 
 	logger.WriteLog(logger.LogLevelDebug, fmt.Sprintf("%s; Request: %+v;", logPrefix, utils.JsonEncode(req)))
 
-	if err := h.Service.AssignPermissions(id, req); err != nil {
+	if err := h.Service.AssignPermissions(id, req, currentUserRole); err != nil {
 		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; Service.AssignPermissions; Error: %+v", logPrefix, err))
-		res := response.Response(http.StatusInternalServerError, err.Error(), logId, nil)
+		statusCode := http.StatusInternalServerError
+		if err.Error() == "access denied: cannot modify superadmin role" || err.Error() == "access denied: only superadmin and admin can modify system roles" {
+			statusCode = http.StatusForbidden
+		}
+		res := response.Response(statusCode, err.Error(), logId, nil)
 		res.Error = err.Error()
-		ctx.JSON(http.StatusInternalServerError, res)
+		ctx.JSON(statusCode, res)
 		return
 	}
 
@@ -273,6 +281,10 @@ func (h *RoleHandler) AssignMenus(ctx *gin.Context) {
 	logId := utils.GenerateLogId(ctx)
 	logPrefix := fmt.Sprintf("[%s][RoleHandler][AssignMenus]", logId)
 
+	// Get current user's role
+	authData := utils.GetAuthData(ctx)
+	currentUserRole := utils.InterfaceString(authData["role"])
+
 	if err := ctx.BindJSON(&req); err != nil {
 		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; BindJSON ERROR: %s;", logPrefix, err.Error()))
 		res := response.Response(http.StatusBadRequest, messages.InvalidRequest, logId, nil)
@@ -283,11 +295,15 @@ func (h *RoleHandler) AssignMenus(ctx *gin.Context) {
 
 	logger.WriteLog(logger.LogLevelDebug, fmt.Sprintf("%s; Request: %+v;", logPrefix, utils.JsonEncode(req)))
 
-	if err := h.Service.AssignMenus(id, req); err != nil {
+	if err := h.Service.AssignMenus(id, req, currentUserRole); err != nil {
 		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; Service.AssignMenus; Error: %+v", logPrefix, err))
-		res := response.Response(http.StatusInternalServerError, err.Error(), logId, nil)
+		statusCode := http.StatusInternalServerError
+		if err.Error() == "access denied: cannot modify superadmin role" || err.Error() == "access denied: only superadmin and admin can modify system roles" {
+			statusCode = http.StatusForbidden
+		}
+		res := response.Response(statusCode, err.Error(), logId, nil)
 		res.Error = err.Error()
-		ctx.JSON(http.StatusInternalServerError, res)
+		ctx.JSON(statusCode, res)
 		return
 	}
 

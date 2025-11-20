@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import DashboardLayout from '../../components/common/DashboardLayout';
 import SchoolMap from '../../components/maps/SchoolMap';
 import ConfirmationModal from '../../components/common/ConfirmationModal';
 import schoolService from '../../services/schoolService';
@@ -209,7 +208,7 @@ const SchoolList = () => {
   };
 
   return (
-    <DashboardLayout>
+    <>
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2>Schools Management</h2>
         <div className="d-flex gap-2">
@@ -463,7 +462,7 @@ const SchoolList = () => {
         onConfirm={handleDeleteConfirm}
         onCancel={handleDeleteCancel}
       />
-    </DashboardLayout>
+    </>
   );
 };
 

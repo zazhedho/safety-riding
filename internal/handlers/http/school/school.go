@@ -283,3 +283,39 @@ func (h *SchoolHandler) GetEducationStats(ctx *gin.Context) {
 	logger.WriteLog(logger.LogLevelDebug, fmt.Sprintf("%s; Response: total schools=%d, total students educated=%d", logId, stats.TotalSchools, stats.TotalAllStudents))
 	ctx.JSON(http.StatusOK, res)
 }
+
+// GetEducationPriority godoc
+// @Summary Get education priority matrix
+// @Description Retrieve education priority matrix combining market share, school, and accident data
+// @Tags Schools
+// @Accept json
+// @Produce json
+// @Param district_id query string false "Filter by district ID"
+// @Param city_id query string false "Filter by city ID"
+// @Param province_id query string false "Filter by province ID"
+// @Param month query string false "Filter by month"
+// @Param year query string false "Filter by year"
+// @Success 200 {object} response.Success
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /schools/education-priority [get]
+func (h *SchoolHandler) GetEducationPriority(ctx *gin.Context) {
+	logId := utils.GenerateLogId(ctx)
+	logPrefix := fmt.Sprintf("[%s][SchoolHandler][GetEducationPriority]", logId)
+
+	params, _ := filter.GetBaseParams(ctx, "market_share", "asc", 100)
+	params.Filters = filter.WhitelistStringFilter(params.Filters, []string{"district_id", "city_id", "province_id", "month", "year"})
+
+	priority, err := h.Service.GetEducationPriority(params)
+	if err != nil {
+		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; GetEducationPriority; Error: %+v", logPrefix, err))
+		res := response.Response(http.StatusInternalServerError, messages.MsgFail, logId, nil)
+		res.Error = err.Error()
+		ctx.JSON(http.StatusInternalServerError, res)
+		return
+	}
+
+	res := response.Response(http.StatusOK, "Get education priority matrix successfully", logId, priority)
+	logger.WriteLog(logger.LogLevelDebug, fmt.Sprintf("%s; Response: total items=%d, critical=%d, high=%d", logId, priority.TotalItems, priority.CriticalCount, priority.HighPriorityCount))
+	ctx.JSON(http.StatusOK, res)
+}

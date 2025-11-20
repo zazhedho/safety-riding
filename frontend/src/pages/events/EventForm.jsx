@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import DashboardLayout from '../../components/common/DashboardLayout';
 import eventService from '../../services/eventService';
 import schoolService from '../../services/schoolService';
 import publicService from '../../services/publicService';
@@ -334,7 +333,7 @@ const EventForm = () => {
   };
 
   if (loading) {
-    return <DashboardLayout>Loading...</DashboardLayout>;
+    return <>Loading...</>;
   }
 
   const isAdmin = hasRole(['admin']);
@@ -364,7 +363,7 @@ const EventForm = () => {
   const achievementBadge = getAchievementBadge();
 
   return (
-    <DashboardLayout>
+    <>
       <h2>{id ? 'Edit Event' : 'Add Event'}</h2>
 
       {/* Warning for finalized events */}
@@ -778,7 +777,7 @@ const EventForm = () => {
           </button>
         </div>
       </form>
-    </DashboardLayout>
+    </>
   );
 };
 

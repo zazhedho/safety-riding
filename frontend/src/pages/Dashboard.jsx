@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import DashboardLayout from '../components/common/DashboardLayout';
 import schoolService from '../services/schoolService';
 import publicService from '../services/publicService';
 import eventService from '../services/eventService';
@@ -55,6 +54,10 @@ const Dashboard = () => {
   });
   const [marketShareLoading, setMarketShareLoading] = useState(false);
 
+  // Education Priority data
+  const [educationPriority, setEducationPriority] = useState(null);
+  const [priorityLoading, setPriorityLoading] = useState(false);
+
   // Filtered data
   const [filteredEvents, setFilteredEvents] = useState([]);
   const [filteredAccidents, setFilteredAccidents] = useState([]);
@@ -89,7 +92,25 @@ const Dashboard = () => {
     fetchProvinces();
     fetchDashboardData();
     fetchMarketShareSuggestions();
+    fetchEducationPriority();
   }, []);
+
+  const fetchEducationPriority = async () => {
+    try {
+      setPriorityLoading(true);
+      const now = new Date();
+      const params = {
+        'filters[year]': now.getFullYear(),
+        'filters[month]': now.getMonth() + 1
+      };
+      const response = await schoolService.getEducationPriority(params);
+      setEducationPriority(response.data.data);
+    } catch (error) {
+      console.error('Failed to load education priority', error);
+    } finally {
+      setPriorityLoading(false);
+    }
+  };
 
   const fetchMarketShareSuggestions = async () => {
     try {
@@ -326,18 +347,18 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <DashboardLayout>
+      <>
         <div className="d-flex justify-content-center align-items-center" style={{ height: '60vh' }}>
           <div className="spinner-border text-danger" role="status">
             <span className="visually-hidden">Loading...</span>
           </div>
         </div>
-      </DashboardLayout>
+      </>
     );
   }
 
   return (
-    <DashboardLayout>
+    <>
       <style>{`
         .react-datepicker-popper {
           z-index: 1050; 
@@ -365,6 +386,93 @@ const Dashboard = () => {
           accidents={allAccidents}
           marketShare={marketShareSuggestions}
         />
+      </div>
+
+      {/* Education Priority Summary */}
+      <div className="card mb-4">
+        <div className="card-header d-flex justify-content-between align-items-center">
+          <div>
+            <h5 className="mb-0">
+              <i className="bi bi-grid-3x3-gap-fill me-2 text-danger"></i>
+              Education Priority Matrix
+            </h5>
+            <small className="text-muted">
+              Areas requiring safety riding education based on market share ({educationPriority?.market_threshold || 87}% threshold), schools & accidents
+            </small>
+          </div>
+          <Link to="/education/priority" className="btn btn-sm btn-outline-primary">
+            <i className="bi bi-box-arrow-up-right me-1"></i>
+            View Details
+          </Link>
+        </div>
+        <div className="card-body">
+          {priorityLoading ? (
+            <div className="text-center py-4">
+              <div className="spinner-border spinner-border-sm text-primary" role="status">
+                <span className="visually-hidden">Loading...</span>
+              </div>
+            </div>
+          ) : educationPriority ? (
+            <div className="row g-3">
+              <div className="col-6 col-lg-3">
+                <div className="card border-danger h-100">
+                  <div className="card-body text-center py-3">
+                    <div className="text-danger mb-1">
+                      <i className="bi bi-exclamation-triangle-fill fs-4"></i>
+                    </div>
+                    <h3 className="mb-1 text-danger">{educationPriority.critical_count || 0}</h3>
+                    <small className="text-muted">Critical</small>
+                  </div>
+                </div>
+              </div>
+              <div className="col-6 col-lg-3">
+                <div className="card border-warning h-100">
+                  <div className="card-body text-center py-3">
+                    <div className="text-warning mb-1">
+                      <i className="bi bi-exclamation-circle-fill fs-4"></i>
+                    </div>
+                    <h3 className="mb-1 text-warning">{educationPriority.high_priority_count || 0}</h3>
+                    <small className="text-muted">High</small>
+                  </div>
+                </div>
+              </div>
+              <div className="col-6 col-lg-3">
+                <div className="card border-info h-100">
+                  <div className="card-body text-center py-3">
+                    <div className="text-info mb-1">
+                      <i className="bi bi-info-circle-fill fs-4"></i>
+                    </div>
+                    <h3 className="mb-1 text-info">{educationPriority.medium_count || 0}</h3>
+                    <small className="text-muted">Medium</small>
+                  </div>
+                </div>
+              </div>
+              <div className="col-6 col-lg-3">
+                <div className="card border-success h-100">
+                  <div className="card-body text-center py-3">
+                    <div className="text-success mb-1">
+                      <i className="bi bi-check-circle-fill fs-4"></i>
+                    </div>
+                    <h3 className="mb-1 text-success">{educationPriority.low_count || 0}</h3>
+                    <small className="text-muted">Low</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <p className="text-muted text-center mb-0">No priority data available</p>
+          )}
+          {educationPriority && educationPriority.total_items > 0 && (
+            <div className="mt-3 text-center">
+              <small className="text-muted">
+                Total {educationPriority.total_items} districts analyzed -
+                <strong className="text-danger ms-1">
+                  {(educationPriority.critical_count || 0) + (educationPriority.high_priority_count || 0)} require immediate attention
+                </strong>
+              </small>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Statistics Cards */}
@@ -810,7 +918,7 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
-    </DashboardLayout>
+    </>
   );
 };
 

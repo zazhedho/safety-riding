@@ -1,6 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
-import ProtectedRoute from './components/common/ProtectedRoute';
+import ProtectedLayout from './components/common/ProtectedLayout';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import Dashboard from './pages/Dashboard';
@@ -8,6 +8,7 @@ import SchoolList from './pages/schools/SchoolList';
 import SchoolForm from './pages/schools/SchoolForm';
 import SchoolDetail from './pages/schools/SchoolDetail';
 import EducationStats from './pages/schools/EducationStats';
+import EducationPriority from './pages/schools/EducationPriority';
 import PublicList from './pages/publics/PublicList';
 import PublicForm from './pages/publics/PublicForm';
 import PublicDetail from './pages/publics/PublicDetail';
@@ -42,335 +43,75 @@ function App() {
     <BrowserRouter>
       <AuthProvider>
         <Routes>
+          {/* Public routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
+          {/* Redirect root to dashboard */}
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
+          {/* Protected routes with shared layout */}
+          <Route element={<ProtectedLayout />}>
+            <Route path="/dashboard" element={<Dashboard />} />
 
-          <Route
-            path="/schools"
-            element={
-              <ProtectedRoute>
-                <SchoolList />
-              </ProtectedRoute>
-            }
-          />
+            {/* Schools */}
+            <Route path="/schools" element={<SchoolList />} />
+            <Route path="/schools/new" element={<SchoolForm />} />
+            <Route path="/schools/:id" element={<SchoolDetail />} />
+            <Route path="/schools/:id/edit" element={<SchoolForm />} />
 
-          <Route
-            path="/schools/education-stats"
-            element={
-              <ProtectedRoute>
-                <EducationStats />
-              </ProtectedRoute>
-            }
-          />
+            {/* Education */}
+            <Route path="/education/stats" element={<EducationStats />} />
+            <Route path="/education/priority" element={<EducationPriority />} />
 
-          <Route
-            path="/schools/new"
-            element={
-              <ProtectedRoute>
-                <SchoolForm />
-              </ProtectedRoute>
-            }
-          />
+            {/* Public Entities */}
+            <Route path="/publics" element={<PublicList />} />
+            <Route path="/publics/new" element={<PublicForm />} />
+            <Route path="/publics/:id" element={<PublicDetail />} />
+            <Route path="/publics/:id/edit" element={<PublicForm />} />
 
-          <Route
-            path="/schools/:id"
-            element={
-              <ProtectedRoute>
-                <SchoolDetail />
-              </ProtectedRoute>
-            }
-          />
+            {/* Events */}
+            <Route path="/events" element={<EventList />} />
+            <Route path="/events/new" element={<EventForm />} />
+            <Route path="/events/:id" element={<EventDetail />} />
+            <Route path="/events/:id/edit" element={<EventForm />} />
 
-          <Route
-            path="/schools/:id/edit"
-            element={
-              <ProtectedRoute>
-                <SchoolForm />
-              </ProtectedRoute>
-            }
-          />
+            {/* Accidents */}
+            <Route path="/accidents" element={<AccidentList />} />
+            <Route path="/accidents/new" element={<AccidentForm />} />
+            <Route path="/accidents/:id" element={<AccidentDetail />} />
+            <Route path="/accidents/:id/edit" element={<AccidentForm />} />
 
-          <Route
-            path="/publics"
-            element={
-              <ProtectedRoute>
-                <PublicList />
-              </ProtectedRoute>
-            }
-          />
+            {/* Budgets */}
+            <Route path="/budgets" element={<BudgetList />} />
+            <Route path="/budgets/new" element={<BudgetForm />} />
+            <Route path="/budgets/:id" element={<BudgetDetail />} />
+            <Route path="/budgets/:id/edit" element={<BudgetForm />} />
 
-          <Route
-            path="/publics/new"
-            element={
-              <ProtectedRoute>
-                <PublicForm />
-              </ProtectedRoute>
-            }
-          />
+            {/* Market Share */}
+            <Route path="/marketshare" element={<MarketShareList />} />
+            <Route path="/marketshare/add" element={<MarketShareForm />} />
+            <Route path="/marketshare/:id" element={<MarketShareDetail />} />
+            <Route path="/marketshare/:id/edit" element={<MarketShareForm />} />
 
-          <Route
-            path="/publics/:id"
-            element={
-              <ProtectedRoute>
-                <PublicDetail />
-              </ProtectedRoute>
-            }
-          />
+            {/* Users */}
+            <Route path="/users" element={<UserList />} />
+            <Route path="/users/new" element={<UserForm />} />
+            <Route path="/users/:id/edit" element={<UserForm />} />
+            <Route path="/profile" element={<Profile />} />
 
-          <Route
-            path="/publics/:id/edit"
-            element={
-              <ProtectedRoute>
-                <PublicForm />
-              </ProtectedRoute>
-            }
-          />
+            {/* Roles */}
+            <Route path="/roles" element={<RoleList />} />
+            <Route path="/roles/new" element={<RoleForm />} />
+            <Route path="/roles/:id/edit" element={<RoleForm />} />
 
-          <Route
-            path="/events"
-            element={
-              <ProtectedRoute>
-                <EventList />
-              </ProtectedRoute>
-            }
-          />
+            {/* Menus */}
+            <Route path="/menus" element={<MenuList />} />
+            <Route path="/menus/new" element={<MenuForm />} />
+            <Route path="/menus/:id/edit" element={<MenuForm />} />
+          </Route>
 
-          <Route
-            path="/events/new"
-            element={
-              <ProtectedRoute>
-                <EventForm />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/events/:id"
-            element={
-              <ProtectedRoute>
-                <EventDetail />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/events/:id/edit"
-            element={
-              <ProtectedRoute>
-                <EventForm />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/accidents"
-            element={
-              <ProtectedRoute>
-                <AccidentList />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/accidents/new"
-            element={
-              <ProtectedRoute>
-                <AccidentForm />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/accidents/:id"
-            element={
-              <ProtectedRoute>
-                <AccidentDetail />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/accidents/:id/edit"
-            element={
-              <ProtectedRoute>
-                <AccidentForm />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/budgets"
-            element={
-              <ProtectedRoute>
-                <BudgetList />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/budgets/new"
-            element={
-              <ProtectedRoute>
-                <BudgetForm />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/budgets/:id"
-            element={
-              <ProtectedRoute>
-                <BudgetDetail />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/budgets/:id/edit"
-            element={
-              <ProtectedRoute>
-                <BudgetForm />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/marketshare"
-            element={
-              <ProtectedRoute>
-                <MarketShareList />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/marketshare/add"
-            element={
-              <ProtectedRoute>
-                <MarketShareForm />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/marketshare/:id"
-            element={
-              <ProtectedRoute>
-                <MarketShareDetail />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/marketshare/:id/edit"
-            element={
-              <ProtectedRoute>
-                <MarketShareForm />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/users"
-            element={
-              <ProtectedRoute>
-                <UserList />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/users/new"
-            element={
-              <ProtectedRoute>
-                <UserForm />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/users/:id/edit"
-            element={
-              <ProtectedRoute>
-                <UserForm />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/profile"
-            element={
-              <ProtectedRoute>
-                <Profile />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/roles"
-            element={
-              <ProtectedRoute>
-                <RoleList />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/roles/new"
-            element={
-              <ProtectedRoute>
-                <RoleForm />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/roles/:id/edit"
-            element={
-              <ProtectedRoute>
-                <RoleForm />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/menus"
-            element={
-              <ProtectedRoute>
-                <MenuList />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/menus/new"
-            element={
-              <ProtectedRoute>
-                <MenuForm />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/menus/:id/edit"
-            element={
-              <ProtectedRoute>
-                <MenuForm />
-              </ProtectedRoute>
-            }
-          />
-
+          {/* Error pages */}
           <Route
             path="/unauthorized"
             element={

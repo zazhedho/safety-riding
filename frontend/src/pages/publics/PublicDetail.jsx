@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import DashboardLayout from '../../components/common/DashboardLayout';
 import ConfirmationModal from '../../components/common/ConfirmationModal';
 import publicService from '../../services/publicService';
 import { toast } from 'react-toastify';
@@ -57,21 +56,21 @@ const PublicDetail = () => {
 
   if (loading) {
     return (
-      <DashboardLayout>
+      <>
         <div className="text-center py-5">
           <div className="spinner-border text-primary" role="status">
             <span className="visually-hidden">Loading...</span>
           </div>
         </div>
-      </DashboardLayout>
+      </>
     );
   }
 
   if (!publicEntity) {
     return (
-      <DashboardLayout>
+      <>
         <div className="alert alert-danger">Public entity not found</div>
-      </DashboardLayout>
+      </>
     );
   }
 

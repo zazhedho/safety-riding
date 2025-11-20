@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import DashboardLayout from '../../components/common/DashboardLayout';
 import ConfirmationModal from '../../components/common/ConfirmationModal';
 import eventService from '../../services/eventService';
 import { toast } from 'react-toastify';
@@ -236,21 +235,21 @@ const EventDetail = () => {
 
   if (loading) {
     return (
-      <DashboardLayout>
+      <>
         <div className="text-center py-5">
           <div className="spinner-border text-primary" role="status">
             <span className="visually-hidden">Loading...</span>
           </div>
         </div>
-      </DashboardLayout>
+      </>
     );
   }
 
   if (!event) {
     return (
-      <DashboardLayout>
+      <>
         <div className="alert alert-danger">Event not found</div>
-      </DashboardLayout>
+      </>
     );
   }
 
@@ -306,7 +305,7 @@ const EventDetail = () => {
     : 0;
 
   return (
-    <DashboardLayout>
+    <>
       {/* Warning for finalized events */}
       {isFinalized && !isAdminOrSuperadmin && (
         <div className="alert alert-warning mb-4" role="alert">
@@ -940,7 +939,7 @@ const EventDetail = () => {
         onConfirm={handleDeleteConfirm}
         onCancel={handleDeleteCancel}
       />
-    </DashboardLayout>
+    </>
   );
 };
 
