@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import schoolService from '../../services/schoolService';
 import locationService from '../../services/locationService';
+import PriorityMatrixChart from '../../components/charts/PriorityMatrixChart';
 import { toast } from 'react-toastify';
 
 const EducationPriority = () => {
@@ -222,6 +223,31 @@ const EducationPriority = () => {
           <strong>Market Share Threshold: {data.market_threshold}%</strong> -
           Areas with market share below {data.market_threshold}% require mandatory safety riding education.
         </div>
+      )}
+
+      {/* 2x2 Priority Matrix Visualization */}
+      {!loading && data && (
+        data.items && data.items.length > 0 ? (
+          <div className="card mb-4">
+            <div className="card-body">
+              <PriorityMatrixChart
+                data={data.items}
+                threshold={data.market_threshold || 87}
+              />
+            </div>
+          </div>
+        ) : (
+          <div className="alert alert-warning mb-4">
+            <i className="bi bi-info-circle me-2"></i>
+            <strong>Matrix visualization not available.</strong>
+            <p className="mb-0 mt-2">To see the priority matrix, you need to add:</p>
+            <ul className="mb-0 mt-2">
+              <li>Market share data for districts</li>
+              <li>School data (students count)</li>
+              <li>Accident data (deaths, injuries)</li>
+            </ul>
+          </div>
+        )
       )}
 
       {/* Filters */}

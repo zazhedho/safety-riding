@@ -19,6 +19,7 @@ import BudgetUtilizationChart from '../components/charts/BudgetUtilizationChart'
 import SchoolsByProvinceChart from '../components/charts/SchoolsByProvinceChart';
 import PublicsByCityChart from '../components/charts/PublicsByCityChart';
 import DistrictRecommendation from '../components/recommendations/DistrictRecommendation';
+import PriorityMatrixChart from '../components/charts/PriorityMatrixChart';
 
 const Dashboard = () => {
   const { hasPermission } = useAuth();
@@ -413,52 +414,69 @@ const Dashboard = () => {
               </div>
             </div>
           ) : educationPriority ? (
-            <div className="row g-3">
-              <div className="col-6 col-lg-3">
-                <div className="card border-danger h-100">
-                  <div className="card-body text-center py-3">
-                    <div className="text-danger mb-1">
-                      <i className="bi bi-exclamation-triangle-fill fs-4"></i>
+            <>
+              <div className="row g-3">
+                <div className="col-6 col-lg-3">
+                  <div className="card border-danger h-100">
+                    <div className="card-body text-center py-3">
+                      <div className="text-danger mb-1">
+                        <i className="bi bi-exclamation-triangle-fill fs-4"></i>
+                      </div>
+                      <h3 className="mb-1 text-danger">{educationPriority.critical_count || 0}</h3>
+                      <small className="text-muted">Critical</small>
                     </div>
-                    <h3 className="mb-1 text-danger">{educationPriority.critical_count || 0}</h3>
-                    <small className="text-muted">Critical</small>
+                  </div>
+                </div>
+                <div className="col-6 col-lg-3">
+                  <div className="card border-warning h-100">
+                    <div className="card-body text-center py-3">
+                      <div className="text-warning mb-1">
+                        <i className="bi bi-exclamation-circle-fill fs-4"></i>
+                      </div>
+                      <h3 className="mb-1 text-warning">{educationPriority.high_priority_count || 0}</h3>
+                      <small className="text-muted">High</small>
+                    </div>
+                  </div>
+                </div>
+                <div className="col-6 col-lg-3">
+                  <div className="card border-info h-100">
+                    <div className="card-body text-center py-3">
+                      <div className="text-info mb-1">
+                        <i className="bi bi-info-circle-fill fs-4"></i>
+                      </div>
+                      <h3 className="mb-1 text-info">{educationPriority.medium_count || 0}</h3>
+                      <small className="text-muted">Medium</small>
+                    </div>
+                  </div>
+                </div>
+                <div className="col-6 col-lg-3">
+                  <div className="card border-success h-100">
+                    <div className="card-body text-center py-3">
+                      <div className="text-success mb-1">
+                        <i className="bi bi-check-circle-fill fs-4"></i>
+                      </div>
+                      <h3 className="mb-1 text-success">{educationPriority.low_count || 0}</h3>
+                      <small className="text-muted">Low</small>
+                    </div>
                   </div>
                 </div>
               </div>
-              <div className="col-6 col-lg-3">
-                <div className="card border-warning h-100">
-                  <div className="card-body text-center py-3">
-                    <div className="text-warning mb-1">
-                      <i className="bi bi-exclamation-circle-fill fs-4"></i>
-                    </div>
-                    <h3 className="mb-1 text-warning">{educationPriority.high_priority_count || 0}</h3>
-                    <small className="text-muted">High</small>
-                  </div>
+              {/* 2x2 Priority Matrix Visualization */}
+              {educationPriority.items && educationPriority.items.length > 0 ? (
+                <div className="mt-4">
+                  <hr className="my-3" />
+                  <PriorityMatrixChart
+                    data={educationPriority.items}
+                    threshold={educationPriority.market_threshold || 87}
+                  />
                 </div>
-              </div>
-              <div className="col-6 col-lg-3">
-                <div className="card border-info h-100">
-                  <div className="card-body text-center py-3">
-                    <div className="text-info mb-1">
-                      <i className="bi bi-info-circle-fill fs-4"></i>
-                    </div>
-                    <h3 className="mb-1 text-info">{educationPriority.medium_count || 0}</h3>
-                    <small className="text-muted">Medium</small>
-                  </div>
+              ) : (
+                <div className="alert alert-warning mt-4">
+                  <i className="bi bi-info-circle me-2"></i>
+                  <strong>Matrix visualization not available.</strong> Add market share, school, and accident data to see the priority matrix.
                 </div>
-              </div>
-              <div className="col-6 col-lg-3">
-                <div className="card border-success h-100">
-                  <div className="card-body text-center py-3">
-                    <div className="text-success mb-1">
-                      <i className="bi bi-check-circle-fill fs-4"></i>
-                    </div>
-                    <h3 className="mb-1 text-success">{educationPriority.low_count || 0}</h3>
-                    <small className="text-muted">Low</small>
-                  </div>
-                </div>
-              </div>
-            </div>
+              )}
+            </>
           ) : (
             <p className="text-muted text-center mb-0">No priority data available</p>
           )}
