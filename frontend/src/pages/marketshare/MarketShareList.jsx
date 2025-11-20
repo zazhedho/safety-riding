@@ -374,8 +374,8 @@ const MarketShareList = () => {
                     const secondaryLabel = item.district_name
                       ? `${item.city_name}, ${item.province_name}`
                       : item.city_name
-                      ? item.province_name
-                      : '';
+                        ? item.province_name
+                        : '';
                     return (
                       <tr key={idx}>
                         <td>
@@ -429,7 +429,7 @@ const MarketShareList = () => {
                 onChange={(e) => handleListFilterChange('month', e.target.value)}
               >
                 <option value="">All Months</option>
-                {[...Array(12)].map((_, i) => <option key={i+1} value={i+1}>{getMonthName(i+1)}</option>)}
+                {[...Array(12)].map((_, i) => <option key={i + 1} value={i + 1}>{getMonthName(i + 1)}</option>)}
               </select>
             </div>
             <div className="col-12 col-lg-2">
@@ -475,15 +475,15 @@ const MarketShareList = () => {
             </div>
             <div className="col-12 col-lg-3">
               <label className="form-label d-none d-lg-block">&nbsp;</label>
-              <div className="d-flex flex-wrap gap-2">
+              <div className="d-flex gap-2">
                 <button
                   className="btn btn-primary flex-fill"
                   onClick={applyListFilters}
                 >
-                  Apply Filters
+                  <i className="bi bi-filter me-2"></i>Apply
                 </button>
                 <button
-                  className="btn btn-outline-secondary flex-fill"
+                  className="btn btn-outline-secondary"
                   onClick={() => {
                     setFilters({
                       search: '',
@@ -498,8 +498,9 @@ const MarketShareList = () => {
                     setPagination({ page: 1, limit: 10, total: 0 });
                     setFiltersVersion(prev => prev + 1);
                   }}
+                  title="Clear Filters"
                 >
-                  Clear Filters
+                  <i className="bi bi-x-circle"></i>
                 </button>
               </div>
             </div>

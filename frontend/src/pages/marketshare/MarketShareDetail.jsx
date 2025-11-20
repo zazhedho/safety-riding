@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import ConfirmationModal from '../../components/common/ConfirmationModal';
 import marketShareService from '../../services/marketShareService';
+import AuditInfoCard from '../../components/common/AuditInfoCard';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -81,7 +82,7 @@ const MarketShareDetail = () => {
                   <tr><td className="text-muted"><strong>Province</strong></td><td>{data.province_name}</td></tr>
                   <tr><td className="text-muted"><strong>City</strong></td><td>{data.city_name}</td></tr>
                   <tr><td className="text-muted"><strong>District</strong></td><td>{data.district_name}</td></tr>
-                  <tr><td className="text-muted"><strong>Period</strong></td><td>{new Date(data.year, data.month-1).toLocaleString('default', { month: 'long', year: 'numeric' })}</td></tr>
+                  <tr><td className="text-muted"><strong>Period</strong></td><td>{new Date(data.year, data.month - 1).toLocaleString('default', { month: 'long', year: 'numeric' })}</td></tr>
                 </tbody>
               </table>
             </div>
@@ -92,12 +93,65 @@ const MarketShareDetail = () => {
           <div className="card">
             <div className="card-header"><h5>Sales Performance</h5></div>
             <div className="card-body">
-              <h6>Company</h6>
-              <p>Monthly: {formatCurrency(data.monthly_sales)} ({data.monthly_sales_percentage}%)</p>
-              <p>Yearly: {formatCurrency(data.yearly_sales)} ({data.yearly_sales_percentage}%)</p>
-              <h6 className="mt-3">Competitor</h6>
-              <p>Monthly: {formatCurrency(data.monthly_competitor_sales)} ({data.monthly_competitor_percentage}%)</p>
-              <p>Yearly: {formatCurrency(data.yearly_competitor_sales)} ({data.yearly_competitor_percentage}%)</p>
+              <table className="table table-borderless mb-0">
+                <tbody>
+                  <tr>
+                    <td colSpan="2" className="pb-2">
+                      <h6 className="mb-0 text-primary">
+                        <i className="bi bi-building me-2"></i>Company
+                      </h6>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="text-muted ps-4" style={{ width: '40%' }}>Monthly Sales</td>
+                    <td>
+                      <div className="d-flex align-items-center">
+                        <span className="me-2">{formatCurrency(data.monthly_sales)}</span>
+                        <span className="badge bg-primary">{data.monthly_sales_percentage}%</span>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="text-muted ps-4">Yearly Sales</td>
+                    <td>
+                      <div className="d-flex align-items-center">
+                        <span className="me-2">{formatCurrency(data.yearly_sales)}</span>
+                        <span className="badge bg-primary">{data.yearly_sales_percentage}%</span>
+                      </div>
+                    </td>
+                  </tr>
+
+                  <tr>
+                    <td colSpan="2" className="py-2"></td>
+                  </tr>
+
+                  <tr>
+                    <td colSpan="2" className="pb-2">
+                      <h6 className="mb-0 text-secondary">
+                        <i className="bi bi-shop me-2"></i>Competitor
+                      </h6>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="text-muted ps-4">Monthly Sales</td>
+                    <td>
+                      <div className="d-flex align-items-center">
+                        <span className="me-2">{formatCurrency(data.monthly_competitor_sales)}</span>
+                        <span className="badge bg-secondary">{data.monthly_competitor_percentage}%</span>
+                      </div>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="text-muted ps-4">Yearly Sales</td>
+                    <td>
+                      <div className="d-flex align-items-center">
+                        <span className="me-2">{formatCurrency(data.yearly_competitor_sales)}</span>
+                        <span className="badge bg-secondary">{data.yearly_competitor_percentage}%</span>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
@@ -109,6 +163,8 @@ const MarketShareDetail = () => {
           <div className="card-body">{data.notes}</div>
         </div>
       )}
+
+      <AuditInfoCard data={data} />
 
       <ConfirmationModal
         show={showDeleteModal}

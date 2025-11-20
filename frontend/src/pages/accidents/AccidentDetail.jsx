@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import ConfirmationModal from '../../components/common/ConfirmationModal';
 import accidentService from '../../services/accidentService';
+import AuditInfoCard from '../../components/common/AuditInfoCard';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -361,203 +362,203 @@ const AccidentDetail = () => {
           <div className="tab-content">
             {activeTab === 'details' && (
               <>
-              <div className="row">
-                {/* Accident Information */}
-                <div className="col-lg-6 mb-4">
-                  <div className="card h-100">
-                    <div className="card-header">
-                      <h5 className="mb-0">
-                        <i className="bi bi-cone-striped me-2"></i>Accident Information
-                      </h5>
+                <div className="row">
+                  {/* Accident Information */}
+                  <div className="col-lg-6 mb-4">
+                    <div className="card h-100">
+                      <div className="card-header">
+                        <h5 className="mb-0">
+                          <i className="bi bi-cone-striped me-2"></i>Accident Information
+                        </h5>
+                      </div>
+                      <div className="card-body">
+                        <table className="table table-borderless">
+                          <tbody>
+                            <tr>
+                              <td className="text-muted" style={{ width: '40%' }}>
+                                <strong>Accident Type</strong>
+                              </td>
+                              <td>
+                                <span className="badge bg-danger">{accident.accident_type || 'N/A'}</span>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td className="text-muted">
+                                <strong>Vehicle Type</strong>
+                              </td>
+                              <td><span className="badge bg-primary">{accident.vehicle_type || 'N/A'}</span></td>
+                            </tr>
+                            <tr>
+                              <td className="text-muted">
+                                <strong>Total Casualties</strong>
+                              </td>
+                              <td><strong>{totalCasualties}</strong> people</td>
+                            </tr>
+                            <tr>
+                              <td className="text-muted">
+                                <strong>Cause</strong>
+                              </td>
+                              <td>{accident.cause_of_accident || 'N/A'}</td>
+                            </tr>
+                            <tr>
+                              <td className="text-muted">
+                                <strong>Description</strong>
+                              </td>
+                              <td>{accident.description || 'N/A'}</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
-            <div className="card-body">
-              <table className="table table-borderless">
-                <tbody>
-                  <tr>
-                    <td className="text-muted" style={{ width: '40%' }}>
-                      <strong>Accident Type</strong>
-                    </td>
-                    <td>
-                      <span className="badge bg-danger">{accident.accident_type || 'N/A'}</span>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="text-muted">
-                      <strong>Vehicle Type</strong>
-                    </td>
-                    <td><span className="badge bg-primary">{accident.vehicle_type || 'N/A'}</span></td>
-                  </tr>
-                  <tr>
-                    <td className="text-muted">
-                      <strong>Total Casualties</strong>
-                    </td>
-                    <td><strong>{totalCasualties}</strong> people</td>
-                  </tr>
-                  <tr>
-                    <td className="text-muted">
-                      <strong>Cause</strong>
-                    </td>
-                    <td>{accident.cause_of_accident || 'N/A'}</td>
-                  </tr>
-                  <tr>
-                    <td className="text-muted">
-                      <strong>Description</strong>
-                    </td>
-                    <td>{accident.description || 'N/A'}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
+                  </div>
 
-        {/* Location Information */}
-        <div className="col-lg-6 mb-4">
-          <div className="card h-100">
-            <div className="card-header">
-              <h5 className="mb-0">
-                <i className="bi bi-geo-alt me-2"></i>Location Information
-              </h5>
-            </div>
-            <div className="card-body">
-              <table className="table table-borderless">
-                <tbody>
-                  <tr>
-                    <td className="text-muted" style={{ width: '40%' }}>
-                      <strong>Address</strong>
-                    </td>
-                    <td>{accident.location || 'N/A'}</td>
-                  </tr>
-                  <tr>
-                    <td className="text-muted">
-                      <strong>District</strong>
-                    </td>
-                    <td>{accident.district_name || 'N/A'}</td>
-                  </tr>
-                  <tr>
-                    <td className="text-muted">
-                      <strong>City/Regency</strong>
-                    </td>
-                    <td>{accident.city_name || 'N/A'}</td>
-                  </tr>
-                  <tr>
-                    <td className="text-muted">
-                      <strong>Province</strong>
-                    </td>
-                    <td>{accident.province_name || 'N/A'}</td>
-                  </tr>
-                  <tr>
-                    <td className="text-muted">
-                      <strong>Coordinates</strong>
-                    </td>
-                    <td>
-                      {accident.latitude && accident.longitude ? (
-                        <>
-                          <span className="badge bg-success me-2">
-                            {accident.latitude}, {accident.longitude}
-                          </span>
-                          <a
-                            href={`https://www.google.com/maps?q=${accident.latitude},${accident.longitude}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="btn btn-sm btn-outline-primary"
-                          >
-                            <i className="bi bi-map me-1"></i>View Map
-                          </a>
-                        </>
-                      ) : (
-                        <span className="badge bg-secondary">No coordinates</span>
-                      )}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
+                  {/* Location Information */}
+                  <div className="col-lg-6 mb-4">
+                    <div className="card h-100">
+                      <div className="card-header">
+                        <h5 className="mb-0">
+                          <i className="bi bi-geo-alt me-2"></i>Location Information
+                        </h5>
+                      </div>
+                      <div className="card-body">
+                        <table className="table table-borderless">
+                          <tbody>
+                            <tr>
+                              <td className="text-muted" style={{ width: '40%' }}>
+                                <strong>Address</strong>
+                              </td>
+                              <td>{accident.location || 'N/A'}</td>
+                            </tr>
+                            <tr>
+                              <td className="text-muted">
+                                <strong>District</strong>
+                              </td>
+                              <td>{accident.district_name || 'N/A'}</td>
+                            </tr>
+                            <tr>
+                              <td className="text-muted">
+                                <strong>City/Regency</strong>
+                              </td>
+                              <td>{accident.city_name || 'N/A'}</td>
+                            </tr>
+                            <tr>
+                              <td className="text-muted">
+                                <strong>Province</strong>
+                              </td>
+                              <td>{accident.province_name || 'N/A'}</td>
+                            </tr>
+                            <tr>
+                              <td className="text-muted">
+                                <strong>Coordinates</strong>
+                              </td>
+                              <td>
+                                {accident.latitude && accident.longitude ? (
+                                  <>
+                                    <span className="badge bg-success me-2">
+                                      {accident.latitude}, {accident.longitude}
+                                    </span>
+                                    <a
+                                      href={`https://www.google.com/maps?q=${accident.latitude},${accident.longitude}`}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="btn btn-sm btn-outline-primary"
+                                    >
+                                      <i className="bi bi-map me-1"></i>View Map
+                                    </a>
+                                  </>
+                                ) : (
+                                  <span className="badge bg-secondary">No coordinates</span>
+                                )}
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
-      <div className="row">
-        {/* Road & Environment */}
-        <div className="col-lg-6 mb-4">
-          <div className="card h-100">
-            <div className="card-header">
-              <h5 className="mb-0">
-                <i className="bi bi-sign-turn-right me-2"></i>Road & Environment
-              </h5>
-            </div>
-            <div className="card-body">
-              <table className="table table-borderless">
-                <tbody>
-                  <tr>
-                    <td className="text-muted" style={{ width: '40%' }}>
-                      <strong>Road Type</strong>
-                    </td>
-                    <td>{accident.road_type || 'N/A'}</td>
-                  </tr>
-                  <tr>
-                    <td className="text-muted">
-                      <strong>Road Condition</strong>
-                    </td>
-                    <td>
-                      <span className={`badge ${accident.road_condition === 'good' ? 'bg-success' : accident.road_condition === 'fair' ? 'bg-warning' : 'bg-danger'}`}>
-                        {accident.road_condition || 'N/A'}
-                      </span>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="text-muted">
-                      <strong>Weather Condition</strong>
-                    </td>
-                    <td>
-                      <span className={`badge ${accident.weather_condition === 'sunny' || accident.weather_condition === 'clear' ? 'bg-success' : 'bg-info'}`}>
-                        {accident.weather_condition || 'N/A'}
-                      </span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
+                <div className="row">
+                  {/* Road & Environment */}
+                  <div className="col-lg-6 mb-4">
+                    <div className="card h-100">
+                      <div className="card-header">
+                        <h5 className="mb-0">
+                          <i className="bi bi-sign-turn-right me-2"></i>Road & Environment
+                        </h5>
+                      </div>
+                      <div className="card-body">
+                        <table className="table table-borderless">
+                          <tbody>
+                            <tr>
+                              <td className="text-muted" style={{ width: '40%' }}>
+                                <strong>Road Type</strong>
+                              </td>
+                              <td>{accident.road_type || 'N/A'}</td>
+                            </tr>
+                            <tr>
+                              <td className="text-muted">
+                                <strong>Road Condition</strong>
+                              </td>
+                              <td>
+                                <span className={`badge ${accident.road_condition === 'good' ? 'bg-success' : accident.road_condition === 'fair' ? 'bg-warning' : 'bg-danger'}`}>
+                                  {accident.road_condition || 'N/A'}
+                                </span>
+                              </td>
+                            </tr>
+                            <tr>
+                              <td className="text-muted">
+                                <strong>Weather Condition</strong>
+                              </td>
+                              <td>
+                                <span className={`badge ${accident.weather_condition === 'sunny' || accident.weather_condition === 'clear' ? 'bg-success' : 'bg-info'}`}>
+                                  {accident.weather_condition || 'N/A'}
+                                </span>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
 
-        {/* Official Report */}
-        <div className="col-lg-6 mb-4">
-          <div className="card h-100">
-            <div className="card-header">
-              <h5 className="mb-0">
-                <i className="bi bi-shield-check me-2"></i>Official Report
-              </h5>
-            </div>
-            <div className="card-body">
-              <table className="table table-borderless">
-                <tbody>
-                  <tr>
-                    <td className="text-muted" style={{ width: '40%' }}>
-                      <strong>Police Station</strong>
-                    </td>
-                    <td><strong>{accident.police_station || 'N/A'}</strong></td>
-                  </tr>
-                  <tr>
-                    <td className="text-muted">
-                      <strong>Officer Name</strong>
-                    </td>
-                    <td>{accident.officer_name || 'N/A'}</td>
-                  </tr>
-                  <tr>
-                    <td className="text-muted">
-                      <strong>Report Number</strong>
-                    </td>
-                    <td>
-                      <span className="badge bg-warning">{accident.police_report_no}</span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-              </div>
+                  {/* Official Report */}
+                  <div className="col-lg-6 mb-4">
+                    <div className="card h-100">
+                      <div className="card-header">
+                        <h5 className="mb-0">
+                          <i className="bi bi-shield-check me-2"></i>Official Report
+                        </h5>
+                      </div>
+                      <div className="card-body">
+                        <table className="table table-borderless">
+                          <tbody>
+                            <tr>
+                              <td className="text-muted" style={{ width: '40%' }}>
+                                <strong>Police Station</strong>
+                              </td>
+                              <td><strong>{accident.police_station || 'N/A'}</strong></td>
+                            </tr>
+                            <tr>
+                              <td className="text-muted">
+                                <strong>Officer Name</strong>
+                              </td>
+                              <td>{accident.officer_name || 'N/A'}</td>
+                            </tr>
+                            <tr>
+                              <td className="text-muted">
+                                <strong>Report Number</strong>
+                              </td>
+                              <td>
+                                <span className="badge bg-warning">{accident.police_report_no}</span>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </>
             )}
 
@@ -676,35 +677,7 @@ const AccidentDetail = () => {
       </div>
 
       {/* Audit Information */}
-      <div className="card mt-4">
-        <div className="card-header">
-          <h5 className="mb-0">
-            <i className="bi bi-clock-history me-2"></i>Audit Information
-          </h5>
-        </div>
-        <div className="card-body">
-          <div className="row">
-            <div className="col-md-6">
-              <p className="mb-2">
-                <strong className="text-muted">Created At:</strong>{' '}
-                {new Date(accident.created_at).toLocaleString()}
-              </p>
-              <p className="mb-0">
-                <strong className="text-muted">Created By:</strong> {accident.created_by || '-'}
-              </p>
-            </div>
-            <div className="col-md-6">
-              <p className="mb-2">
-                <strong className="text-muted">Updated At:</strong>{' '}
-                {new Date(accident.updated_at).toLocaleString()}
-              </p>
-              <p className="mb-0">
-                <strong className="text-muted">Updated By:</strong> {accident.updated_by || '-'}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <AuditInfoCard data={accident} />
 
       {/* Delete Photo Confirmation Modal */}
       <ConfirmationModal

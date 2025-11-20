@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import ConfirmationModal from '../../components/common/ConfirmationModal';
+import AuditInfoCard from '../../components/common/AuditInfoCard';
 import eventService from '../../services/eventService';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../contexts/AuthContext';
@@ -890,35 +891,7 @@ const EventDetail = () => {
       </div>
 
       {/* Audit Information */}
-      <div className="card mt-4">
-        <div className="card-header">
-          <h5 className="mb-0">
-            <i className="bi bi-clock-history me-2"></i>Audit Information
-          </h5>
-        </div>
-        <div className="card-body">
-          <div className="row">
-            <div className="col-md-6">
-              <p className="mb-2">
-                <strong className="text-muted">Created At:</strong>{' '}
-                {new Date(event.created_at).toLocaleString()}
-              </p>
-              <p className="mb-0">
-                <strong className="text-muted">Created By:</strong> {event.created_by || '-'}
-              </p>
-            </div>
-            <div className="col-md-6">
-              <p className="mb-2">
-                <strong className="text-muted">Updated At:</strong>{' '}
-                {new Date(event.updated_at).toLocaleString()}
-              </p>
-              <p className="mb-0">
-                <strong className="text-muted">Updated By:</strong> {event.updated_by || '-'}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <AuditInfoCard data={event} />
 
       {/* Delete Photo Confirmation Modal */}
       <ConfirmationModal

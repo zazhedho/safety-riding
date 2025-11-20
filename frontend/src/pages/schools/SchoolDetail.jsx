@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import ConfirmationModal from '../../components/common/ConfirmationModal';
+import AuditInfoCard from '../../components/common/AuditInfoCard';
 import schoolService from '../../services/schoolService';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../contexts/AuthContext';
@@ -315,35 +316,7 @@ const SchoolDetail = () => {
       </div>
 
       {/* Audit Information */}
-      <div className="card">
-        <div className="card-header">
-          <h5 className="mb-0">
-            <i className="bi bi-clock-history me-2"></i>Audit Information
-          </h5>
-        </div>
-        <div className="card-body">
-          <div className="row">
-            <div className="col-md-6">
-              <p className="mb-2">
-                <strong className="text-muted">Created At:</strong>{' '}
-                {formatDate(school.created_at)}
-              </p>
-              <p className="mb-0">
-                <strong className="text-muted">Created By:</strong> {school.created_by || '-'}
-              </p>
-            </div>
-            <div className="col-md-6">
-              <p className="mb-2">
-                <strong className="text-muted">Updated At:</strong>{' '}
-                {formatDate(school.updated_at)}
-              </p>
-              <p className="mb-0">
-                <strong className="text-muted">Updated By:</strong> {school.updated_by || '-'}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <AuditInfoCard data={school} />
 
       <ConfirmationModal
         show={showDeleteModal}

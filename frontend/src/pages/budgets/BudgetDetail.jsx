@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import ConfirmationModal from '../../components/common/ConfirmationModal';
+import AuditInfoCard from '../../components/common/AuditInfoCard';
 import budgetService from '../../services/budgetService';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../contexts/AuthContext';
@@ -205,11 +206,10 @@ const BudgetDetail = () => {
         <div className="card-body">
           <div className="progress position-relative" style={{ height: '30px' }}>
             <div
-              className={`progress-bar ${
-                percentage > 100 ? 'bg-danger' :
+              className={`progress-bar ${percentage > 100 ? 'bg-danger' :
                 percentage > 80 ? 'bg-warning' :
-                'bg-success'
-              } d-flex align-items-center justify-content-center`}
+                  'bg-success'
+                } d-flex align-items-center justify-content-center`}
               role="progressbar"
               style={{ width: `${Math.min(percentage, 100)}%` }}
               aria-valuenow={percentage}
@@ -372,35 +372,7 @@ const BudgetDetail = () => {
       </div>
 
       {/* Audit Information */}
-      <div className="card">
-        <div className="card-header">
-          <h5 className="mb-0">
-            <i className="bi bi-clock-history me-2"></i>Audit Information
-          </h5>
-        </div>
-        <div className="card-body">
-          <div className="row">
-            <div className="col-md-6">
-              <p className="mb-2">
-                <strong className="text-muted">Created At:</strong>{' '}
-                {new Date(budget.created_at).toLocaleString()}
-              </p>
-              <p className="mb-0">
-                <strong className="text-muted">Created By:</strong> {budget.created_by || '-'}
-              </p>
-            </div>
-            <div className="col-md-6">
-              <p className="mb-2">
-                <strong className="text-muted">Updated At:</strong>{' '}
-                {new Date(budget.updated_at).toLocaleString()}
-              </p>
-              <p className="mb-0">
-                <strong className="text-muted">Updated By:</strong> {budget.updated_by || '-'}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+      <AuditInfoCard data={budget} />
 
       <ConfirmationModal
         show={showDeleteModal}
