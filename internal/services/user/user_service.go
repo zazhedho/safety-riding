@@ -3,13 +3,13 @@ package serviceuser
 import (
 	"errors"
 	"regexp"
-	"safety-riding/internal/domain/auth"
-	"safety-riding/internal/domain/user"
+	domainauth "safety-riding/internal/domain/auth"
+	domainuser "safety-riding/internal/domain/user"
 	"safety-riding/internal/dto"
-	"safety-riding/internal/interfaces/auth"
-	"safety-riding/internal/interfaces/permission"
-	"safety-riding/internal/interfaces/role"
-	"safety-riding/internal/interfaces/user"
+	interfaceauth "safety-riding/internal/interfaces/auth"
+	interfacepermission "safety-riding/internal/interfaces/permission"
+	interfacerole "safety-riding/internal/interfaces/role"
+	interfaceuser "safety-riding/internal/interfaces/user"
 	"safety-riding/pkg/filter"
 	"safety-riding/utils"
 	"strings"
@@ -70,9 +70,16 @@ func ValidatePasswordStrength(password string) error {
 }
 
 func (s *ServiceUser) RegisterUser(req dto.UserRegister) (domainuser.Users, error) {
+	phone := utils.NormalizePhoneTo62(req.Phone)
+
 	data, _ := s.UserRepo.GetByEmail(req.Email)
-	if data.Id != "" || data.Email == req.Email || data.Phone == req.Phone {
-		return domainuser.Users{}, errors.New("email or phone already exists")
+	if data.Id != "" {
+		return domainuser.Users{}, errors.New("email already exists")
+	}
+
+	phoneData, _ := s.UserRepo.GetByPhone(phone)
+	if phoneData.Id != "" {
+		return domainuser.Users{}, errors.New("phone number already exists")
 	}
 
 	// Validate password strength
@@ -84,8 +91,6 @@ func (s *ServiceUser) RegisterUser(req dto.UserRegister) (domainuser.Users, erro
 	if err != nil {
 		return domainuser.Users{}, err
 	}
-
-	phone := utils.NormalizePhoneTo62(req.Phone)
 	var roleName = utils.RoleViewer
 	if strings.TrimSpace(req.Role) != "" {
 		roleName = strings.ToLower(req.Role)

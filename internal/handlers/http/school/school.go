@@ -259,10 +259,12 @@ func (h *SchoolHandler) DeleteSchool(ctx *gin.Context) {
 // @Param is_educated query string false "Filter by education completion flag"
 // @Param month query string false "Filter by month"
 // @Param year query string false "Filter by year"
+// @Param sort query string false "Sort field"
+// @Param order query string false "Sort order (asc/desc)"
 // @Success 200 {object} response.Success
 // @Failure 500 {object} response.Error
 // @Security ApiKeyAuth
-// @Router /schools/education-stats [get]
+// @Router /education/stats [get]
 func (h *SchoolHandler) GetEducationStats(ctx *gin.Context) {
 	logId := utils.GenerateLogId(ctx)
 	logPrefix := fmt.Sprintf("[%s][SchoolHandler][GetEducationStats]", logId)
@@ -295,10 +297,14 @@ func (h *SchoolHandler) GetEducationStats(ctx *gin.Context) {
 // @Param province_id query string false "Filter by province ID"
 // @Param month query string false "Filter by month"
 // @Param year query string false "Filter by year"
+// @Param page query int false "Page number"
+// @Param limit query int false "Items per page"
+// @Param sort query string false "Sort field"
+// @Param order query string false "Sort order (asc/desc)"
 // @Success 200 {object} response.Success
 // @Failure 500 {object} response.Error
 // @Security ApiKeyAuth
-// @Router /schools/education-priority [get]
+// @Router /education/priority [get]
 func (h *SchoolHandler) GetEducationPriority(ctx *gin.Context) {
 	logId := utils.GenerateLogId(ctx)
 	logPrefix := fmt.Sprintf("[%s][SchoolHandler][GetEducationPriority]", logId)

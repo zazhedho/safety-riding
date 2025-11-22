@@ -261,6 +261,8 @@ func (h *PublicHandler) DeletePublic(ctx *gin.Context) {
 // @Param is_educated query string false "Filter by education flag"
 // @Param month query string false "Filter by month"
 // @Param year query string false "Filter by year"
+// @Param sort query string false "Sort field"
+// @Param order query string false "Sort order (asc/desc)"
 // @Success 200 {object} response.Success
 // @Failure 500 {object} response.Error
 // @Security ApiKeyAuth

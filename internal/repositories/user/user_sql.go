@@ -29,6 +29,14 @@ func (r *repo) GetByEmail(email string) (ret domainuser.Users, err error) {
 	return ret, nil
 }
 
+func (r *repo) GetByPhone(phone string) (ret domainuser.Users, err error) {
+	if err = r.DB.Where("phone = ?", phone).First(&ret).Error; err != nil {
+		return domainuser.Users{}, err
+	}
+
+	return ret, nil
+}
+
 func (r *repo) GetByID(id string) (ret domainuser.Users, err error) {
 	if err = r.DB.Where("id = ?", id).First(&ret).Error; err != nil {
 		return domainuser.Users{}, err

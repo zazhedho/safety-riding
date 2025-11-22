@@ -1581,6 +1581,127 @@ paths:
       summary: Get districts
       tags:
       - Districts
+  /education/priority:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve education priority matrix combining market share, school,
+        and accident data
+      parameters:
+      - description: Filter by district ID
+        in: query
+        name: district_id
+        type: string
+      - description: Filter by city ID
+        in: query
+        name: city_id
+        type: string
+      - description: Filter by province ID
+        in: query
+        name: province_id
+        type: string
+      - description: Filter by month
+        in: query
+        name: month
+        type: string
+      - description: Filter by year
+        in: query
+        name: year
+        type: string
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Items per page
+        in: query
+        name: limit
+        type: integer
+      - description: Sort field
+        in: query
+        name: sort
+        type: string
+      - description: Sort order (asc/desc)
+        in: query
+        name: order
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get education priority matrix
+      tags:
+      - Schools
+  /education/stats:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve aggregated school education statistics with optional filters
+      parameters:
+      - description: Page number
+        in: query
+        name: page
+        type: integer
+      - description: Items per page
+        in: query
+        name: limit
+        type: integer
+      - description: Filter by district ID
+        in: query
+        name: district_id
+        type: string
+      - description: Filter by city ID
+        in: query
+        name: city_id
+        type: string
+      - description: Filter by province ID
+        in: query
+        name: province_id
+        type: string
+      - description: Filter by education completion flag
+        in: query
+        name: is_educated
+        type: string
+      - description: Filter by month
+        in: query
+        name: month
+        type: string
+      - description: Filter by year
+        in: query
+        name: year
+        type: string
+      - description: Sort field
+        in: query
+        name: sort
+        type: string
+      - description: Sort order (asc/desc)
+        in: query
+        name: order
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.Success'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.Error'
+      security:
+      - ApiKeyAuth: []
+      summary: Get school education statistics
+      tags:
+      - Schools
   /event:
     post:
       consumes:
@@ -2818,6 +2939,14 @@ paths:
         in: query
         name: year
         type: string
+      - description: Sort field
+        in: query
+        name: sort
+        type: string
+      - description: Sort order (asc/desc)
+        in: query
+        name: order
+        type: string
       produces:
       - application/json
       responses:
@@ -2983,6 +3112,10 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/response.Error'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.Error'
         "500":
           description: Internal Server Error
           schema:
@@ -3018,6 +3151,10 @@ paths:
             $ref: '#/definitions/response.Success'
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "403":
+          description: Forbidden
           schema:
             $ref: '#/definitions/response.Error'
         "500":
@@ -3254,71 +3391,11 @@ paths:
       summary: List schools
       tags:
       - Schools
-  /schools/education-stats:
-    get:
-      consumes:
-      - application/json
-      description: Retrieve aggregated school education statistics with optional filters
-      parameters:
-      - description: Page number
-        in: query
-        name: page
-        type: integer
-      - description: Items per page
-        in: query
-        name: limit
-        type: integer
-      - description: Filter by district ID
-        in: query
-        name: district_id
-        type: string
-      - description: Filter by city ID
-        in: query
-        name: city_id
-        type: string
-      - description: Filter by province ID
-        in: query
-        name: province_id
-        type: string
-      - description: Filter by education completion flag
-        in: query
-        name: is_educated
-        type: string
-      - description: Filter by month
-        in: query
-        name: month
-        type: string
-      - description: Filter by year
-        in: query
-        name: year
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/response.Success'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/response.Error'
-      security:
-      - ApiKeyAuth: []
-      summary: Get school education statistics
-      tags:
-      - Schools
   /user:
     delete:
       consumes:
       - application/json
       description: Delete a user
-      parameters:
-      - description: User ID
-        in: path
-        name: id
-        required: true
-        type: string
       produces:
       - application/json
       responses:
@@ -3509,11 +3586,6 @@ paths:
       - application/json
       description: Change a user's password
       parameters:
-      - description: User ID
-        in: path
-        name: id
-        required: true
-        type: string
       - description: User change password details
         in: body
         name: user
@@ -3565,6 +3637,10 @@ paths:
             $ref: '#/definitions/response.Success'
         "400":
           description: Bad Request
+          schema:
+            $ref: '#/definitions/response.Error'
+        "429":
+          description: Too Many Requests
           schema:
             $ref: '#/definitions/response.Error'
         "500":
@@ -3649,6 +3725,14 @@ paths:
             $ref: '#/definitions/response.Error'
         "401":
           description: Unauthorized
+          schema:
+            $ref: '#/definitions/response.Error'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/response.Error'
+        "404":
+          description: Not Found
           schema:
             $ref: '#/definitions/response.Error'
         "500":

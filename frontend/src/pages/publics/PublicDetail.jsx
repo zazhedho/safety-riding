@@ -76,7 +76,7 @@ const PublicDetail = () => {
   }
 
   return (
-    <DashboardLayout>
+    <>
       {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -328,7 +328,7 @@ const PublicDetail = () => {
         onConfirm={handleDeleteConfirm}
         onCancel={handleDeleteCancel}
       />
-    </DashboardLayout>
+    </>
   );
 };
 

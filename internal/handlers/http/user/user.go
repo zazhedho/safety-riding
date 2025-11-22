@@ -96,6 +96,7 @@ func (h *HandlerUser) Register(ctx *gin.Context) {
 // @Param user body dto.Login true "User login details"
 // @Success 200 {object} response.Success
 // @Failure 400 {object} response.Error
+// @Failure 429 {object} response.Error
 // @Failure 500 {object} response.Error
 // @Router /user/login [post]
 func (h *HandlerUser) Login(ctx *gin.Context) {
@@ -481,7 +482,6 @@ func (h *HandlerUser) UpdateUserById(ctx *gin.Context) {
 // @Tags Users
 // @Accept  json
 // @Produce  json
-// @Param id path string true "User ID"
 // @Param user body dto.ChangePassword true "User change password details"
 // @Success 200 {object} response.Success
 // @Failure 400 {object} response.Error
@@ -539,7 +539,6 @@ func (h *HandlerUser) ChangePassword(ctx *gin.Context) {
 // @Tags Users
 // @Accept  json
 // @Produce  json
-// @Param id path string true "User ID"
 // @Success 200 {object} response.Success
 // @Failure 404 {object} response.Error
 // @Failure 500 {object} response.Error

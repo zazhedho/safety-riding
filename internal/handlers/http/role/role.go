@@ -222,6 +222,7 @@ func (h *RoleHandler) Delete(ctx *gin.Context) {
 // @Param permissions body dto.AssignPermissions true "Permission assignments"
 // @Success 200 {object} response.Success
 // @Failure 400 {object} response.Error
+// @Failure 403 {object} response.Error
 // @Failure 500 {object} response.Error
 // @Security ApiKeyAuth
 // @Router /role/{id}/permissions [post]
@@ -272,6 +273,7 @@ func (h *RoleHandler) AssignPermissions(ctx *gin.Context) {
 // @Param menus body dto.AssignMenus true "Menu assignments"
 // @Success 200 {object} response.Success
 // @Failure 400 {object} response.Error
+// @Failure 403 {object} response.Error
 // @Failure 500 {object} response.Error
 // @Security ApiKeyAuth
 // @Router /role/{id}/menus [post]

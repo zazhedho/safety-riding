@@ -79,6 +79,8 @@ func (h *HandlerSession) GetActiveSessions(ctx *gin.Context) {
 // @Success 200 {object} response.Success
 // @Failure 400 {object} response.Error
 // @Failure 401 {object} response.Error
+// @Failure 403 {object} response.Error
+// @Failure 404 {object} response.Error
 // @Failure 500 {object} response.Error
 // @Security ApiKeyAuth
 // @Router /user/session/{session_id} [delete]
