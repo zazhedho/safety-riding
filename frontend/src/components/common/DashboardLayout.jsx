@@ -110,15 +110,17 @@ const DashboardLayout = ({ children }) => {
         }
 
         // Transform API menu format to component format with hierarchy support
-        const transformedMenus = menus.map(menu => ({
-          id: menu.id,
-          path: menu.path,
-          label: menu.display_name,
-          icon: menu.icon || 'bi-circle',
-          name: menu.name,
-          parentId: menu.parent_id || null,
-          orderIndex: menu.order_index || 0,
-        }));
+        const transformedMenus = menus
+          .filter(menu => menu.path !== '/profile' && menu.name !== 'profile')
+          .map(menu => ({
+            id: menu.id,
+            path: menu.path,
+            label: menu.display_name,
+            icon: menu.icon || 'bi-circle',
+            name: menu.name,
+            parentId: menu.parent_id || null,
+            orderIndex: menu.order_index || 0,
+          }));
 
         // Build hierarchical menu structure
         const hierarchicalMenus = buildMenuHierarchy(transformedMenus);
@@ -148,7 +150,6 @@ const DashboardLayout = ({ children }) => {
   const getFallbackMenus = (role) => {
     const baseMenus = [
       { path: '/dashboard', label: 'Dashboard', icon: 'bi-speedometer2', name: 'dashboard', children: [] },
-      { path: '/profile', label: 'Profile', icon: 'bi-person-circle', name: 'profile', children: [] },
       { path: '/schools', label: 'Schools', icon: 'bi-building', name: 'schools', children: [] },
       {
         path: null,
