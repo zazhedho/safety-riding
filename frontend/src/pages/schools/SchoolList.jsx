@@ -242,6 +242,7 @@ const SchoolList = () => {
                 type="text"
                 className="form-control"
                 placeholder="Search by name or NPSN..."
+                aria-label="Search schools by name or NPSN"
                 name="search"
                 value={filters.search}
                 onChange={handleFilterChange}
@@ -252,6 +253,7 @@ const SchoolList = () => {
               <select
                 className="form-select"
                 name="province_id"
+                aria-label="Filter by province"
                 value={filters.province_id}
                 onChange={handleFilterChange}
               >
@@ -265,6 +267,7 @@ const SchoolList = () => {
               <select
                 className="form-select"
                 name="city_id"
+                aria-label="Filter by city"
                 value={filters.city_id}
                 onChange={handleFilterChange}
                 disabled={!filters.province_id}
@@ -279,6 +282,7 @@ const SchoolList = () => {
               <select
                 className="form-select"
                 name="district_id"
+                aria-label="Filter by district"
                 value={filters.district_id}
                 onChange={handleFilterChange}
                 disabled={!filters.city_id}
@@ -291,11 +295,11 @@ const SchoolList = () => {
             </div>
             <div className="col-md-3">
               <div className="d-flex gap-2">
-                <button className="btn btn-primary flex-fill" onClick={handleSearch}>
-                  <i className="bi bi-search me-2"></i>Search
+                <button className="btn btn-primary flex-fill" onClick={handleSearch} aria-label="Apply filters">
+                  <i className="bi bi-search me-2" aria-hidden="true"></i>Search
                 </button>
-                <button className="btn btn-outline-secondary" onClick={handleClearFilters} title="Clear all filters">
-                  <i className="bi bi-x-circle"></i>
+                <button className="btn btn-outline-secondary" onClick={handleClearFilters} title="Clear all filters" aria-label="Clear all filters">
+                  <i className="bi bi-x-circle" aria-hidden="true"></i>
                 </button>
               </div>
             </div>
@@ -363,24 +367,27 @@ const SchoolList = () => {
                               <Link
                                 to={`/schools/${school.id}`}
                                 className="btn btn-sm btn-outline-primary"
+                                aria-label={`View details for ${school.name}`}
                               >
-                                <i className="bi bi-eye"></i>
+                                <i className="bi bi-eye" aria-hidden="true"></i>
                               </Link>
                             )}
                             {hasPermission('update_schools') && (
                               <Link
                                 to={`/schools/${school.id}/edit`}
                                 className="btn btn-sm btn-outline-warning"
+                                aria-label={`Edit ${school.name}`}
                               >
-                                <i className="bi bi-pencil"></i>
+                                <i className="bi bi-pencil" aria-hidden="true"></i>
                               </Link>
                             )}
                             {hasPermission('delete_schools') && (
                               <button
                                 onClick={() => handleDeleteClick(school)}
                                 className="btn btn-sm btn-outline-danger"
+                                aria-label={`Delete ${school.name}`}
                               >
-                                <i className="bi bi-trash"></i>
+                                <i className="bi bi-trash" aria-hidden="true"></i>
                               </button>
                             )}
                           </div>
@@ -400,6 +407,7 @@ const SchoolList = () => {
                           className="page-link"
                           onClick={() => handlePageChange(pagination.page - 1)}
                           disabled={pagination.page === 1}
+                          aria-label="Previous page"
                         >
                           Previous
                         </button>
@@ -417,6 +425,8 @@ const SchoolList = () => {
                               <button
                                 className="page-link"
                                 onClick={() => handlePageChange(pageNum)}
+                                aria-label={`Go to page ${pageNum}`}
+                                aria-current={pagination.page === pageNum ? 'page' : undefined}
                               >
                                 {pageNum}
                               </button>
@@ -436,6 +446,7 @@ const SchoolList = () => {
                           className="page-link"
                           onClick={() => handlePageChange(pagination.page + 1)}
                           disabled={pagination.page === pagination.totalPages}
+                          aria-label="Next page"
                         >
                           Next
                         </button>

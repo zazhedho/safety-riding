@@ -214,6 +214,7 @@ const AccidentList = () => {
                 type="text"
                 className="form-control"
                 placeholder="Search by report no, location..."
+                aria-label="Search accidents by report number or location"
                 name="search"
                 value={filters.search}
                 onChange={handleFilterChange}
@@ -224,6 +225,7 @@ const AccidentList = () => {
               <select
                 className="form-select"
                 name="province_id"
+                aria-label="Filter by province"
                 value={filters.province_id}
                 onChange={handleFilterChange}
               >
@@ -237,6 +239,7 @@ const AccidentList = () => {
               <select
                 className="form-select"
                 name="city_id"
+                aria-label="Filter by city"
                 value={filters.city_id}
                 onChange={handleFilterChange}
                 disabled={!filters.province_id}
@@ -251,6 +254,7 @@ const AccidentList = () => {
               <select
                 className="form-select"
                 name="district_id"
+                aria-label="Filter by district"
                 value={filters.district_id}
                 onChange={handleFilterChange}
                 disabled={!filters.city_id}
@@ -266,6 +270,7 @@ const AccidentList = () => {
                 type="text"
                 className="form-control"
                 placeholder="Accident Type"
+                aria-label="Filter by accident type"
                 name="accident_type"
                 value={filters.accident_type}
                 onChange={handleFilterChange}
@@ -276,6 +281,7 @@ const AccidentList = () => {
                 type="text"
                 className="form-control"
                 placeholder="Vehicle Type"
+                aria-label="Filter by vehicle type"
                 name="vehicle_type"
                 value={filters.vehicle_type}
                 onChange={handleFilterChange}
@@ -286,6 +292,7 @@ const AccidentList = () => {
                 type="text"
                 className="form-control"
                 placeholder="Police Station"
+                aria-label="Filter by police station"
                 name="police_station"
                 value={filters.police_station}
                 onChange={handleFilterChange}
@@ -293,11 +300,11 @@ const AccidentList = () => {
             </div>
             <div className="col-md-3">
               <div className="d-flex gap-2">
-                <button className="btn btn-primary flex-fill" onClick={handleSearch}>
-                  <i className="bi bi-search me-2"></i>Search
+                <button className="btn btn-primary flex-fill" onClick={handleSearch} aria-label="Apply filters">
+                  <i className="bi bi-search me-2" aria-hidden="true"></i>Search
                 </button>
-                <button className="btn btn-outline-secondary" onClick={handleClearFilters} title="Clear all filters">
-                  <i className="bi bi-x-circle"></i>
+                <button className="btn btn-outline-secondary" onClick={handleClearFilters} title="Clear all filters" aria-label="Clear all filters">
+                  <i className="bi bi-x-circle" aria-hidden="true"></i>
                 </button>
               </div>
             </div>
@@ -354,24 +361,27 @@ const AccidentList = () => {
                             <Link
                               to={`/accidents/${accident.id}`}
                               className="btn btn-sm btn-outline-primary"
+                              aria-label={`View details for accident ${accident.police_report_no}`}
                             >
-                              <i className="bi bi-eye"></i>
+                              <i className="bi bi-eye" aria-hidden="true"></i>
                             </Link>
                           )}
                           {hasPermission('update_accidents') && (
                             <Link
                               to={`/accidents/${accident.id}/edit`}
                               className="btn btn-sm btn-outline-warning"
+                              aria-label={`Edit accident ${accident.police_report_no}`}
                             >
-                              <i className="bi bi-pencil"></i>
+                              <i className="bi bi-pencil" aria-hidden="true"></i>
                             </Link>
                           )}
                           {hasPermission('delete_accidents') && (
                             <button
                               onClick={() => handleDeleteClick(accident)}
                               className="btn btn-sm btn-outline-danger"
+                              aria-label={`Delete accident ${accident.police_report_no}`}
                             >
-                              <i className="bi bi-trash"></i>
+                              <i className="bi bi-trash" aria-hidden="true"></i>
                             </button>
                           )}
                         </div>
@@ -391,6 +401,7 @@ const AccidentList = () => {
                         className="page-link"
                         onClick={() => handlePageChange(pagination.page - 1)}
                         disabled={pagination.page === 1}
+                        aria-label="Previous page"
                       >
                         Previous
                       </button>
@@ -408,6 +419,8 @@ const AccidentList = () => {
                             <button
                               className="page-link"
                               onClick={() => handlePageChange(pageNum)}
+                              aria-label={`Go to page ${pageNum}`}
+                              aria-current={pagination.page === pageNum ? 'page' : undefined}
                             >
                               {pageNum}
                             </button>
@@ -427,6 +440,7 @@ const AccidentList = () => {
                         className="page-link"
                         onClick={() => handlePageChange(pagination.page + 1)}
                         disabled={pagination.page === pagination.totalPages}
+                        aria-label="Next page"
                       >
                         Next
                       </button>

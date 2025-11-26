@@ -39,15 +39,17 @@ const Login = () => {
   const inputStyle = {
     padding: '0.75rem 1rem 0.75rem 2.75rem',
     fontSize: '0.95rem',
-    border: '2px solid #e9ecef',
+    border: '2px solid #e2e8f0',
     borderRadius: '12px',
     transition: 'all 0.3s ease',
+    backgroundColor: '#f8fafc'
   };
 
   const inputFocusStyle = {
-    borderColor: '#6a9ae0',
-    boxShadow: '0 0 0 0.25rem rgba(106, 154, 224, 0.15)',
+    borderColor: '#3b82f6',
+    boxShadow: '0 0 0 3px rgba(59, 130, 246, 0.1)',
     transform: 'translateY(-1px)',
+    backgroundColor: '#ffffff'
   };
 
   const iconStyle = {
@@ -56,7 +58,7 @@ const Login = () => {
     top: '50%',
     transform: 'translateY(-50%)',
     fontSize: '1.1rem',
-    color: '#6c757d',
+    color: '#64748b',
     transition: 'color 0.3s ease',
   };
 
@@ -64,64 +66,73 @@ const Login = () => {
     <div
       className="min-vh-100 d-flex align-items-center justify-content-center position-relative"
       style={{
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
+        background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%)',
         overflow: 'hidden'
       }}
     >
-      {/* Animated background shapes */}
+      {/* Modern geometric patterns */}
       <div style={{
         position: 'absolute',
         width: '100%',
         height: '100%',
         overflow: 'hidden',
-        zIndex: 0
+        zIndex: 0,
+        opacity: 0.4
       }}>
         <div style={{
           position: 'absolute',
-          top: '-10%',
-          right: '-5%',
-          width: '400px',
-          height: '400px',
-          background: 'rgba(255, 255, 255, 0.1)',
-          borderRadius: '50%',
-          animation: 'float 6s ease-in-out infinite'
+          top: '-5%',
+          right: '10%',
+          width: '300px',
+          height: '300px',
+          background: 'linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)',
+          borderRadius: '30% 70% 70% 30% / 30% 30% 70% 70%',
+          animation: 'morphing 8s ease-in-out infinite',
+          filter: 'blur(40px)'
         }}></div>
         <div style={{
           position: 'absolute',
-          bottom: '-15%',
-          left: '-10%',
-          width: '500px',
-          height: '500px',
-          background: 'rgba(255, 255, 255, 0.08)',
-          borderRadius: '50%',
-          animation: 'float 8s ease-in-out infinite reverse'
+          bottom: '10%',
+          left: '5%',
+          width: '250px',
+          height: '250px',
+          background: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
+          borderRadius: '70% 30% 30% 70% / 70% 70% 30% 30%',
+          animation: 'morphing 10s ease-in-out infinite reverse',
+          filter: 'blur(40px)'
         }}></div>
       </div>
 
       <style>
         {`
-          @keyframes float {
-            0%, 100% { transform: translateY(0px) rotate(0deg); }
-            50% { transform: translateY(-30px) rotate(5deg); }
+          @keyframes morphing {
+            0%, 100% {
+              border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
+              transform: rotate(0deg) scale(1);
+            }
+            50% {
+              border-radius: 70% 30% 30% 70% / 70% 70% 30% 30%;
+              transform: rotate(180deg) scale(1.1);
+            }
           }
 
           .login-card {
-            backdrop-filter: blur(20px);
-            background: rgba(255, 255, 255, 0.95);
+            background: #ffffff;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid rgba(148, 163, 184, 0.1);
           }
 
           .login-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2) !important;
+            transform: translateY(-8px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
           }
 
           .btn-login {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
             border: none;
             padding: 0.85rem;
             font-weight: 600;
-            letter-spacing: 0.5px;
+            letter-spacing: 0.3px;
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
@@ -134,8 +145,8 @@ const Login = () => {
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-            transition: left 0.5s ease;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.6s ease;
           }
 
           .btn-login:hover::before {
@@ -143,8 +154,9 @@ const Login = () => {
           }
 
           .btn-login:hover {
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.4);
           }
 
           .btn-login:active {
@@ -158,32 +170,32 @@ const Login = () => {
             transform: translateY(-50%);
             background: none;
             border: none;
-            color: #6c757d;
+            color: #64748b;
             cursor: pointer;
             padding: 0.25rem;
             transition: color 0.3s ease;
           }
 
           .password-toggle:hover {
-            color: #6a9ae0;
+            color: #3b82f6;
           }
 
           .brand-icon {
             width: 70px;
             height: 70px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             margin: 0 auto 1rem;
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
           }
 
           .form-label {
             font-weight: 600;
             font-size: 0.9rem;
-            color: #495057;
+            color: #334155;
             margin-bottom: 0.5rem;
           }
         `}
@@ -206,13 +218,16 @@ const Login = () => {
               <i className="bi bi-shield-check text-white" style={{ fontSize: '2rem' }}></i>
             </div>
             <h2 className="fw-bold mb-2" style={{
-              color: '#2d3748',
+              color: '#0f172a',
               fontSize: '1.75rem',
               letterSpacing: '-0.5px'
             }}>
               Welcome Back
             </h2>
-            <p className="text-muted mb-0" style={{ fontSize: '0.95rem' }}>
+            <p className="mb-0" style={{
+              fontSize: '0.95rem',
+              color: '#64748b'
+            }}>
               Promotion & Safety Riding Management
             </p>
           </div>
@@ -225,7 +240,7 @@ const Login = () => {
                   className="bi bi-envelope"
                   style={{
                     ...iconStyle,
-                    color: focusedInput === 'email' ? '#6a9ae0' : '#6c757d'
+                    color: focusedInput === 'email' ? '#3b82f6' : '#64748b'
                   }}
                 ></i>
                 <input
@@ -253,7 +268,7 @@ const Login = () => {
                   className="bi bi-lock"
                   style={{
                     ...iconStyle,
-                    color: focusedInput === 'password' ? '#6a9ae0' : '#6c757d'
+                    color: focusedInput === 'password' ? '#3b82f6' : '#64748b'
                   }}
                 ></i>
                 <input
@@ -307,18 +322,21 @@ const Login = () => {
           </form>
 
           <div className="text-center mt-4">
-            <p className="text-muted mb-0" style={{ fontSize: '0.9rem' }}>
+            <p className="mb-0" style={{
+              fontSize: '0.9rem',
+              color: '#64748b'
+            }}>
               Don't have an account? {' '}
               <Link
                 to="/register"
                 style={{
-                  color: '#667eea',
+                  color: '#3b82f6',
                   textDecoration: 'none',
                   fontWeight: '600',
                   transition: 'color 0.3s ease'
                 }}
-                onMouseEnter={(e) => e.target.style.color = '#764ba2'}
-                onMouseLeave={(e) => e.target.style.color = '#667eea'}
+                onMouseEnter={(e) => e.target.style.color = '#2563eb'}
+                onMouseLeave={(e) => e.target.style.color = '#3b82f6'}
               >
                 Create Account
               </Link>

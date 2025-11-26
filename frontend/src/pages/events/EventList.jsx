@@ -197,6 +197,7 @@ const EventList = () => {
                 type="text"
                 className="form-control"
                 placeholder="Search by event and instructor name..."
+                aria-label="Search events by name or instructor"
                 name="search"
                 value={filters.search}
                 onChange={handleFilterChange}
@@ -207,6 +208,7 @@ const EventList = () => {
               <select
                 className="form-select"
                 name="entity_type"
+                aria-label="Filter by entity type"
                 value={filters.entity_type}
                 onChange={handleFilterChange}
               >
@@ -220,6 +222,7 @@ const EventList = () => {
                 <select
                   className="form-select"
                   name="school_id"
+                  aria-label="Filter by school"
                   value={filters.school_id}
                   onChange={handleFilterChange}
                 >
@@ -235,6 +238,7 @@ const EventList = () => {
                 <select
                   className="form-select"
                   name="public_id"
+                  aria-label="Filter by public entity"
                   value={filters.public_id}
                   onChange={handleFilterChange}
                 >
@@ -247,11 +251,11 @@ const EventList = () => {
             )}
             <div className={filters.entity_type ? "col-md-3" : "col-md-6"}>
               <div className="d-flex gap-2">
-                <button className="btn btn-primary" onClick={handleSearch}>
-                  <i className="bi bi-search me-2"></i>Search
+                <button className="btn btn-primary" onClick={handleSearch} aria-label="Apply filters">
+                  <i className="bi bi-search me-2" aria-hidden="true"></i>Search
                 </button>
-                <button className="btn btn-outline-secondary" onClick={handleClearFilters} title="Clear all filters">
-                  <i className="bi bi-x-circle"></i>
+                <button className="btn btn-outline-secondary" onClick={handleClearFilters} title="Clear all filters" aria-label="Clear all filters">
+                  <i className="bi bi-x-circle" aria-hidden="true"></i>
                 </button>
               </div>
             </div>
@@ -328,16 +332,18 @@ const EventList = () => {
                             <Link
                               to={`/events/${event.id}`}
                               className="btn btn-sm btn-outline-primary"
+                              aria-label={`View details for ${event.title}`}
                             >
-                              <i className="bi bi-eye"></i>
+                              <i className="bi bi-eye" aria-hidden="true"></i>
                             </Link>
                           )}
                           {hasPermission('update_events') && (event.status !== 'completed' || user?.role === 'admin' || user?.role === 'superadmin') && (
                             <Link
                               to={`/events/${event.id}/edit`}
                               className="btn btn-sm btn-outline-warning"
+                              aria-label={`Edit ${event.title}`}
                             >
-                              <i className="bi bi-pencil"></i>
+                              <i className="bi bi-pencil" aria-hidden="true"></i>
                             </Link>
                           )}
                           {hasPermission('delete_events') && (
@@ -345,8 +351,9 @@ const EventList = () => {
                               onClick={() => handleDeleteClick(event)}
                               className="btn btn-sm btn-outline-danger"
                               disabled={event.status === 'completed' && user?.role !== 'admin' && user?.role !== 'superadmin'}
+                              aria-label={`Delete ${event.title}`}
                             >
-                              <i className="bi bi-trash"></i>
+                              <i className="bi bi-trash" aria-hidden="true"></i>
                             </button>
                           )}
                         </div>
@@ -366,6 +373,7 @@ const EventList = () => {
                         className="page-link"
                         onClick={() => handlePageChange(pagination.page - 1)}
                         disabled={pagination.page === 1}
+                        aria-label="Previous page"
                       >
                         Previous
                       </button>
@@ -383,6 +391,8 @@ const EventList = () => {
                             <button
                               className="page-link"
                               onClick={() => handlePageChange(pageNum)}
+                              aria-label={`Go to page ${pageNum}`}
+                              aria-current={pagination.page === pageNum ? 'page' : undefined}
                             >
                               {pageNum}
                             </button>
@@ -402,6 +412,7 @@ const EventList = () => {
                         className="page-link"
                         onClick={() => handlePageChange(pagination.page + 1)}
                         disabled={pagination.page === pagination.totalPages}
+                        aria-label="Next page"
                       >
                         Next
                       </button>

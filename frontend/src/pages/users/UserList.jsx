@@ -155,6 +155,7 @@ const UserList = () => {
                 type="text"
                 className="form-control"
                 placeholder="Search by name, email, or phone..."
+                aria-label="Search users by name, email, or phone"
                 name="search"
                 value={filters.search}
                 onChange={handleFilterChange}
@@ -165,6 +166,7 @@ const UserList = () => {
               <select
                 className="form-select"
                 name="role"
+                aria-label="Filter by user role"
                 value={filters.role}
                 onChange={handleFilterChange}
               >
@@ -178,11 +180,11 @@ const UserList = () => {
             </div>
             <div className="col-md-3">
               <div className="d-flex gap-2">
-                <button className="btn btn-primary flex-fill" onClick={handleSearch}>
-                  <i className="bi bi-search me-2"></i>Search
+                <button className="btn btn-primary flex-fill" onClick={handleSearch} aria-label="Apply filters">
+                  <i className="bi bi-search me-2" aria-hidden="true"></i>Search
                 </button>
-                <button className="btn btn-outline-secondary" onClick={handleClearFilters} title="Clear all filters">
-                  <i className="bi bi-x-circle"></i>
+                <button className="btn btn-outline-secondary" onClick={handleClearFilters} title="Clear all filters" aria-label="Clear all filters">
+                  <i className="bi bi-x-circle" aria-hidden="true"></i>
                 </button>
               </div>
             </div>
@@ -243,8 +245,8 @@ const UserList = () => {
                         <td>{getRoleBadge(user.role)}</td>
                         <td>{formatDate(user.created_at)}</td>
                         <td>
-                          <Link to={`/users/${user.id}/edit`} className="btn btn-sm btn-outline-warning">
-                            <i className="bi bi-pencil"></i>
+                          <Link to={`/users/${user.id}/edit`} className="btn btn-sm btn-outline-warning" aria-label={`Edit user ${user.name}`}>
+                            <i className="bi bi-pencil" aria-hidden="true"></i>
                           </Link>
                         </td>
                       </tr>
@@ -262,6 +264,7 @@ const UserList = () => {
                           className="page-link"
                           onClick={() => handlePageChange(pagination.page - 1)}
                           disabled={pagination.page === 1}
+                          aria-label="Previous page"
                         >
                           Previous
                         </button>
@@ -279,6 +282,8 @@ const UserList = () => {
                               <button
                                 className="page-link"
                                 onClick={() => handlePageChange(pageNum)}
+                                aria-label={`Go to page ${pageNum}`}
+                                aria-current={pagination.page === pageNum ? 'page' : undefined}
                               >
                                 {pageNum}
                               </button>
@@ -298,6 +303,7 @@ const UserList = () => {
                           className="page-link"
                           onClick={() => handlePageChange(pagination.page + 1)}
                           disabled={pagination.page === pagination.totalPages}
+                          aria-label="Next page"
                         >
                           Next
                         </button>
