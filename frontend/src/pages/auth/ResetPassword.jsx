@@ -1,36 +1,79 @@
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { toast } from 'react-toastify';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
-const Login = () => {
-  const [formData, setFormData] = useState({ email: '', password: '' });
+const ResetPassword = () => {
+  const [searchParams] = useSearchParams();
+  const [token, setToken] = useState('');
+  const [formData, setFormData] = useState({
+    newPassword: '',
+    confirmPassword: ''
+  });
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  const [focusedInput, setFocusedInput] = useState(null);
-  const { login } = useAuth();
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  const [passwordValidation, setPasswordValidation] = useState({
+    minLength: false,
+    hasLowercase: false,
+    hasUppercase: false,
+    hasNumber: false,
+    hasSymbol: false
+  });
+
+  const { resetPassword } = useAuth();
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const tokenParam = searchParams.get('token');
+    if (tokenParam) {
+      setToken(tokenParam);
+    } else {
+      toast.error('Invalid password reset link.');
+      navigate('/login');
+    }
+  }, [searchParams, navigate]);
+
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+
+    if (name === 'newPassword') {
+      setPasswordValidation({
+        minLength: value.length >= 8,
+        hasLowercase: /[a-z]/.test(value),
+        hasUppercase: /[A-Z]/.test(value),
+        hasNumber: /[0-9]/.test(value),
+        hasSymbol: /[^a-zA-Z0-9]/.test(value)
+      });
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (formData.newPassword !== formData.confirmPassword) {
+      toast.error('Passwords do not match');
+      return;
+    }
+
+    // Validate password requirements
+    const allRequirementsMet = Object.values(passwordValidation).every(val => val === true);
+    if (!allRequirementsMet) {
+      toast.error('New password does not meet all requirements');
+      return;
+    }
+
     setLoading(true);
 
-    const result = await login(formData.email, formData.password);
+    const result = await resetPassword(token, formData.newPassword);
 
     if (result.success) {
-      toast.success('Login successful!');
-      if (result.user?.role === 'admin' || result.user?.role === 'viewer') {
-        navigate('/dashboard');
-      } else {
-        navigate('/profile');
-      }
+      toast.success('Password reset successfully! Please login with your new password.');
+      navigate('/login');
     } else {
-      toast.error(result.error || 'Login failed');
+      toast.error(result.error || 'Failed to reset password');
     }
 
     setLoading(false);
@@ -110,22 +153,6 @@ const Login = () => {
             );
           }
 
-          .input-group-text {
-            background: transparent;
-            border-right: none;
-            color: #64748b;
-          }
-          
-          .form-control {
-            border-left: none;
-            padding-left: 0;
-          }
-          
-          .form-control:focus {
-            box-shadow: none;
-            border-color: #cbd5e1;
-          }
-
           .input-wrapper {
             display: flex;
             align-items: center;
@@ -137,7 +164,7 @@ const Login = () => {
             margin-bottom: 1.5rem;
           }
 
-          .input-wrapper.focused {
+          .input-wrapper:focus-within {
             border-color: #3b82f6;
             box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
             transform: translateY(-1px);
@@ -150,7 +177,7 @@ const Login = () => {
             transition: color 0.3s ease;
           }
 
-          .input-wrapper.focused i {
+          .input-wrapper:focus-within i {
             color: #3b82f6;
           }
 
@@ -166,7 +193,7 @@ const Login = () => {
             color: #cbd5e1;
           }
 
-          .btn-login {
+          .btn-primary-custom {
             background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
             border: none;
             padding: 1rem;
@@ -178,24 +205,9 @@ const Login = () => {
             overflow: hidden;
           }
 
-          .btn-login:hover {
+          .btn-primary-custom:hover {
             transform: translateY(-2px);
             box-shadow: 0 10px 20px rgba(37, 99, 235, 0.2);
-          }
-
-          .btn-login::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            transition: 0.5s;
-          }
-
-          .btn-login:hover::after {
-            left: 100%;
           }
 
           .brand-circle {
@@ -230,9 +242,9 @@ const Login = () => {
           <i className="bi bi-shield-check" style={{ fontSize: '3.5rem' }}></i>
         </div>
 
-        <h1 className="fw-bold mb-3 display-5 text-center">Safety Riding</h1>
+        <h1 className="fw-bold mb-3 display-5 text-center">Reset Password</h1>
         <p className="text-center text-light opacity-75 fs-5" style={{ maxWidth: '400px' }}>
-          Promotion & Safety Management System
+          Create a new strong password for your account
         </p>
 
         <div className="safety-pattern"></div>
@@ -249,78 +261,99 @@ const Login = () => {
           </div>
 
           <div className="mb-5">
-            <h2 className="fw-bold text-dark mb-2">Welcome Back!</h2>
-            <p className="text-secondary">Please enter your details to sign in.</p>
+            <h2 className="fw-bold text-dark mb-2">New Password</h2>
+            <p className="text-secondary">Please enter your new password below.</p>
           </div>
 
           <form onSubmit={handleSubmit}>
-            <div className={`input-wrapper ${focusedInput === 'email' ? 'focused' : ''}`}>
-              <i className="bi bi-envelope"></i>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                onFocus={() => setFocusedInput('email')}
-                onBlur={() => setFocusedInput(null)}
-                placeholder="Email Address"
-                required
-              />
-            </div>
-
-            <div className={`input-wrapper ${focusedInput === 'password' ? 'focused' : ''}`}>
+            <div className="input-wrapper">
               <i className="bi bi-lock"></i>
               <input
-                type={showPassword ? 'text' : 'password'}
-                name="password"
-                value={formData.password}
+                type={showNewPassword ? 'text' : 'password'}
+                name="newPassword"
+                value={formData.newPassword}
                 onChange={handleChange}
-                onFocus={() => setFocusedInput('password')}
-                onBlur={() => setFocusedInput(null)}
-                placeholder="Password"
+                placeholder="New Password"
                 required
+                minLength={8}
               />
               <button
                 type="button"
-                onClick={() => setShowPassword(!showPassword)}
+                onClick={() => setShowNewPassword(!showNewPassword)}
                 style={{ background: 'none', border: 'none', padding: 0, color: '#94a3b8', cursor: 'pointer' }}
               >
-                <i className={`bi bi-eye${showPassword ? '-slash' : ''} m-0`}></i>
+                <i className={`bi bi-eye${showNewPassword ? '-slash' : ''} m-0`}></i>
               </button>
             </div>
 
-            <div className="d-flex justify-content-between align-items-center mb-4">
-              <div className="form-check">
-                <input className="form-check-input" type="checkbox" id="remember" />
-                <label className="form-check-label text-secondary small" htmlFor="remember">
-                  Remember me
-                </label>
+            {formData.newPassword && (
+              <div className="mb-3 p-3 bg-light rounded">
+                <small className="d-block fw-bold mb-2 text-secondary">Password Requirements:</small>
+                <div className="d-flex flex-column gap-1">
+                  <small className={passwordValidation.minLength ? 'text-success' : 'text-danger'}>
+                    <i className={`bi bi-${passwordValidation.minLength ? 'check-circle-fill' : 'x-circle-fill'} me-1`}></i>
+                    Minimum 8 characters
+                  </small>
+                  <small className={passwordValidation.hasLowercase ? 'text-success' : 'text-danger'}>
+                    <i className={`bi bi-${passwordValidation.hasLowercase ? 'check-circle-fill' : 'x-circle-fill'} me-1`}></i>
+                    At least 1 lowercase letter (a-z)
+                  </small>
+                  <small className={passwordValidation.hasUppercase ? 'text-success' : 'text-danger'}>
+                    <i className={`bi bi-${passwordValidation.hasUppercase ? 'check-circle-fill' : 'x-circle-fill'} me-1`}></i>
+                    At least 1 uppercase letter (A-Z)
+                  </small>
+                  <small className={passwordValidation.hasNumber ? 'text-success' : 'text-danger'}>
+                    <i className={`bi bi-${passwordValidation.hasNumber ? 'check-circle-fill' : 'x-circle-fill'} me-1`}></i>
+                    At least 1 number (0-9)
+                  </small>
+                  <small className={passwordValidation.hasSymbol ? 'text-success' : 'text-danger'}>
+                    <i className={`bi bi-${passwordValidation.hasSymbol ? 'check-circle-fill' : 'x-circle-fill'} me-1`}></i>
+                    At least 1 symbol (!@#$%^&*...)
+                  </small>
+                </div>
               </div>
-              <Link to="/forgot-password" className="text-primary text-decoration-none small fw-semibold">Forgot Password?</Link>
+            )}
+
+            <div className="input-wrapper">
+              <i className="bi bi-shield-lock"></i>
+              <input
+                type={showConfirmPassword ? 'text' : 'password'}
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                placeholder="Confirm New Password"
+                required
+                minLength={8}
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                style={{ background: 'none', border: 'none', padding: 0, color: '#94a3b8', cursor: 'pointer' }}
+              >
+                <i className={`bi bi-eye${showConfirmPassword ? '-slash' : ''} m-0`}></i>
+              </button>
             </div>
 
             <button
               type="submit"
-              className="btn btn-login text-white w-100 mb-4"
+              className="btn btn-primary-custom text-white w-100 mb-4"
               disabled={loading}
             >
               {loading ? (
                 <>
                   <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                  Logging in...
+                  Resetting...
                 </>
               ) : (
-                'Sign In'
+                'Reset Password'
               )}
             </button>
 
             <div className="text-center">
-              <p className="text-secondary mb-0">
-                Don't have an account?{' '}
-                <Link to="/register" className="text-primary fw-semibold text-decoration-none">
-                  Create Account
-                </Link>
-              </p>
+              <Link to="/login" className="text-secondary text-decoration-none fw-semibold">
+                <i className="bi bi-arrow-left me-2"></i>
+                Back to Login
+              </Link>
             </div>
           </form>
         </div>
@@ -329,4 +362,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default ResetPassword;

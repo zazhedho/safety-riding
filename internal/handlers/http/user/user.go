@@ -533,6 +533,82 @@ func (h *HandlerUser) ChangePassword(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, res)
 }
 
+// ForgotPassword godoc
+// @Summary Request a password reset token
+// @Description Request a password reset token via email
+// @Tags Users
+// @Accept  json
+// @Produce  json
+// @Param user body dto.ForgotPasswordRequest true "Forgot password details"
+// @Success 200 {object} response.Success
+// @Failure 400 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Router /user/forgot-password [post]
+func (h *HandlerUser) ForgotPassword(ctx *gin.Context) {
+	var req dto.ForgotPasswordRequest
+	logId := utils.GenerateLogId(ctx)
+	logPrefix := fmt.Sprintf("[%s][UserHandler][ForgotPassword]", logId)
+
+	if err := ctx.BindJSON(&req); err != nil {
+		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; BindJSON ERROR: %s;", logPrefix, err.Error()))
+		res := response.Response(http.StatusBadRequest, messages.InvalidRequest, logId, nil)
+		res.Error = utils.ValidateError(err, reflect.TypeOf(req), "json")
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	token, err := h.Service.ForgotPassword(req)
+	if err != nil {
+		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; Service.ForgotPassword; ERROR: %s;", logPrefix, err))
+		res := response.Response(http.StatusInternalServerError, messages.MsgFail, logId, nil)
+		res.Error = err.Error()
+		ctx.JSON(http.StatusInternalServerError, res)
+		return
+	}
+
+	// MOCK: Log the token for testing purposes since we don't have an email service
+	logger.WriteLog(logger.LogLevelInfo, fmt.Sprintf("MOCK EMAIL SENT: Reset Token for %s: %s", req.Email, token))
+
+	res := response.Response(http.StatusOK, "Password reset instructions sent to your email", logId, token)
+	ctx.JSON(http.StatusOK, res)
+}
+
+// ResetPassword godoc
+// @Summary Reset user password
+// @Description Reset user password using a token
+// @Tags Users
+// @Accept  json
+// @Produce  json
+// @Param user body dto.ResetPasswordRequest true "Reset password details"
+// @Success 200 {object} response.Success
+// @Failure 400 {object} response.Error
+// @Failure 500 {object} response.Error
+// @Router /user/reset-password [post]
+func (h *HandlerUser) ResetPassword(ctx *gin.Context) {
+	var req dto.ResetPasswordRequest
+	logId := utils.GenerateLogId(ctx)
+	logPrefix := fmt.Sprintf("[%s][UserHandler][ResetPassword]", logId)
+
+	if err := ctx.BindJSON(&req); err != nil {
+		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; BindJSON ERROR: %s;", logPrefix, err.Error()))
+		res := response.Response(http.StatusBadRequest, messages.InvalidRequest, logId, nil)
+		res.Error = utils.ValidateError(err, reflect.TypeOf(req), "json")
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	if err := h.Service.ResetPassword(req); err != nil {
+		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; Service.ResetPassword; ERROR: %s;", logPrefix, err))
+		res := response.Response(http.StatusBadRequest, messages.MsgFail, logId, nil)
+		res.Error = err.Error()
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	res := response.Response(http.StatusOK, "Password reset successfully", logId, nil)
+	ctx.JSON(http.StatusOK, res)
+}
+
 // Delete godoc
 // @Summary Delete a user
 // @Description Delete a user

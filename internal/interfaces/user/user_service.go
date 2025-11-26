@@ -16,5 +16,7 @@ type ServiceUserInterface interface {
 	GetAllUsers(params filter.BaseParams, currentUserRole string) ([]domainuser.Users, int64, error)
 	Update(id, role string, req dto.UserUpdate) (domainuser.Users, error)
 	ChangePassword(id string, req dto.ChangePassword) (domainuser.Users, error)
+	ForgotPassword(req dto.ForgotPasswordRequest) (string, error)
+	ResetPassword(req dto.ResetPasswordRequest) error
 	Delete(id string) error
 }

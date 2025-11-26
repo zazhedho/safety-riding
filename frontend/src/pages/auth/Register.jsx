@@ -84,32 +84,6 @@ const Register = () => {
     setLoading(false);
   };
 
-  const inputStyle = {
-    padding: '0.75rem 1rem 0.75rem 2.75rem',
-    fontSize: '0.95rem',
-    border: '2px solid #e2e8f0',
-    borderRadius: '12px',
-    transition: 'all 0.3s ease',
-    backgroundColor: '#f8fafc'
-  };
-
-  const inputFocusStyle = {
-    borderColor: '#3b82f6',
-    boxShadow: '0 0 0 3px rgba(59, 130, 246, 0.1)',
-    transform: 'translateY(-1px)',
-    backgroundColor: '#ffffff'
-  };
-
-  const iconStyle = {
-    position: 'absolute',
-    left: '1rem',
-    top: '50%',
-    transform: 'translateY(-50%)',
-    fontSize: '1.1rem',
-    color: '#64748b',
-    transition: 'color 0.3s ease',
-  };
-
   const getStrengthColor = () => {
     if (passwordStrength <= 1) return '#ef4444';
     if (passwordStrength === 2) return '#f59e0b';
@@ -126,82 +100,138 @@ const Register = () => {
   };
 
   return (
-    <div
-      className="min-vh-100 d-flex align-items-center justify-content-center position-relative py-5"
-      style={{
-        background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%)',
-        overflow: 'hidden'
-      }}
-    >
-      {/* Modern geometric patterns */}
-      <div style={{
-        position: 'absolute',
-        width: '100%',
-        height: '100%',
-        overflow: 'hidden',
-        zIndex: 0,
-        opacity: 0.4
-      }}>
-        <div style={{
-          position: 'absolute',
-          top: '-5%',
-          right: '10%',
-          width: '300px',
-          height: '300px',
-          background: 'linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%)',
-          borderRadius: '30% 70% 70% 30% / 30% 30% 70% 70%',
-          animation: 'morphing 8s ease-in-out infinite',
-          filter: 'blur(40px)'
-        }}></div>
-        <div style={{
-          position: 'absolute',
-          bottom: '10%',
-          left: '5%',
-          width: '250px',
-          height: '250px',
-          background: 'linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%)',
-          borderRadius: '70% 30% 30% 70% / 70% 70% 30% 30%',
-          animation: 'morphing 10s ease-in-out infinite reverse',
-          filter: 'blur(40px)'
-        }}></div>
-      </div>
-
+    <div className="min-vh-100 d-flex overflow-hidden">
       <style>
         {`
-          @keyframes morphing {
-            0%, 100% {
-              border-radius: 30% 70% 70% 30% / 30% 30% 70% 70%;
-              transform: rotate(0deg) scale(1);
-            }
-            50% {
-              border-radius: 70% 30% 30% 70% / 70% 70% 30% 30%;
-              transform: rotate(180deg) scale(1.1);
-            }
+          .login-split-container {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            flex-wrap: wrap;
+          }
+          
+          .brand-section {
+            flex: 1;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            padding: 2rem;
+            overflow: hidden;
+            min-height: 300px;
           }
 
-          .register-card {
-            background: #ffffff;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            border: 1px solid rgba(148, 163, 184, 0.1);
+          .form-section {
+            flex: 1;
+            background: #f8fafc;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            position: relative;
+            min-width: 320px;
+            overflow-y: auto;
           }
 
-          .register-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+          /* Road markings effect */
+          .road-line {
+            position: absolute;
+            width: 4px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.15);
+            left: 50%;
+            transform: translateX(-50%);
+            animation: moveRoad 3s linear infinite;
+          }
+          
+          .road-line:nth-child(1) { top: -100px; animation-delay: 0s; }
+          .road-line:nth-child(2) { top: 50%; animation-delay: 1s; }
+          .road-line:nth-child(3) { top: 100%; animation-delay: 2s; }
+
+          @keyframes moveRoad {
+            0% { top: -150px; opacity: 0; }
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { top: 100%; opacity: 0; }
+          }
+
+          .safety-pattern {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 10px;
+            background: repeating-linear-gradient(
+              45deg,
+              #fbbf24,
+              #fbbf24 10px,
+              #1e293b 10px,
+              #1e293b 20px
+            );
+          }
+
+          .input-wrapper {
+            display: flex;
+            align-items: center;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 0.5rem 1rem;
+            transition: all 0.3s ease;
+            background: white;
+            margin-bottom: 1rem;
+          }
+
+          .input-wrapper.focused {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+            transform: translateY(-1px);
+          }
+
+          .input-wrapper i {
+            font-size: 1.2rem;
+            color: #94a3b8;
+            margin-right: 1rem;
+            transition: color 0.3s ease;
+          }
+
+          .input-wrapper.focused i {
+            color: #3b82f6;
+          }
+
+          .input-wrapper input {
+            border: none;
+            outline: none;
+            width: 100%;
+            color: #1e293b;
+            font-weight: 500;
+          }
+
+          .input-wrapper input::placeholder {
+            color: #cbd5e1;
           }
 
           .btn-register {
-            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
             border: none;
-            padding: 0.85rem;
+            padding: 1rem;
+            border-radius: 12px;
             font-weight: 600;
-            letter-spacing: 0.3px;
+            letter-spacing: 0.5px;
             transition: all 0.3s ease;
             position: relative;
             overflow: hidden;
           }
 
-          .btn-register::before {
+          .btn-register:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(37, 99, 235, 0.2);
+          }
+
+          .btn-register::after {
             content: '';
             position: absolute;
             top: 0;
@@ -209,57 +239,25 @@ const Register = () => {
             width: 100%;
             height: 100%;
             background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            transition: left 0.6s ease;
+            transition: 0.5s;
           }
 
-          .btn-register:hover::before {
+          .btn-register:hover::after {
             left: 100%;
           }
 
-          .btn-register:hover {
-            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.4);
-          }
-
-          .btn-register:active {
-            transform: translateY(0);
-          }
-
-          .password-toggle {
-            position: absolute;
-            right: 1rem;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            color: #64748b;
-            cursor: pointer;
-            padding: 0.25rem;
-            transition: color 0.3s ease;
-          }
-
-          .password-toggle:hover {
-            color: #3b82f6;
-          }
-
-          .brand-icon {
-            width: 70px;
-            height: 70px;
-            background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+          .brand-circle {
+            width: 120px;
+            height: 120px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: 0 auto 1rem;
-            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
-          }
-
-          .form-label {
-            font-weight: 600;
-            font-size: 0.9rem;
-            color: #334155;
-            margin-bottom: 0.5rem;
+            margin-bottom: 2rem;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.3);
           }
 
           .password-strength-bar {
@@ -274,258 +272,203 @@ const Register = () => {
             height: 100%;
             transition: width 0.3s ease, background-color 0.3s ease;
           }
+
+          @media (max-width: 768px) {
+            .brand-section {
+              display: none;
+            }
+            .form-section {
+              padding: 1rem;
+            }
+          }
         `}
       </style>
 
-      <div
-        className="card register-card shadow-lg"
-        style={{
-          maxWidth: '480px',
-          width: '90%',
-          borderRadius: '24px',
-          border: 'none',
-          position: 'relative',
-          zIndex: 1
-        }}
-      >
-        <div className="card-body p-5">
-          <div className="text-center mb-4">
-            <div className="brand-icon">
-              <i className="bi bi-person-plus-fill text-white" style={{ fontSize: '2rem' }}></i>
+      {/* Left Side - Brand/Theme */}
+      <div className="brand-section">
+        <div className="road-line"></div>
+        <div className="road-line"></div>
+        <div className="road-line"></div>
+
+        <div className="brand-circle">
+          <i className="bi bi-person-plus-fill" style={{ fontSize: '3.5rem' }}></i>
+        </div>
+
+        <h1 className="fw-bold mb-3 display-5 text-center">Join Us</h1>
+        <p className="text-center text-light opacity-75 fs-5" style={{ maxWidth: '400px' }}>
+          Become part of the Safety Riding community
+        </p>
+
+        <div className="safety-pattern"></div>
+      </div>
+
+      {/* Right Side - Form */}
+      <div className="form-section">
+        <div style={{ width: '100%', maxWidth: '480px' }}>
+          <div className="text-center mb-4 d-md-none">
+            <div className="d-inline-flex align-items-center justify-content-center bg-primary text-white rounded-circle mb-3" style={{ width: '60px', height: '60px' }}>
+              <i className="bi bi-shield-check fs-2"></i>
             </div>
-            <h2 className="fw-bold mb-2" style={{
-              color: '#0f172a',
-              fontSize: '1.75rem',
-              letterSpacing: '-0.5px'
-            }}>
-              Create Account
-            </h2>
-            <p className="mb-0" style={{
-              fontSize: '0.95rem',
-              color: '#64748b'
-            }}>
-              Join Promotion & Safety Riding Management
-            </p>
+            <h2 className="fw-bold text-dark">Safety Riding</h2>
+          </div>
+
+          <div className="mb-4">
+            <h2 className="fw-bold text-dark mb-2">Create Account</h2>
+            <p className="text-secondary">Fill in your details to get started.</p>
           </div>
 
           <form onSubmit={handleSubmit}>
-            <div className="mb-3">
-              <label className="form-label">Full Name</label>
-              <div className="position-relative">
-                <i
-                  className="bi bi-person"
-                  style={{
-                    ...iconStyle,
-                    color: focusedInput === 'name' ? '#3b82f6' : '#64748b'
-                  }}
-                ></i>
-                <input
-                  type="text"
-                  className="form-control"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  onFocus={() => setFocusedInput('name')}
-                  onBlur={() => setFocusedInput(null)}
-                  placeholder="Enter your full name"
-                  required
-                  style={{
-                    ...inputStyle,
-                    ...(focusedInput === 'name' ? inputFocusStyle : {})
-                  }}
-                />
+            <div className="row g-2">
+              <div className="col-md-6">
+                <div className={`input-wrapper ${focusedInput === 'name' ? 'focused' : ''}`}>
+                  <i className="bi bi-person"></i>
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    onFocus={() => setFocusedInput('name')}
+                    onBlur={() => setFocusedInput(null)}
+                    placeholder="Full Name"
+                    required
+                  />
+                </div>
+              </div>
+              <div className="col-md-6">
+                <div className={`input-wrapper ${focusedInput === 'phone' ? 'focused' : ''}`}>
+                  <i className="bi bi-telephone"></i>
+                  <input
+                    type="text"
+                    name="phone"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    onFocus={() => setFocusedInput('phone')}
+                    onBlur={() => setFocusedInput(null)}
+                    placeholder="Phone"
+                    required
+                  />
+                </div>
               </div>
             </div>
 
-            <div className="mb-3">
-              <label className="form-label">Email Address</label>
-              <div className="position-relative">
-                <i
-                  className="bi bi-envelope"
-                  style={{
-                    ...iconStyle,
-                    color: focusedInput === 'email' ? '#3b82f6' : '#64748b'
-                  }}
-                ></i>
-                <input
-                  type="email"
-                  className="form-control"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  onFocus={() => setFocusedInput('email')}
-                  onBlur={() => setFocusedInput(null)}
-                  placeholder="Enter your email"
-                  required
-                  style={{
-                    ...inputStyle,
-                    ...(focusedInput === 'email' ? inputFocusStyle : {})
-                  }}
-                />
-              </div>
+            <div className={`input-wrapper ${focusedInput === 'email' ? 'focused' : ''}`}>
+              <i className="bi bi-envelope"></i>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                onFocus={() => setFocusedInput('email')}
+                onBlur={() => setFocusedInput(null)}
+                placeholder="Email Address"
+                required
+              />
             </div>
 
-            <div className="mb-3">
-              <label className="form-label">Phone Number</label>
-              <div className="position-relative">
-                <i
-                  className="bi bi-telephone"
-                  style={{
-                    ...iconStyle,
-                    color: focusedInput === 'phone' ? '#3b82f6' : '#64748b'
-                  }}
-                ></i>
-                <input
-                  type="text"
-                  className="form-control"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  onFocus={() => setFocusedInput('phone')}
-                  onBlur={() => setFocusedInput(null)}
-                  placeholder="Enter your phone number"
-                  required
-                  style={{
-                    ...inputStyle,
-                    ...(focusedInput === 'phone' ? inputFocusStyle : {})
-                  }}
-                />
-              </div>
+            <div className={`input-wrapper ${focusedInput === 'password' ? 'focused' : ''}`}>
+              <i className="bi bi-lock"></i>
+              <input
+                type={showPassword ? 'text' : 'password'}
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                onFocus={() => setFocusedInput('password')}
+                onBlur={() => setFocusedInput(null)}
+                placeholder="Password"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                style={{ background: 'none', border: 'none', padding: 0, color: '#94a3b8', cursor: 'pointer' }}
+              >
+                <i className={`bi bi-eye${showPassword ? '-slash' : ''} m-0`}></i>
+              </button>
             </div>
 
-            <div className="mb-3">
-              <label className="form-label">Password</label>
-              <div className="position-relative">
-                <i
-                  className="bi bi-lock"
-                  style={{
-                    ...iconStyle,
-                    color: focusedInput === 'password' ? '#3b82f6' : '#64748b'
-                  }}
-                ></i>
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  className="form-control"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  onFocus={() => setFocusedInput('password')}
-                  onBlur={() => setFocusedInput(null)}
-                  placeholder="Create a strong password"
-                  required
-                  style={{
-                    ...inputStyle,
-                    paddingRight: '3rem',
-                    ...(focusedInput === 'password' ? inputFocusStyle : {})
-                  }}
-                />
-                <button
-                  type="button"
-                  className="password-toggle"
-                  onClick={() => setShowPassword(!showPassword)}
-                  tabIndex={-1}
-                >
-                  <i className={`bi bi-eye${showPassword ? '-slash' : ''}`}></i>
-                </button>
-              </div>
-              {formData.password && (
-                <div>
-                  <div className="password-strength-bar">
-                    <div
-                      className="password-strength-fill"
-                      style={{
-                        width: `${(passwordStrength / 4) * 100}%`,
-                        backgroundColor: getStrengthColor()
-                      }}
-                    ></div>
+            {formData.password && (
+              <div className="mb-3 px-1">
+                <div className="password-strength-bar">
+                  <div
+                    className="password-strength-fill"
+                    style={{
+                      width: `${(passwordStrength / 4) * 100}%`,
+                      backgroundColor: getStrengthColor()
+                    }}
+                  ></div>
+                </div>
+                <div className="d-flex justify-content-between align-items-center mt-1">
+                  <small style={{ color: getStrengthColor(), fontWeight: '600' }}>
+                    {getStrengthText()}
+                  </small>
+                  <small className="text-secondary" style={{ fontSize: '0.75rem' }}>
+                    {passwordStrength}/5 requirements
+                  </small>
+                </div>
+
+                <div className="row g-1 mt-2">
+                  <div className="col-6">
+                    <small className={`d-block ${passwordValidation.minLength ? 'text-success' : 'text-muted'}`} style={{ fontSize: '0.75rem' }}>
+                      <i className={`bi bi-${passwordValidation.minLength ? 'check-circle-fill' : 'circle'} me-1`}></i> Min 8 chars
+                    </small>
+                    <small className={`d-block ${passwordValidation.hasLowercase ? 'text-success' : 'text-muted'}`} style={{ fontSize: '0.75rem' }}>
+                      <i className={`bi bi-${passwordValidation.hasLowercase ? 'check-circle-fill' : 'circle'} me-1`}></i> Lowercase
+                    </small>
+                    <small className={`d-block ${passwordValidation.hasUppercase ? 'text-success' : 'text-muted'}`} style={{ fontSize: '0.75rem' }}>
+                      <i className={`bi bi-${passwordValidation.hasUppercase ? 'check-circle-fill' : 'circle'} me-1`}></i> Uppercase
+                    </small>
                   </div>
-                  <div className="mt-2">
-                    <small className="d-block fw-bold mb-1" style={{ color: '#334155' }}>Password Requirements:</small>
-                    <small className={`d-block ${passwordValidation.minLength ? 'text-success' : 'text-danger'}`} style={{ fontSize: '0.75rem' }}>
-                      <i className={`bi bi-${passwordValidation.minLength ? 'check-circle-fill' : 'x-circle-fill'} me-1`}></i>
-                      Minimum 8 characters
+                  <div className="col-6">
+                    <small className={`d-block ${passwordValidation.hasNumber ? 'text-success' : 'text-muted'}`} style={{ fontSize: '0.75rem' }}>
+                      <i className={`bi bi-${passwordValidation.hasNumber ? 'check-circle-fill' : 'circle'} me-1`}></i> Number
                     </small>
-                    <small className={`d-block ${passwordValidation.hasLowercase ? 'text-success' : 'text-danger'}`} style={{ fontSize: '0.75rem' }}>
-                      <i className={`bi bi-${passwordValidation.hasLowercase ? 'check-circle-fill' : 'x-circle-fill'} me-1`}></i>
-                      At least 1 lowercase letter (a-z)
-                    </small>
-                    <small className={`d-block ${passwordValidation.hasUppercase ? 'text-success' : 'text-danger'}`} style={{ fontSize: '0.75rem' }}>
-                      <i className={`bi bi-${passwordValidation.hasUppercase ? 'check-circle-fill' : 'x-circle-fill'} me-1`}></i>
-                      At least 1 uppercase letter (A-Z)
-                    </small>
-                    <small className={`d-block ${passwordValidation.hasNumber ? 'text-success' : 'text-danger'}`} style={{ fontSize: '0.75rem' }}>
-                      <i className={`bi bi-${passwordValidation.hasNumber ? 'check-circle-fill' : 'x-circle-fill'} me-1`}></i>
-                      At least 1 number (0-9)
-                    </small>
-                    <small className={`d-block ${passwordValidation.hasSymbol ? 'text-success' : 'text-danger'}`} style={{ fontSize: '0.75rem' }}>
-                      <i className={`bi bi-${passwordValidation.hasSymbol ? 'check-circle-fill' : 'x-circle-fill'} me-1`}></i>
-                      At least 1 symbol (!@#$%^&*...)
-                    </small>
-                    <small className="d-block mt-1" style={{ color: getStrengthColor(), fontSize: '0.8rem', fontWeight: '600' }}>
-                      Strength: {getStrengthText()}
+                    <small className={`d-block ${passwordValidation.hasSymbol ? 'text-success' : 'text-muted'}`} style={{ fontSize: '0.75rem' }}>
+                      <i className={`bi bi-${passwordValidation.hasSymbol ? 'check-circle-fill' : 'circle'} me-1`}></i> Symbol
                     </small>
                   </div>
                 </div>
-              )}
+              </div>
+            )}
+
+            <div className={`input-wrapper ${focusedInput === 'confirmPassword' ? 'focused' : ''}`}>
+              <i className="bi bi-shield-lock"></i>
+              <input
+                type={showConfirmPassword ? 'text' : 'password'}
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                onFocus={() => setFocusedInput('confirmPassword')}
+                onBlur={() => setFocusedInput(null)}
+                placeholder="Confirm Password"
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                style={{ background: 'none', border: 'none', padding: 0, color: '#94a3b8', cursor: 'pointer' }}
+              >
+                <i className={`bi bi-eye${showConfirmPassword ? '-slash' : ''} m-0`}></i>
+              </button>
             </div>
 
-            <div className="mb-4">
-              <label className="form-label">Confirm Password</label>
-              <div className="position-relative">
-                <i
-                  className="bi bi-shield-lock"
-                  style={{
-                    ...iconStyle,
-                    color: focusedInput === 'confirmPassword' ? '#3b82f6' : '#64748b'
-                  }}
-                ></i>
-                <input
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  className="form-control"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  onFocus={() => setFocusedInput('confirmPassword')}
-                  onBlur={() => setFocusedInput(null)}
-                  placeholder="Confirm your password"
-                  required
-                  style={{
-                    ...inputStyle,
-                    paddingRight: '3rem',
-                    ...(focusedInput === 'confirmPassword' ? inputFocusStyle : {})
-                  }}
-                />
-                <button
-                  type="button"
-                  className="password-toggle"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  tabIndex={-1}
-                >
-                  <i className={`bi bi-eye${showConfirmPassword ? '-slash' : ''}`}></i>
-                </button>
+            {formData.confirmPassword && (
+              <div className="mb-3 px-1">
+                {formData.password === formData.confirmPassword ? (
+                  <small className="text-success fw-semibold">
+                    <i className="bi bi-check-circle-fill me-1"></i> Passwords match
+                  </small>
+                ) : (
+                  <small className="text-danger fw-semibold">
+                    <i className="bi bi-exclamation-circle-fill me-1"></i> Passwords do not match
+                  </small>
+                )}
               </div>
-              {formData.confirmPassword && formData.password !== formData.confirmPassword && (
-                <small className="text-danger" style={{ fontSize: '0.8rem' }}>
-                  <i className="bi bi-exclamation-circle me-1"></i>
-                  Passwords do not match
-                </small>
-              )}
-              {formData.confirmPassword && formData.password === formData.confirmPassword && (
-                <small className="text-success" style={{ fontSize: '0.8rem' }}>
-                  <i className="bi bi-check-circle me-1"></i>
-                  Passwords match
-                </small>
-              )}
-            </div>
+            )}
 
             <button
               type="submit"
-              className="btn btn-register text-white w-100"
+              className="btn btn-register text-white w-100 mb-4 mt-2"
               disabled={loading}
-              style={{
-                borderRadius: '12px',
-                fontSize: '1rem'
-              }}
             >
               {loading ? (
                 <>
@@ -533,35 +476,19 @@ const Register = () => {
                   Creating Account...
                 </>
               ) : (
-                <>
-                  <i className="bi bi-person-check me-2"></i>
-                  Create Account
-                </>
+                'Create Account'
               )}
             </button>
-          </form>
 
-          <div className="text-center mt-4">
-            <p className="mb-0" style={{
-              fontSize: '0.9rem',
-              color: '#64748b'
-            }}>
-              Already have an account? {' '}
-              <Link
-                to="/login"
-                style={{
-                  color: '#3b82f6',
-                  textDecoration: 'none',
-                  fontWeight: '600',
-                  transition: 'color 0.3s ease'
-                }}
-                onMouseEnter={(e) => e.target.style.color = '#2563eb'}
-                onMouseLeave={(e) => e.target.style.color = '#3b82f6'}
-              >
-                Sign In
-              </Link>
-            </p>
-          </div>
+            <div className="text-center pb-4">
+              <p className="text-secondary mb-0">
+                Already have an account?{' '}
+                <Link to="/login" className="text-primary fw-semibold text-decoration-none">
+                  Sign In
+                </Link>
+              </p>
+            </div>
+          </form>
         </div>
       </div>
     </div>

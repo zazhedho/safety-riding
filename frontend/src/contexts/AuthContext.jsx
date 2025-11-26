@@ -50,11 +50,11 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await api.post('/user/login', { email, password });
       const { token } = response.data.data;
-      
+
       localStorage.setItem('token', token);
       setToken(token);
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      
+
       const user = await fetchUser();
       return { success: true, user };
     } catch (error) {
@@ -66,9 +66,9 @@ export const AuthProvider = ({ children }) => {
           errorMessage = error.response.data.error.map(err => err.message).join(', ');
         }
       }
-      return { 
-        success: false, 
-        error: errorMessage 
+      return {
+        success: false,
+        error: errorMessage
       };
     }
   };
@@ -86,9 +86,9 @@ export const AuthProvider = ({ children }) => {
           errorMessage = error.response.data.error.map(err => err.message).join(', ');
         }
       }
-      return { 
-        success: false, 
-        error: errorMessage 
+      return {
+        success: false,
+        error: errorMessage
       };
     }
   };
@@ -122,9 +122,9 @@ export const AuthProvider = ({ children }) => {
           errorMessage = error.response.data.error.map(err => err.message).join(', ');
         }
       }
-      return { 
-        success: false, 
-        error: errorMessage 
+      return {
+        success: false,
+        error: errorMessage
       };
     }
   };
@@ -151,6 +151,40 @@ export const AuthProvider = ({ children }) => {
         success: false,
         error: errorMessage
       };
+    }
+  };
+
+  const forgotPassword = async (email) => {
+    try {
+      const response = await api.post('/user/forgot-password', { email });
+      return { success: true, data: response.data };
+    } catch (error) {
+      let errorMessage = 'Failed to send reset email';
+      if (error.response && error.response.data) {
+        if (error.response.data.message) {
+          errorMessage = error.response.data.message;
+        } else if (Array.isArray(error.response.data.error) && error.response.data.error.length > 0) {
+          errorMessage = error.response.data.error.map(err => err.message).join(', ');
+        }
+      }
+      return { success: false, error: errorMessage };
+    }
+  };
+
+  const resetPassword = async (token, newPassword) => {
+    try {
+      const response = await api.post('/user/reset-password', { token, new_password: newPassword });
+      return { success: true, data: response.data };
+    } catch (error) {
+      let errorMessage = 'Failed to reset password';
+      if (error.response && error.response.data) {
+        if (error.response.data.message) {
+          errorMessage = error.response.data.message;
+        } else if (Array.isArray(error.response.data.error) && error.response.data.error.length > 0) {
+          errorMessage = error.response.data.error.map(err => err.message).join(', ');
+        }
+      }
+      return { success: false, error: errorMessage };
     }
   };
 
@@ -189,6 +223,8 @@ export const AuthProvider = ({ children }) => {
     logout,
     updateProfile,
     updatePassword,
+    forgotPassword,
+    resetPassword,
     deleteUser,
     hasRole,
     hasPermission,

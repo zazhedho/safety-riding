@@ -115,6 +115,8 @@ func (r *Routes) UserRoutes() {
 	{
 		user.POST("/register", registerLimiter, h.Register)
 		user.POST("/login", h.Login)
+		user.POST("/forgot-password", h.ForgotPassword)
+		user.POST("/reset-password", h.ResetPassword)
 
 		userPriv := user.Group("").Use(mdw.AuthMiddleware())
 		{

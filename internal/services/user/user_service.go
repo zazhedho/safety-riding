@@ -341,6 +341,65 @@ func (s *ServiceUser) ChangePassword(id string, req dto.ChangePassword) (domainu
 	return data, nil
 }
 
+func (s *ServiceUser) ForgotPassword(req dto.ForgotPasswordRequest) (string, error) {
+	data, err := s.UserRepo.GetByEmail(req.Email)
+	if err != nil {
+		// Return nil error to prevent email enumeration
+		return "", nil
+	}
+
+	// Generate a short-lived token (e.g., 15 minutes)
+	// For simplicity, we'll use the existing JWT generator but with a specific "reset_password" purpose
+	// In a real app, this should be a random string stored in Redis or DB with expiry
+	token, err := utils.GenerateJwt(&data, "reset_password")
+	if err != nil {
+		return "", err
+	}
+
+	// In a real application, send this token via email
+	// For now, we return it so it can be logged/displayed for testing
+	return token, nil
+}
+
+func (s *ServiceUser) ResetPassword(req dto.ResetPasswordRequest) error {
+	// Validate new password strength
+	if err := ValidatePasswordStrength(req.NewPassword); err != nil {
+		return err
+	}
+
+	// Validate token and extract user ID
+	// Note: This relies on the token being a valid JWT signed by this server
+	claims, err := utils.JwtClaim(req.Token)
+	if err != nil {
+		return errors.New("invalid or expired token")
+	}
+
+	userId := claims["user_id"].(string)
+
+	data, err := s.UserRepo.GetByID(userId)
+	if err != nil {
+		return errors.New("user not found")
+	}
+
+	hashedPwd, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	data.Password = string(hashedPwd)
+
+	if err = s.UserRepo.Update(data); err != nil {
+		return err
+	}
+
+	// Ideally, we should also invalidate the token here (e.g., add to blacklist)
+	// But since we're using stateless JWTs for this mock, we'll skip it for now
+	// or we can reuse the Logout logic
+	_ = s.LogoutUser(req.Token)
+
+	return nil
+}
+
 func (s *ServiceUser) Delete(id string) error {
 	return s.UserRepo.Delete(id)
 }
