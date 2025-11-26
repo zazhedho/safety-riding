@@ -3,8 +3,10 @@ import schoolService from '../../services/schoolService';
 import locationService from '../../services/locationService';
 import PriorityMatrixChart from '../../components/charts/PriorityMatrixChart';
 import { toast } from 'react-toastify';
+import { useTranslation } from 'react-i18next';
 
 const EducationPriority = () => {
+  const { t, i18n } = useTranslation();
   const currentYear = new Date().getFullYear();
   const defaultFilters = {
     province_id: '',
@@ -49,7 +51,7 @@ const EducationPriority = () => {
       const response = await locationService.getProvinces();
       setProvinces(response.data.data || []);
     } catch (error) {
-      toast.error('Failed to load provinces');
+      toast.error(t('common.error'));
     }
   };
 
@@ -58,7 +60,7 @@ const EducationPriority = () => {
       const response = await locationService.getCities(provinceCode);
       setCities(response.data.data || []);
     } catch (error) {
-      toast.error('Failed to load cities');
+      toast.error(t('common.error'));
     }
   };
 
@@ -67,7 +69,7 @@ const EducationPriority = () => {
       const response = await locationService.getDistricts(provinceCode, cityCode);
       setDistricts(response.data.data || []);
     } catch (error) {
-      toast.error('Failed to load districts');
+      toast.error(t('common.error'));
     }
   };
 
@@ -85,7 +87,7 @@ const EducationPriority = () => {
       const response = await schoolService.getEducationPriority(params);
       setData(response.data.data);
     } catch (error) {
-      toast.error('Failed to load education priority data');
+      toast.error(t('schools.priority.loadFailed'));
     } finally {
       setLoading(false);
     }
@@ -144,7 +146,7 @@ const EducationPriority = () => {
   return (
     <>
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2>Education Priority Matrix</h2>
+        <h2>{t('schools.priority.title')}</h2>
       </div>
 
       {/* Summary Cards */}
@@ -155,7 +157,7 @@ const EducationPriority = () => {
               <div className="card-body">
                 <div className="d-flex justify-content-between align-items-center">
                   <div className="flex-grow-1 pe-2">
-                    <h6 className="text-muted mb-1 small">Critical Priority</h6>
+                    <h6 className="text-muted mb-1 small">{t('schools.priority.critical')}</h6>
                     <h3 className="mb-0 text-danger">{data.critical_count || 0}</h3>
                   </div>
                   <div className="text-danger flex-shrink-0" style={{ fontSize: '2rem' }}>
@@ -171,7 +173,7 @@ const EducationPriority = () => {
               <div className="card-body">
                 <div className="d-flex justify-content-between align-items-center">
                   <div className="flex-grow-1 pe-2">
-                    <h6 className="text-muted mb-1 small">High Priority</h6>
+                    <h6 className="text-muted mb-1 small">{t('schools.priority.high')}</h6>
                     <h3 className="mb-0 text-warning">{data.high_priority_count || 0}</h3>
                   </div>
                   <div className="text-warning flex-shrink-0" style={{ fontSize: '2rem' }}>
@@ -187,7 +189,7 @@ const EducationPriority = () => {
               <div className="card-body">
                 <div className="d-flex justify-content-between align-items-center">
                   <div className="flex-grow-1 pe-2">
-                    <h6 className="text-muted mb-1 small">Medium Priority</h6>
+                    <h6 className="text-muted mb-1 small">{t('schools.priority.medium')}</h6>
                     <h3 className="mb-0 text-info">{data.medium_count || 0}</h3>
                   </div>
                   <div className="text-info flex-shrink-0" style={{ fontSize: '2rem' }}>
@@ -203,7 +205,7 @@ const EducationPriority = () => {
               <div className="card-body">
                 <div className="d-flex justify-content-between align-items-center">
                   <div className="flex-grow-1 pe-2">
-                    <h6 className="text-muted mb-1 small">Low Priority</h6>
+                    <h6 className="text-muted mb-1 small">{t('schools.priority.low')}</h6>
                     <h3 className="mb-0 text-success">{data.low_count || 0}</h3>
                   </div>
                   <div className="text-success flex-shrink-0" style={{ fontSize: '2rem' }}>
@@ -220,8 +222,8 @@ const EducationPriority = () => {
       {data && (
         <div className="alert alert-info mb-3">
           <i className="bi bi-info-circle me-2"></i>
-          <strong>Market Share Threshold: {data.market_threshold}%</strong> -
-          Areas with market share below {data.market_threshold}% require mandatory safety riding education.
+          <strong>{t('schools.priority.threshold', { threshold: data.market_threshold })}</strong> -
+          {t('schools.priority.thresholdDesc', { threshold: data.market_threshold })}
         </div>
       )}
 
@@ -239,12 +241,12 @@ const EducationPriority = () => {
         ) : (
           <div className="alert alert-warning mb-4">
             <i className="bi bi-info-circle me-2"></i>
-            <strong>Matrix visualization not available.</strong>
-            <p className="mb-0 mt-2">To see the priority matrix, you need to add:</p>
+            <strong>{t('schools.priority.matrixNotAvailable')}</strong>
+            <p className="mb-0 mt-2">{t('schools.priority.matrixRequirements')}</p>
             <ul className="mb-0 mt-2">
-              <li>Market share data for districts</li>
-              <li>School data (students count)</li>
-              <li>Accident data (deaths, injuries)</li>
+              <li>{t('schools.priority.reqMarketShare')}</li>
+              <li>{t('schools.priority.reqSchoolData')}</li>
+              <li>{t('schools.priority.reqAccidentData')}</li>
             </ul>
           </div>
         )
@@ -261,7 +263,7 @@ const EducationPriority = () => {
                 value={filters.province_id}
                 onChange={handleFilterChange}
               >
-                <option value="">All Provinces</option>
+                <option value="">{t('schools.priority.allProvinces')}</option>
                 {provinces.map(prov => (
                   <option key={prov.code} value={prov.code}>{prov.name}</option>
                 ))}
@@ -275,7 +277,7 @@ const EducationPriority = () => {
                 onChange={handleFilterChange}
                 disabled={!filters.province_id}
               >
-                <option value="">All Cities</option>
+                <option value="">{t('schools.priority.allCities')}</option>
                 {cities.map(city => (
                   <option key={city.code} value={city.code}>{city.name}</option>
                 ))}
@@ -289,7 +291,7 @@ const EducationPriority = () => {
                 onChange={handleFilterChange}
                 disabled={!filters.city_id}
               >
-                <option value="">All Districts</option>
+                <option value="">{t('schools.priority.allDistricts')}</option>
                 {districts.map(dist => (
                   <option key={dist.code} value={dist.code}>{dist.name}</option>
                 ))}
@@ -302,10 +304,10 @@ const EducationPriority = () => {
                 value={filters.month}
                 onChange={handleFilterChange}
               >
-                <option value="">All Months</option>
+                <option value="">{t('schools.priority.allMonths')}</option>
                 {Array.from({ length: 12 }, (_, index) => (
                   <option key={index + 1} value={String(index + 1)}>
-                    {new Date(2000, index, 1).toLocaleString('en-US', { month: 'long' })}
+                    {new Date(2000, index, 1).toLocaleString(i18n.language === 'id' ? 'id-ID' : 'en-US', { month: 'long' })}
                   </option>
                 ))}
               </select>
@@ -317,7 +319,7 @@ const EducationPriority = () => {
                 value={filters.year}
                 onChange={handleFilterChange}
               >
-                <option value="">All Years</option>
+                <option value="">{t('schools.priority.allYears')}</option>
                 {yearOptions.map(year => (
                   <option key={year} value={year}>{year}</option>
                 ))}
@@ -325,10 +327,10 @@ const EducationPriority = () => {
             </div>
             <div className="col-6 col-lg-2">
               <div className="d-flex gap-2">
-                <button className="btn btn-primary flex-fill" onClick={handleSearch} title="Apply filters">
+                <button className="btn btn-primary flex-fill" onClick={handleSearch} title={t('schools.priority.applyFilters')}>
                   <i className="bi bi-search"></i>
                 </button>
-                <button className="btn btn-outline-secondary" onClick={handleClearFilters} title="Clear all filters">
+                <button className="btn btn-outline-secondary" onClick={handleClearFilters} title={t('schools.priority.clearFilters')}>
                   <i className="bi bi-x-circle"></i>
                 </button>
               </div>
@@ -340,13 +342,13 @@ const EducationPriority = () => {
       {/* Priority Matrix Table */}
       <div className="card">
         <div className="card-header">
-          <h5 className="mb-0">Priority Matrix by District</h5>
+          <h5 className="mb-0">{t('schools.priority.tableTitle')}</h5>
         </div>
         <div className="card-body">
           {loading ? (
             <div className="text-center py-5">
               <div className="spinner-border text-primary" role="status">
-                <span className="visually-hidden">Loading...</span>
+                <span className="visually-hidden">{t('common.loading')}</span>
               </div>
             </div>
           ) : data && data.items && data.items.length > 0 ? (
@@ -354,15 +356,15 @@ const EducationPriority = () => {
               <table className="table table-hover table-sm">
                 <thead>
                   <tr>
-                    <th>Location</th>
-                    <th className="text-center">Market Share</th>
-                    <th className="text-center">Safety Riding</th>
-                    <th className="text-center">Schools</th>
-                    <th className="text-center">Students</th>
-                    <th className="text-center">Accidents</th>
-                    <th className="text-center">Severity</th>
-                    <th className="text-center">Score</th>
-                    <th className="text-center">Priority</th>
+                    <th>{t('schools.priority.location')}</th>
+                    <th className="text-center">{t('schools.priority.marketShare')}</th>
+                    <th className="text-center">{t('schools.priority.safetyRiding')}</th>
+                    <th className="text-center">{t('schools.priority.schools')}</th>
+                    <th className="text-center">{t('schools.priority.students')}</th>
+                    <th className="text-center">{t('schools.priority.accidents')}</th>
+                    <th className="text-center">{t('schools.priority.severity')}</th>
+                    <th className="text-center">{t('schools.priority.score')}</th>
+                    <th className="text-center">{t('schools.priority.priorityLevel')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -390,14 +392,14 @@ const EducationPriority = () => {
                           {item.total_schools}
                         </span>
                         <br />
-                        <small className="text-success">{item.educated_schools} educated</small>
+                        <small className="text-success">{t('schools.priority.educated', { count: item.educated_schools })}</small>
                       </td>
                       <td className="text-center">
                         <span className="badge bg-primary">
                           {item.total_students.toLocaleString()}
                         </span>
                         <br />
-                        <small className="text-info">{item.total_student_educated.toLocaleString()} educated</small>
+                        <small className="text-info">{t('schools.priority.educated', { count: item.total_student_educated.toLocaleString() })}</small>
                       </td>
                       <td className="text-center">
                         <span className={`badge ${item.total_accidents > 0 ? 'bg-danger' : 'bg-secondary'}`}>
@@ -406,7 +408,7 @@ const EducationPriority = () => {
                         {item.total_deaths > 0 && (
                           <>
                             <br />
-                            <small className="text-danger">{item.total_deaths} deaths</small>
+                            <small className="text-danger">{t('schools.priority.deaths', { count: item.total_deaths })}</small>
                           </>
                         )}
                       </td>
@@ -447,7 +449,7 @@ const EducationPriority = () => {
           ) : (
             <div className="text-center py-5 text-muted">
               <i className="bi bi-inbox" style={{ fontSize: '3rem' }}></i>
-              <p className="mt-2">No priority data found</p>
+              <p className="mt-2">{t('schools.priority.noData')}</p>
             </div>
           )}
         </div>
@@ -456,25 +458,25 @@ const EducationPriority = () => {
       {/* Legend */}
       <div className="card mt-3">
         <div className="card-header">
-          <h6 className="mb-0">Legend</h6>
+          <h6 className="mb-0">{t('schools.priority.legend')}</h6>
         </div>
         <div className="card-body">
           <div className="row">
             <div className="col-md-6">
-              <h6 className="small fw-bold">Priority Score Calculation:</h6>
+              <h6 className="small fw-bold">{t('schools.priority.calcTitle')}</h6>
               <ul className="small mb-0">
-                <li><strong>Market Share Factor (40 pts):</strong> Below 87% threshold = higher priority</li>
-                <li><strong>Student Population (30 pts):</strong> More students = higher education impact</li>
-                <li><strong>Accident Severity (30 pts):</strong> Deaths (10), Injured (5), Minor (1)</li>
+                <li><strong>{t('schools.priority.calcMarketShare')}</strong></li>
+                <li><strong>{t('schools.priority.calcStudent')}</strong></li>
+                <li><strong>{t('schools.priority.calcAccident')}</strong></li>
               </ul>
             </div>
             <div className="col-md-6">
-              <h6 className="small fw-bold">Priority Levels:</h6>
+              <h6 className="small fw-bold">{t('schools.priority.levelTitle')}</h6>
               <ul className="small mb-0">
-                <li><span className="badge bg-danger">Critical</span> Score 75-100</li>
-                <li><span className="badge bg-warning text-dark">High</span> Score 50-74</li>
-                <li><span className="badge bg-info">Medium</span> Score 25-49</li>
-                <li><span className="badge bg-success">Low</span> Score 0-24</li>
+                <li><span className="badge bg-danger">Critical</span> {t('schools.priority.levelCritical')}</li>
+                <li><span className="badge bg-warning text-dark">High</span> {t('schools.priority.levelHigh')}</li>
+                <li><span className="badge bg-info">Medium</span> {t('schools.priority.levelMedium')}</li>
+                <li><span className="badge bg-success">Low</span> {t('schools.priority.levelLow')}</li>
               </ul>
             </div>
           </div>

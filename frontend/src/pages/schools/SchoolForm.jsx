@@ -4,10 +4,12 @@ import LocationPickerMap from '../../components/maps/LocationPickerMap';
 import schoolService from '../../services/schoolService';
 import locationService from '../../services/locationService';
 import { toast } from 'react-toastify';
+import { useTranslation } from 'react-i18next';
 
 const SchoolForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [formData, setFormData] = useState({
     name: '',
     npsn: '',
@@ -66,7 +68,7 @@ const SchoolForm = () => {
         last_visit_at: schoolData.last_visit_at ? schoolData.last_visit_at.slice(0, 16) : '',
       });
     } catch (error) {
-      toast.error('Failed to fetch school');
+      toast.error(t('schools.form.fetchFailed'));
     } finally {
       setLoading(false);
     }
@@ -77,7 +79,7 @@ const SchoolForm = () => {
       const response = await locationService.getProvinces();
       setProvinces(response.data.data || []);
     } catch (error) {
-      toast.error('Failed to load provinces');
+      toast.error(t('common.error'));
     }
   };
 
@@ -86,7 +88,7 @@ const SchoolForm = () => {
       const response = await locationService.getCities(provinceCode);
       setCities(response.data.data || []);
     } catch (error) {
-      toast.error('Failed to load cities');
+      toast.error(t('common.error'));
     }
   };
 
@@ -95,7 +97,7 @@ const SchoolForm = () => {
       const response = await locationService.getDistricts(provinceCode, cityCode);
       setDistricts(response.data.data || []);
     } catch (error) {
-      toast.error('Failed to load districts');
+      toast.error(t('common.error'));
     }
   };
 
@@ -230,7 +232,7 @@ const SchoolForm = () => {
     // Show success message with what was auto-filled
     const filledFields = Object.keys(updates).filter(key => updates[key]);
     if (filledFields.length > 0) {
-      toast.success(`Auto-filled ${filledFields.length} field(s) from location data`);
+      toast.success(t('schools.form.autoFilled', { count: filledFields.length }));
     }
   };
 
@@ -260,87 +262,87 @@ const SchoolForm = () => {
     try {
       if (id) {
         await schoolService.update(id, dataToSend);
-        toast.success('School updated successfully');
+        toast.success(t('schools.form.updateSuccess'));
       } else {
         await schoolService.create(dataToSend);
-        toast.success('School created successfully');
+        toast.success(t('schools.form.createSuccess'));
       }
       navigate('/schools');
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to save school');
+      toast.error(error.response?.data?.message || t('schools.form.saveFailed'));
     }
   };
 
   if (loading) {
-    return <>Loading...</>;
+    return <>{t('common.loading')}</>;
   }
 
   return (
     <>
-      <h2>{id ? 'Edit School' : 'Add School'}</h2>
+      <h2>{id ? t('schools.form.editTitle') : t('schools.form.addTitle')}</h2>
       <div className="card">
         <div className="card-body">
           <form onSubmit={handleSubmit}>
             <div className="row">
               <div className="col-md-6 mb-3">
-                <label className="form-label">Name</label>
+                <label className="form-label">{t('schools.form.name')}</label>
                 <input type="text" className="form-control" name="name" value={formData.name} onChange={handleChange} placeholder="e.g., SMA Negeri 1 Makassar" required />
               </div>
               <div className="col-md-6 mb-3">
-                <label className="form-label">NPSN</label>
+                <label className="form-label">{t('schools.form.npsn')}</label>
                 <input type="text" className="form-control" name="npsn" value={formData.npsn} onChange={handleChange} placeholder="e.g., 40313421" required />
               </div>
             </div>
             <div className="mb-3">
-              <label className="form-label">Address</label>
+              <label className="form-label">{t('schools.form.address')}</label>
               <textarea className="form-control" name="address" value={formData.address} onChange={handleChange} placeholder="e.g., Jl. Gunung Bawakaraeng No.53, Pisang Utara" required />
             </div>
             <div className="row">
               <div className="col-md-6 mb-3">
-                <label className="form-label">Phone</label>
+                <label className="form-label">{t('schools.form.phone')}</label>
                 <input type="text" className="form-control" name="phone" value={formData.phone} onChange={handleChange} placeholder="e.g., (0411) 3616292" required />
               </div>
               <div className="col-md-6 mb-3">
-                <label className="form-label">Email</label>
+                <label className="form-label">{t('schools.form.email')}</label>
                 <input type="email" className="form-control" name="email" value={formData.email} onChange={handleChange} placeholder="e.g., info@sman1mks.sch.id" required />
               </div>
             </div>
             <div className="row">
               <div className="col-md-4 mb-3">
-                <label className="form-label">Province</label>
+                <label className="form-label">{t('schools.form.province')}</label>
                 <select className="form-select" name="province_id" value={formData.province_id} onChange={handleChange} required>
-                  <option value="">Select Province</option>
+                  <option value="">{t('schools.form.selectProvince')}</option>
                   {provinces.map(prov => <option key={prov.code} value={prov.code}>{prov.name}</option>)}
                 </select>
               </div>
               <div className="col-md-4 mb-3">
-                <label className="form-label">City/Regency</label>
+                <label className="form-label">{t('schools.form.city')}</label>
                 <select className="form-select" name="city_id" value={formData.city_id} onChange={handleChange} required disabled={!formData.province_id}>
-                  <option value="">Select City/Regency</option>
+                  <option value="">{t('schools.form.selectCity')}</option>
                   {cities.map(city => <option key={city.code} value={city.code}>{city.name}</option>)}
                 </select>
               </div>
               <div className="col-md-4 mb-3">
-                <label className="form-label">District</label>
+                <label className="form-label">{t('schools.form.district')}</label>
                 <select className="form-select" name="district_id" value={formData.district_id} onChange={handleChange} required disabled={!formData.city_id}>
-                  <option value="">Select District</option>
+                  <option value="">{t('schools.form.selectDistrict')}</option>
                   {districts.map(dist => <option key={dist.code} value={dist.code}>{dist.name}</option>)}
                 </select>
               </div>
             </div>
             <div className="row">
               <div className="col-md-6 mb-3">
-                <label className="form-label">Postal Code</label>
+                <label className="form-label">{t('schools.form.postalCode')}</label>
                 <input type="text" className="form-control" name="postal_code" value={formData.postal_code} onChange={handleChange} placeholder="e.g., 90115" />
               </div>
             </div>
             <div className="row">
               <div className="col-md-6 mb-3">
-                <label className="form-label">Latitude</label>
+                <label className="form-label">{t('schools.form.latitude')}</label>
                 <input type="number" step="any" className="form-control" name="latitude" value={formData.latitude} onChange={handleChange} placeholder="e.g., -5.1353" />
               </div>
               <div className="col-md-6 mb-3">
-                <label className="form-label">Longitude</label>
+                <label className="form-label">{t('schools.form.longitude')}</label>
                 <input type="number" step="any" className="form-control" name="longitude" value={formData.longitude} onChange={handleChange} placeholder="e.g., 119.4238" />
               </div>
             </div>
@@ -353,7 +355,7 @@ const SchoolForm = () => {
                 onClick={() => setShowMapPicker(!showMapPicker)}
               >
                 <i className={`bi ${showMapPicker ? 'bi-chevron-up' : 'bi-map'} me-2`}></i>
-                {showMapPicker ? 'Hide Map Picker' : 'Pick Location on Map'}
+                {showMapPicker ? t('schools.form.hideMap') : t('schools.form.pickLocation')}
               </button>
             </div>
 
@@ -369,38 +371,38 @@ const SchoolForm = () => {
             )}
             <div className="row">
               <div className="col-md-4 mb-3">
-                <label className="form-label">Student Count</label>
+                <label className="form-label">{t('schools.form.studentCount')}</label>
                 <input type="number" className="form-control" name="student_count" value={formData.student_count} onChange={handleChange} onFocus={handleNumberFocus} onKeyDown={handleNumberKeyDown} placeholder="e.g., 1200" min="0" />
               </div>
               <div className="col-md-4 mb-3">
-                <label className="form-label">Teacher Count</label>
+                <label className="form-label">{t('schools.form.teacherCount')}</label>
                 <input type="number" className="form-control" name="teacher_count" value={formData.teacher_count} onChange={handleChange} onFocus={handleNumberFocus} onKeyDown={handleNumberKeyDown} placeholder="e.g., 75" min="0" />
               </div>
               <div className="col-md-4 mb-3">
-                <label className="form-label">Major Count</label>
+                <label className="form-label">{t('schools.form.majorCount')}</label>
                 <input type="number" className="form-control" name="major_count" value={formData.major_count} onChange={handleChange} onFocus={handleNumberFocus} onKeyDown={handleNumberKeyDown} placeholder="e.g., 3" min="0" />
               </div>
             </div>
             <div className="row">
               <div className="col-md-4 mb-3">
-                <label className="form-label">Visit Count</label>
+                <label className="form-label">{t('schools.form.visitCount')}</label>
                 <input type="number" className="form-control" name="visit_count" value={formData.visit_count} onChange={handleChange} onFocus={handleNumberFocus} onKeyDown={handleNumberKeyDown} placeholder="e.g., 2" min="0" />
               </div>
               <div className="col-md-4 mb-3">
-                <label className="form-label">Last Visit At</label>
+                <label className="form-label">{t('schools.form.lastVisitAt')}</label>
                 <input type="datetime-local" className="form-control" name="last_visit_at" value={formData.last_visit_at} onChange={handleChange} />
               </div>
               <div className="col-md-4 mb-3 d-flex align-items-center pt-3">
                 <div className="form-check">
                   <input className="form-check-input" type="checkbox" name="is_educated" id="is_educated" checked={formData.is_educated} onChange={handleChange} />
                   <label className="form-check-label" htmlFor="is_educated">
-                    Is Educated
+                    {t('schools.form.isEducated')}
                   </label>
                 </div>
               </div>
             </div>
-            <button type="submit" className="btn btn-primary">{id ? 'Update' : 'Create'}</button>
-            <button type="button" className="btn btn-secondary ms-2" onClick={() => navigate('/schools')}>Cancel</button>
+            <button type="submit" className="btn btn-primary">{id ? t('schools.form.update') : t('schools.form.save')}</button>
+            <button type="button" className="btn btn-secondary ms-2" onClick={() => navigate('/schools')}>{t('schools.form.cancel')}</button>
           </form>
         </div>
       </div>

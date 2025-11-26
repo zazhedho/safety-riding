@@ -4,8 +4,10 @@ import { useAuth } from '../../contexts/AuthContext';
 import { toast } from 'react-toastify';
 import ConfirmationModal from '../../components/common/ConfirmationModal';
 import 'bootstrap-icons/font/bootstrap-icons.css';
+import { useTranslation } from 'react-i18next';
 
 const Profile = () => {
+  const { t, i18n } = useTranslation();
   const { user, updateProfile, updatePassword, deleteUser } = useAuth();
   const navigate = useNavigate();
   const [profileData, setProfileData] = useState({ name: '', email: '', phone: '' });
@@ -53,29 +55,29 @@ const Profile = () => {
     e.preventDefault();
     const result = await updateProfile(profileData);
     if (result.success) {
-      toast.success('Profile updated successfully');
+      toast.success(t('profile.updateSuccess'));
     } else {
-      toast.error(result.error || 'Failed to update profile');
+      toast.error(result.error || t('profile.updateFailed'));
     }
   };
 
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      toast.error('New passwords do not match');
+      toast.error(t('profile.passwordMismatch'));
       return;
     }
 
     // Validate password requirements
     const allRequirementsMet = Object.values(passwordValidation).every(val => val === true);
     if (!allRequirementsMet) {
-      toast.error('New password does not meet all requirements');
+      toast.error(t('profile.passwordRequirementsNotMet'));
       return;
     }
 
     const result = await updatePassword(passwordData);
     if (result.success) {
-      toast.success('Password updated successfully');
+      toast.success(t('profile.passwordUpdateSuccess'));
       setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
       // Reset password validation
       setPasswordValidation({
@@ -87,7 +89,7 @@ const Profile = () => {
       });
       navigate('/login'); // Redirect to login after password change and logout
     } else {
-      toast.error(result.error || 'Failed to update password');
+      toast.error(result.error || t('profile.passwordUpdateFailed'));
     }
   };
 
@@ -99,10 +101,10 @@ const Profile = () => {
     setShowDeleteModal(false);
     const result = await deleteUser();
     if (result.success) {
-      toast.success('Account deleted successfully');
+      toast.success(t('profile.deleteSuccess'));
       navigate('/login'); // Redirect to login after account deletion and logout
     } else {
-      toast.error(result.error || 'Failed to delete account');
+      toast.error(result.error || t('profile.deleteFailed'));
     }
   };
 
@@ -121,7 +123,7 @@ const Profile = () => {
 
   const formatDate = (dateString) => {
     if (!dateString) return '-';
-    return new Date(dateString).toLocaleString();
+    return new Date(dateString).toLocaleString(i18n.language === 'id' ? 'id-ID' : 'en-US');
   };
 
   return (
@@ -129,13 +131,13 @@ const Profile = () => {
       {/* Header */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
-          <h2>My Profile</h2>
+          <h2>{t('profile.title')}</h2>
           <nav aria-label="breadcrumb">
             <ol className="breadcrumb mb-0">
               <li className="breadcrumb-item">
-                <Link to="/dashboard">Dashboard</Link>
+                <Link to="/dashboard">{t('common.dashboard')}</Link>
               </li>
-              <li className="breadcrumb-item active">Profile</li>
+              <li className="breadcrumb-item active">{t('profile.breadcrumb')}</li>
             </ol>
           </nav>
         </div>
@@ -146,7 +148,7 @@ const Profile = () => {
         <div className="d-flex align-items-center">
           <div className="flex-shrink-0 me-3">
             <div className="bg-white rounded-circle d-flex align-items-center justify-content-center"
-                 style={{ width: '60px', height: '60px' }}>
+              style={{ width: '60px', height: '60px' }}>
               <i className="bi bi-person-circle" style={{ fontSize: '3rem', color: 'var(--primary-color)' }}></i>
             </div>
           </div>
@@ -171,7 +173,7 @@ const Profile = () => {
       <div className="card mb-4">
         <div className="card-header">
           <h5 className="mb-0">
-            <i className="bi bi-info-circle me-2"></i>Account Information
+            <i className="bi bi-info-circle me-2"></i>{t('profile.accountInfo')}
           </h5>
         </div>
         <div className="card-body">
@@ -181,19 +183,19 @@ const Profile = () => {
                 <tbody>
                   <tr>
                     <td className="text-muted" style={{ width: '40%' }}>
-                      <strong><i className="bi bi-person me-2"></i>Name</strong>
+                      <strong><i className="bi bi-person me-2"></i>{t('profile.name')}</strong>
                     </td>
                     <td>{user?.name}</td>
                   </tr>
                   <tr>
                     <td className="text-muted">
-                      <strong><i className="bi bi-envelope me-2"></i>Email</strong>
+                      <strong><i className="bi bi-envelope me-2"></i>{t('profile.email')}</strong>
                     </td>
                     <td>{user?.email}</td>
                   </tr>
                   <tr>
                     <td className="text-muted">
-                      <strong><i className="bi bi-telephone me-2"></i>Phone</strong>
+                      <strong><i className="bi bi-telephone me-2"></i>{t('profile.phone')}</strong>
                     </td>
                     <td>{user?.phone || '-'}</td>
                   </tr>
@@ -205,19 +207,19 @@ const Profile = () => {
                 <tbody>
                   <tr>
                     <td className="text-muted" style={{ width: '40%' }}>
-                      <strong><i className="bi bi-shield-check me-2"></i>Role</strong>
+                      <strong><i className="bi bi-shield-check me-2"></i>{t('profile.role')}</strong>
                     </td>
                     <td>{getRoleBadge(user?.role)}</td>
                   </tr>
                   <tr>
                     <td className="text-muted">
-                      <strong><i className="bi bi-clock-history me-2"></i>Created At</strong>
+                      <strong><i className="bi bi-clock-history me-2"></i>{t('profile.createdAt')}</strong>
                     </td>
                     <td>{formatDate(user?.created_at)}</td>
                   </tr>
                   <tr>
                     <td className="text-muted">
-                      <strong><i className="bi bi-arrow-repeat me-2"></i>Updated At</strong>
+                      <strong><i className="bi bi-arrow-repeat me-2"></i>{t('profile.updatedAt')}</strong>
                     </td>
                     <td>{formatDate(user?.updated_at)}</td>
                   </tr>
@@ -234,14 +236,14 @@ const Profile = () => {
           <div className="card h-100 border-primary">
             <div className="card-header bg-primary bg-opacity-10">
               <h5 className="mb-0">
-                <i className="bi bi-pencil-square me-2"></i>Update Profile
+                <i className="bi bi-pencil-square me-2"></i>{t('profile.updateProfile')}
               </h5>
             </div>
             <div className="card-body">
               <form onSubmit={handleProfileSubmit}>
                 <div className="mb-3">
                   <label className="form-label">
-                    <i className="bi bi-person me-2"></i>Name
+                    <i className="bi bi-person me-2"></i>{t('profile.name')}
                   </label>
                   <input
                     type="text"
@@ -250,12 +252,12 @@ const Profile = () => {
                     value={profileData.name}
                     onChange={handleProfileChange}
                     required
-                    placeholder="Enter your name"
+                    placeholder={t('profile.namePlaceholder')}
                   />
                 </div>
                 <div className="mb-3">
                   <label className="form-label">
-                    <i className="bi bi-envelope me-2"></i>Email
+                    <i className="bi bi-envelope me-2"></i>{t('profile.email')}
                   </label>
                   <input
                     type="email"
@@ -264,12 +266,12 @@ const Profile = () => {
                     value={profileData.email}
                     onChange={handleProfileChange}
                     required
-                    placeholder="Enter your email"
+                    placeholder={t('profile.emailPlaceholder')}
                   />
                 </div>
                 <div className="mb-3">
                   <label className="form-label">
-                    <i className="bi bi-telephone me-2"></i>Phone
+                    <i className="bi bi-telephone me-2"></i>{t('profile.phone')}
                   </label>
                   <input
                     type="text"
@@ -277,11 +279,11 @@ const Profile = () => {
                     name="phone"
                     value={profileData.phone}
                     onChange={handleProfileChange}
-                    placeholder="Enter your phone number"
+                    placeholder={t('profile.phonePlaceholder')}
                   />
                 </div>
                 <button type="submit" className="btn btn-primary w-100">
-                  <i className="bi bi-check-circle me-2"></i>Save Changes
+                  <i className="bi bi-check-circle me-2"></i>{t('profile.saveChanges')}
                 </button>
               </form>
             </div>
@@ -293,14 +295,14 @@ const Profile = () => {
           <div className="card mb-4 border-warning">
             <div className="card-header bg-warning bg-opacity-10">
               <h5 className="mb-0">
-                <i className="bi bi-key me-2"></i>Change Password
+                <i className="bi bi-key me-2"></i>{t('profile.changePassword')}
               </h5>
             </div>
             <div className="card-body">
               <form onSubmit={handlePasswordSubmit}>
                 <div className="mb-3">
                   <label className="form-label">
-                    <i className="bi bi-lock me-2"></i>Current Password
+                    <i className="bi bi-lock me-2"></i>{t('profile.currentPassword')}
                   </label>
                   <div className="position-relative">
                     <input
@@ -311,7 +313,7 @@ const Profile = () => {
                       onChange={handlePasswordChange}
                       style={{ paddingRight: '2.5rem' }}
                       required
-                      placeholder="Enter current password"
+                      placeholder={t('profile.currentPasswordPlaceholder')}
                     />
                     <button
                       type="button"
@@ -326,7 +328,7 @@ const Profile = () => {
                 </div>
                 <div className="mb-3">
                   <label className="form-label">
-                    <i className="bi bi-lock-fill me-2"></i>New Password
+                    <i className="bi bi-lock-fill me-2"></i>{t('profile.newPassword')}
                   </label>
                   <div className="position-relative">
                     <input
@@ -337,7 +339,7 @@ const Profile = () => {
                       onChange={handlePasswordChange}
                       style={{ paddingRight: '2.5rem' }}
                       required
-                      placeholder="Enter new password"
+                      placeholder={t('profile.newPasswordPlaceholder')}
                     />
                     <button
                       type="button"
@@ -351,27 +353,27 @@ const Profile = () => {
                   </div>
                   {passwordData.newPassword && (
                     <div className="mt-2 p-3 bg-light rounded">
-                      <small className="d-block fw-bold mb-2 text-secondary">Password Requirements:</small>
+                      <small className="d-block fw-bold mb-2 text-secondary">{t('users.form.passwordRequirementsTitle')}</small>
                       <div className="d-flex flex-column gap-1">
                         <small className={passwordValidation.minLength ? 'text-success' : 'text-danger'}>
                           <i className={`bi bi-${passwordValidation.minLength ? 'check-circle-fill' : 'x-circle-fill'} me-1`}></i>
-                          Minimum 8 characters
+                          {t('users.form.reqMinLength')}
                         </small>
                         <small className={passwordValidation.hasLowercase ? 'text-success' : 'text-danger'}>
                           <i className={`bi bi-${passwordValidation.hasLowercase ? 'check-circle-fill' : 'x-circle-fill'} me-1`}></i>
-                          At least 1 lowercase letter (a-z)
+                          {t('users.form.reqLowercase')}
                         </small>
                         <small className={passwordValidation.hasUppercase ? 'text-success' : 'text-danger'}>
                           <i className={`bi bi-${passwordValidation.hasUppercase ? 'check-circle-fill' : 'x-circle-fill'} me-1`}></i>
-                          At least 1 uppercase letter (A-Z)
+                          {t('users.form.reqUppercase')}
                         </small>
                         <small className={passwordValidation.hasNumber ? 'text-success' : 'text-danger'}>
                           <i className={`bi bi-${passwordValidation.hasNumber ? 'check-circle-fill' : 'x-circle-fill'} me-1`}></i>
-                          At least 1 number (0-9)
+                          {t('users.form.reqNumber')}
                         </small>
                         <small className={passwordValidation.hasSymbol ? 'text-success' : 'text-danger'}>
                           <i className={`bi bi-${passwordValidation.hasSymbol ? 'check-circle-fill' : 'x-circle-fill'} me-1`}></i>
-                          At least 1 symbol (!@#$%^&*...)
+                          {t('users.form.reqSymbol')}
                         </small>
                       </div>
                     </div>
@@ -379,7 +381,7 @@ const Profile = () => {
                 </div>
                 <div className="mb-3">
                   <label className="form-label">
-                    <i className="bi bi-shield-lock me-2"></i>Confirm New Password
+                    <i className="bi bi-shield-lock me-2"></i>{t('profile.confirmNewPassword')}
                   </label>
                   <div className="position-relative">
                     <input
@@ -390,7 +392,7 @@ const Profile = () => {
                       onChange={handlePasswordChange}
                       style={{ paddingRight: '2.5rem' }}
                       required
-                      placeholder="Confirm new password"
+                      placeholder={t('profile.confirmNewPasswordPlaceholder')}
                     />
                     <button
                       type="button"
@@ -405,18 +407,18 @@ const Profile = () => {
                   {passwordData.confirmPassword && passwordData.newPassword !== passwordData.confirmPassword && (
                     <small className="text-danger d-block mt-1">
                       <i className="bi bi-exclamation-circle me-1"></i>
-                      Passwords do not match
+                      {t('profile.passwordMismatch')}
                     </small>
                   )}
                   {passwordData.confirmPassword && passwordData.newPassword === passwordData.confirmPassword && (
                     <small className="text-success d-block mt-1">
                       <i className="bi bi-check-circle me-1"></i>
-                      Passwords match
+                      {t('users.form.passwordMatch')}
                     </small>
                   )}
                 </div>
                 <button type="submit" className="btn btn-warning w-100">
-                  <i className="bi bi-shield-check me-2"></i>Update Password
+                  <i className="bi bi-shield-check me-2"></i>{t('profile.updatePasswordButton')}
                 </button>
               </form>
             </div>
@@ -426,19 +428,19 @@ const Profile = () => {
           <div className="card border-danger">
             <div className="card-header bg-danger text-white">
               <h5 className="mb-0">
-                <i className="bi bi-exclamation-triangle me-2"></i>Danger Zone
+                <i className="bi bi-exclamation-triangle me-2"></i>{t('profile.dangerZone')}
               </h5>
             </div>
             <div className="card-body">
               <p className="text-muted mb-3">
                 <i className="bi bi-info-circle me-2"></i>
-                Once you delete your account, there is no going back. Please be certain.
+                {t('profile.dangerZoneMessage')}
               </p>
               <button
                 className="btn btn-danger w-100"
                 onClick={handleDeleteAccount}
               >
-                <i className="bi bi-trash me-2"></i>Delete My Account
+                <i className="bi bi-trash me-2"></i>{t('profile.deleteAccountButton')}
               </button>
             </div>
           </div>
@@ -447,9 +449,9 @@ const Profile = () => {
 
       <ConfirmationModal
         show={showDeleteModal}
-        title="Confirm Account Deletion"
-        message="Are you sure you want to delete your account? This action cannot be undone."
-        confirmText="Delete Account"
+        title={t('profile.deleteConfirmTitle')}
+        message={t('profile.deleteConfirmMessage')}
+        confirmText={t('profile.deleteConfirmButton')}
         onConfirm={confirmDeleteAccount}
         onCancel={cancelDeleteAccount}
       />

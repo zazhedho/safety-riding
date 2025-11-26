@@ -6,8 +6,10 @@ import { toast } from 'react-toastify';
 import { useAuth } from '../../contexts/AuthContext';
 import ConfirmationModal from '../../components/common/ConfirmationModal';
 import 'bootstrap-icons/font/bootstrap-icons.css';
+import { useTranslation } from 'react-i18next';
 
 const UserForm = () => {
+  const { t } = useTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
   const { user, register, hasPermission } = useAuth();
@@ -34,8 +36,8 @@ const UserForm = () => {
   });
 
   useEffect(() => {
-    if (!id && user?.role !== 'admin') {
-      toast.error('You are not authorized to create users.');
+    if (!id && user?.role !== 'admin' && user?.role !== 'superadmin') {
+      toast.error(t('users.form.unauthorizedCreate'));
       navigate('/dashboard');
       return;
     }
@@ -55,7 +57,7 @@ const UserForm = () => {
       const { name, email, phone, role } = response.data.data;
       setFormData({ name, email, phone, role, password: '', confirmPassword: '' });
     } catch (error) {
-      toast.error('Failed to fetch user');
+      toast.error(t('users.form.fetchUserFailed'));
     } finally {
       setLoading(false);
     }
@@ -66,7 +68,7 @@ const UserForm = () => {
       const response = await roleService.getAll({ limit: 1000 });
       setRoles(response.data.data || []);
     } catch (error) {
-      console.error('Failed to fetch roles');
+      console.error(t('users.form.fetchRolesFailed'));
     }
   };
 
@@ -89,7 +91,7 @@ const UserForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (formData.password && formData.password !== formData.confirmPassword) {
-      toast.error('Passwords do not match');
+      toast.error(t('users.form.passwordMismatch'));
       return;
     }
 
@@ -97,7 +99,7 @@ const UserForm = () => {
     if (formData.password && (!id || formData.password)) {
       const allRequirementsMet = Object.values(passwordValidation).every(val => val === true);
       if (!allRequirementsMet) {
-        toast.error('Password does not meet all requirements');
+        toast.error(t('users.form.passwordRequirementsNotMet'));
         return;
       }
     }
@@ -112,18 +114,18 @@ const UserForm = () => {
     try {
       if (id) {
         await userService.update(id, userData);
-        toast.success('User updated successfully');
+        toast.success(t('users.form.updateSuccess'));
       } else {
         const result = await register(userData);
         if (result.success) {
-          toast.success('User created successfully!');
+          toast.success(t('users.form.createSuccess'));
         } else {
-          toast.error(result.error || 'Failed to create user');
+          toast.error(result.error || t('users.form.createFailed'));
         }
       }
       navigate('/users');
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to save user');
+      toast.error(error.response?.data?.message || t('users.form.saveFailed'));
     }
   };
 
@@ -135,10 +137,10 @@ const UserForm = () => {
     setShowDeleteModal(false);
     try {
       await userService.delete(id);
-      toast.success('User deleted successfully');
+      toast.success(t('users.form.deleteSuccess'));
       navigate('/users');
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to delete user');
+      toast.error(error.response?.data?.message || t('users.form.deleteFailed'));
     }
   };
 
@@ -147,53 +149,53 @@ const UserForm = () => {
   };
 
   if (loading) {
-    return <>Loading...</>;
+    return <>{t('common.loading')}</>;
   }
 
   return (
     <>
-      <h2>{id ? 'Edit User' : 'Create User'}</h2>
+      <h2>{id ? t('users.form.editTitle') : t('users.form.createTitle')}</h2>
       <div className="card">
         <div className="card-body">
           <form onSubmit={handleSubmit}>
             <div className="mb-3">
-              <label className="form-label">Name</label>
+              <label className="form-label">{t('users.form.name')}</label>
               <input
                 type="text"
                 className="form-control"
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                placeholder="e.g., John Doe"
+                placeholder={t('users.form.namePlaceholder')}
                 required
               />
             </div>
             <div className="mb-3">
-              <label className="form-label">Email</label>
+              <label className="form-label">{t('users.form.email')}</label>
               <input
                 type="email"
                 className="form-control"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                placeholder="e.g., john.doe@example.com"
+                placeholder={t('users.form.emailPlaceholder')}
                 required
               />
             </div>
             <div className="mb-3">
-              <label className="form-label">Phone</label>
+              <label className="form-label">{t('users.form.phone')}</label>
               <input
                 type="text"
                 className="form-control"
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
-                placeholder="e.g., 081234567890"
+                placeholder={t('users.form.phonePlaceholder')}
                 required
               />
             </div>
             <div className="mb-3">
-              <label className="form-label">Role</label>
+              <label className="form-label">{t('users.form.role')}</label>
               <select
                 className="form-select"
                 name="role"
@@ -208,9 +210,9 @@ const UserForm = () => {
               </select>
             </div>
             <hr />
-            <h5>{id ? 'Change Password (Optional)' : 'Password'}</h5>
+            <h5>{id ? t('users.form.changePassword') : t('users.form.password')}</h5>
             <div className="mb-3">
-              <label className="form-label">Password</label>
+              <label className="form-label">{t('users.form.password')}</label>
               <div className="position-relative">
                 <input
                   type={showPassword ? "text" : "password"}
@@ -218,7 +220,7 @@ const UserForm = () => {
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  placeholder={id ? 'Leave blank to keep current password' : 'Enter a strong password'}
+                  placeholder={id ? t('users.form.passwordPlaceholderEdit') : t('users.form.passwordPlaceholderCreate')}
                   style={{ paddingRight: '2.5rem' }}
                   required={!id}
                 />
@@ -234,27 +236,27 @@ const UserForm = () => {
               </div>
               {formData.password && (
                 <div className="mt-2 p-3 bg-light rounded">
-                  <small className="d-block fw-bold mb-2 text-secondary">Password Requirements:</small>
+                  <small className="d-block fw-bold mb-2 text-secondary">{t('users.form.passwordRequirementsTitle')}</small>
                   <div className="d-flex flex-column gap-1">
                     <small className={passwordValidation.minLength ? 'text-success' : 'text-danger'}>
                       <i className={`bi bi-${passwordValidation.minLength ? 'check-circle-fill' : 'x-circle-fill'} me-1`}></i>
-                      Minimum 8 characters
+                      {t('users.form.reqMinLength')}
                     </small>
                     <small className={passwordValidation.hasLowercase ? 'text-success' : 'text-danger'}>
                       <i className={`bi bi-${passwordValidation.hasLowercase ? 'check-circle-fill' : 'x-circle-fill'} me-1`}></i>
-                      At least 1 lowercase letter (a-z)
+                      {t('users.form.reqLowercase')}
                     </small>
                     <small className={passwordValidation.hasUppercase ? 'text-success' : 'text-danger'}>
                       <i className={`bi bi-${passwordValidation.hasUppercase ? 'check-circle-fill' : 'x-circle-fill'} me-1`}></i>
-                      At least 1 uppercase letter (A-Z)
+                      {t('users.form.reqUppercase')}
                     </small>
                     <small className={passwordValidation.hasNumber ? 'text-success' : 'text-danger'}>
                       <i className={`bi bi-${passwordValidation.hasNumber ? 'check-circle-fill' : 'x-circle-fill'} me-1`}></i>
-                      At least 1 number (0-9)
+                      {t('users.form.reqNumber')}
                     </small>
                     <small className={passwordValidation.hasSymbol ? 'text-success' : 'text-danger'}>
                       <i className={`bi bi-${passwordValidation.hasSymbol ? 'check-circle-fill' : 'x-circle-fill'} me-1`}></i>
-                      At least 1 symbol (!@#$%^&*...)
+                      {t('users.form.reqSymbol')}
                     </small>
                   </div>
                 </div>
@@ -262,12 +264,12 @@ const UserForm = () => {
               {!formData.password && !id && (
                 <small className="text-muted d-block mt-1">
                   <i className="bi bi-info-circle me-1"></i>
-                  Password must contain: minimum 8 characters, 1 lowercase, 1 uppercase, 1 number, and 1 symbol
+                  {t('users.form.reqSummary')}
                 </small>
               )}
             </div>
             <div className="mb-3">
-              <label className="form-label">Confirm Password</label>
+              <label className="form-label">{t('users.form.confirmPassword')}</label>
               <div className="position-relative">
                 <input
                   type={showConfirmPassword ? "text" : "password"}
@@ -275,7 +277,7 @@ const UserForm = () => {
                   name="confirmPassword"
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  placeholder={id ? 'Confirm new password' : 'Confirm your password'}
+                  placeholder={id ? t('users.form.confirmPasswordPlaceholderEdit') : t('users.form.confirmPasswordPlaceholderCreate')}
                   style={{ paddingRight: '2.5rem' }}
                   required={!id}
                 />
@@ -292,21 +294,21 @@ const UserForm = () => {
               {formData.confirmPassword && formData.password !== formData.confirmPassword && (
                 <small className="text-danger d-block mt-1">
                   <i className="bi bi-exclamation-circle me-1"></i>
-                  Passwords do not match
+                  {t('users.form.passwordMismatch')}
                 </small>
               )}
               {formData.confirmPassword && formData.password === formData.confirmPassword && (
                 <small className="text-success d-block mt-1">
                   <i className="bi bi-check-circle me-1"></i>
-                  Passwords match
+                  {t('users.form.passwordMatch')}
                 </small>
               )}
             </div>
-            <button type="submit" className="btn btn-primary">Save</button>
-            <button type="button" className="btn btn-secondary ms-2" onClick={() => navigate('/users')}>Cancel</button>
+            <button type="submit" className="btn btn-primary">{t('users.form.save')}</button>
+            <button type="button" className="btn btn-secondary ms-2" onClick={() => navigate('/users')}>{t('users.form.cancel')}</button>
             {id && hasPermission('delete_users') && (
               <button type="button" className="btn btn-danger ms-2" onClick={handleDelete}>
-                Delete User
+                {t('users.form.delete')}
               </button>
             )}
           </form>
@@ -315,9 +317,9 @@ const UserForm = () => {
 
       <ConfirmationModal
         show={showDeleteModal}
-        title="Confirm User Deletion"
-        message="Are you sure you want to delete this user? This action cannot be undone."
-        confirmText="Delete User"
+        title={t('users.form.deleteConfirmTitle')}
+        message={t('users.form.deleteConfirmMessage')}
+        confirmText={t('users.form.delete')}
         onConfirm={confirmDeleteUser}
         onCancel={cancelDeleteUser}
       />

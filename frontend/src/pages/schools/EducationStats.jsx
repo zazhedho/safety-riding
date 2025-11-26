@@ -3,8 +3,10 @@ import schoolService from '../../services/schoolService';
 import publicService from '../../services/publicService';
 import locationService from '../../services/locationService';
 import { toast } from 'react-toastify';
+import { useTranslation } from 'react-i18next';
 
 const EducationStats = () => {
+  const { t, i18n } = useTranslation();
   const currentYear = new Date().getFullYear();
   const defaultFilters = {
     province_id: '',
@@ -64,7 +66,7 @@ const EducationStats = () => {
       const response = await locationService.getProvinces();
       setProvinces(response.data.data || []);
     } catch (error) {
-      toast.error('Failed to load provinces');
+      toast.error(t('stats.loadProvincesFailed'));
     }
   };
 
@@ -73,7 +75,7 @@ const EducationStats = () => {
       const response = await locationService.getCities(provinceCode);
       setCities(response.data.data || []);
     } catch (error) {
-      toast.error('Failed to load cities');
+      toast.error(t('stats.loadCitiesFailed'));
     }
   };
 
@@ -82,7 +84,7 @@ const EducationStats = () => {
       const response = await locationService.getDistricts(provinceCode, cityCode);
       setDistricts(response.data.data || []);
     } catch (error) {
-      toast.error('Failed to load districts');
+      toast.error(t('stats.loadDistrictsFailed'));
     }
   };
 
@@ -108,7 +110,7 @@ const EducationStats = () => {
       const response = await service.getEducationStats(params);
       setStats(response.data.data);
     } catch (error) {
-      toast.error('Failed to load education statistics');
+      toast.error(t('stats.loadFailed'));
     } finally {
       setLoading(false);
     }
@@ -190,17 +192,17 @@ const EducationStats = () => {
   };
 
   const getEntityLabel = () => {
-    return entityType === 'school' ? 'School' : 'Public Entity';
+    return entityType === 'school' ? t('stats.school') : t('stats.publicEntity');
   };
 
   const getEntityLabelPlural = () => {
-    return entityType === 'school' ? 'Schools' : 'Public Entities';
+    return entityType === 'school' ? t('stats.schools') : t('stats.publicEntities');
   };
 
   return (
     <>
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2>Education Statistics</h2>
+        <h2>{t('stats.title')}</h2>
       </div>
 
       {/* Entity Type Tabs */}
@@ -210,7 +212,7 @@ const EducationStats = () => {
             className={`nav-link ${entityType === 'school' ? 'active' : ''}`}
             onClick={() => handleEntityTypeChange('school')}
           >
-            <i className="bi bi-building me-2"></i>Schools
+            <i className="bi bi-building me-2"></i>{t('stats.schools')}
           </button>
         </li>
         <li className="nav-item">
@@ -218,7 +220,7 @@ const EducationStats = () => {
             className={`nav-link ${entityType === 'public' ? 'active' : ''}`}
             onClick={() => handleEntityTypeChange('public')}
           >
-            <i className="bi bi-people me-2"></i>Public Entities
+            <i className="bi bi-people me-2"></i>{t('stats.publicEntities')}
           </button>
         </li>
       </ul>
@@ -231,7 +233,7 @@ const EducationStats = () => {
               <div className="card-body">
                 <div className="d-flex justify-content-between align-items-center">
                   <div className="flex-grow-1 pe-2">
-                    <h6 className="text-muted mb-1 small">Total {getEntityLabelPlural()}</h6>
+                    <h6 className="text-muted mb-1 small">{t('stats.total', { entity: getEntityLabelPlural() })}</h6>
                     <h3 className="mb-0 text-truncate">{stats.total_schools || stats.total_publics || 0}</h3>
                   </div>
                   <div className="text-primary flex-shrink-0" style={{ fontSize: '2rem' }}>
@@ -247,7 +249,7 @@ const EducationStats = () => {
               <div className="card-body">
                 <div className="d-flex justify-content-between align-items-center">
                   <div className="flex-grow-1 pe-2">
-                    <h6 className="text-muted mb-1 small">Educated {getEntityLabelPlural()}</h6>
+                    <h6 className="text-muted mb-1 small">{t('stats.educated', { entity: getEntityLabelPlural() })}</h6>
                     <div className="d-flex align-items-baseline">
                       <h3 className="mb-0 text-truncate">{stats.total_educated_schools || stats.total_educated_publics || 0}</h3>
                       <small className="text-success ms-2 flex-shrink-0">
@@ -271,7 +273,7 @@ const EducationStats = () => {
               <div className="card-body">
                 <div className="d-flex justify-content-between align-items-center">
                   <div className="flex-grow-1 pe-2">
-                    <h6 className="text-muted mb-1 small">Total {entityType === 'school' ? 'Students' : 'People'} Educated</h6>
+                    <h6 className="text-muted mb-1 small">{t('stats.totalPeopleEducated', { entity: entityType === 'school' ? t('stats.students') : t('stats.people') })}</h6>
                     <h3 className="mb-0 text-truncate" title={(stats.total_all_students || stats.total_all_employees || 0).toLocaleString()}>
                       {(stats.total_all_students || stats.total_all_employees || 0).toLocaleString()}
                     </h3>
@@ -289,7 +291,7 @@ const EducationStats = () => {
               <div className="card-body">
                 <div className="d-flex justify-content-between align-items-center">
                   <div className="flex-grow-1 pe-2">
-                    <h6 className="text-muted mb-1 small">Avg {entityType === 'school' ? 'Students' : 'Employees'}/{getEntityLabel()}</h6>
+                    <h6 className="text-muted mb-1 small">{t('stats.avgPeople', { people: entityType === 'school' ? t('stats.students') : t('stats.employees'), entity: getEntityLabel() })}</h6>
                     <h3 className="mb-0 text-truncate">
                       {(stats.total_schools || stats.total_publics || 0) > 0
                         ? Math.round((stats.total_all_students || stats.total_all_employees || 0) / (stats.total_schools || stats.total_publics || 1)).toLocaleString()
@@ -315,7 +317,7 @@ const EducationStats = () => {
               <input
                 type="text"
                 className="form-control"
-                placeholder={`Search by ${entityType === 'school' ? 'school' : 'entity'} name...`}
+                placeholder={t('stats.searchPlaceholder', { entity: entityType === 'school' ? t('stats.school').toLowerCase() : t('stats.publicEntity').toLowerCase() })}
                 name="search"
                 value={filters.search}
                 onChange={handleFilterChange}
@@ -328,7 +330,7 @@ const EducationStats = () => {
                 value={filters.province_id}
                 onChange={handleFilterChange}
               >
-                <option value="">All Provinces</option>
+                <option value="">{t('schools.priority.allProvinces')}</option>
                 {provinces.map(prov => (
                   <option key={prov.code} value={prov.code}>{prov.name}</option>
                 ))}
@@ -342,7 +344,7 @@ const EducationStats = () => {
                 onChange={handleFilterChange}
                 disabled={!filters.province_id}
               >
-                <option value="">All Cities</option>
+                <option value="">{t('schools.priority.allCities')}</option>
                 {cities.map(city => (
                   <option key={city.code} value={city.code}>{city.name}</option>
                 ))}
@@ -356,7 +358,7 @@ const EducationStats = () => {
                 onChange={handleFilterChange}
                 disabled={!filters.city_id}
               >
-                <option value="">All Districts</option>
+                <option value="">{t('schools.priority.allDistricts')}</option>
                 {districts.map(dist => (
                   <option key={dist.code} value={dist.code}>{dist.name}</option>
                 ))}
@@ -369,9 +371,9 @@ const EducationStats = () => {
                 value={filters.is_educated}
                 onChange={handleFilterChange}
               >
-                <option value="">All Status</option>
-                <option value="true">Educated</option>
-                <option value="false">Not Educated</option>
+                <option value="">{t('stats.allStatus')}</option>
+                <option value="true">{t('stats.statusEducated')}</option>
+                <option value="false">{t('stats.statusNotEducated')}</option>
               </select>
             </div>
             <div className="col-6 col-lg-2">
@@ -381,10 +383,10 @@ const EducationStats = () => {
                 value={filters.month}
                 onChange={handleFilterChange}
               >
-                <option value="">All Months</option>
+                <option value="">{t('schools.priority.allMonths')}</option>
                 {Array.from({ length: 12 }, (_, index) => (
                   <option key={index + 1} value={String(index + 1)}>
-                    {new Date(2000, index, 1).toLocaleString('en-US', { month: 'long' })}
+                    {new Date(2000, index, 1).toLocaleString(i18n.language === 'id' ? 'id-ID' : 'en-US', { month: 'long' })}
                   </option>
                 ))}
               </select>
@@ -396,7 +398,7 @@ const EducationStats = () => {
                 value={filters.year}
                 onChange={handleFilterChange}
               >
-                <option value="">All Years</option>
+                <option value="">{t('schools.priority.allYears')}</option>
                 {yearOptions.map(year => (
                   <option key={year} value={year}>{year}</option>
                 ))}
@@ -404,10 +406,10 @@ const EducationStats = () => {
             </div>
             <div className="col-12 col-lg-2">
               <div className="d-flex gap-2">
-                <button className="btn btn-primary flex-fill" onClick={handleSearch} title="Apply filters">
+                <button className="btn btn-primary flex-fill" onClick={handleSearch} title={t('schools.priority.applyFilters')}>
                   <i className="bi bi-search"></i>
                 </button>
-                <button className="btn btn-outline-secondary" onClick={handleClearFilters} title="Clear all filters">
+                <button className="btn btn-outline-secondary" onClick={handleClearFilters} title={t('schools.priority.clearFilters')}>
                   <i className="bi bi-x-circle"></i>
                 </button>
               </div>
@@ -419,9 +421,9 @@ const EducationStats = () => {
       {/* Data Table */}
       <div className="card">
         <div className="card-header d-flex justify-content-between align-items-center">
-          <h5 className="mb-0">{getEntityLabel()} Details</h5>
+          <h5 className="mb-0">{t('stats.details', { entity: getEntityLabel() })}</h5>
           <div className="d-flex align-items-center gap-2">
-            <label className="mb-0 me-2">Show:</label>
+            <label className="mb-0 me-2">{t('stats.show')}</label>
             <select className="form-select form-select-sm" style={{ width: 'auto' }} value={pagination.limit} onChange={handleLimitChange}>
               <option value="10">10</option>
               <option value="25">25</option>
@@ -434,7 +436,7 @@ const EducationStats = () => {
           {loading ? (
             <div className="text-center py-5">
               <div className="spinner-border text-primary" role="status">
-                <span className="visually-hidden">Loading...</span>
+                <span className="visually-hidden">{t('common.loading')}</span>
               </div>
             </div>
           ) : stats && (stats.schools || stats.publics) && (stats.schools?.length > 0 || stats.publics?.length > 0) ? (
@@ -444,28 +446,28 @@ const EducationStats = () => {
                   <thead>
                     <tr>
                       <th style={{ cursor: 'pointer' }} onClick={() => handleSort('name')}>
-                        {getEntityLabel()} Name {getSortIcon('name')}
+                        {t('stats.name', { entity: getEntityLabel() })} {getSortIcon('name')}
                       </th>
                       {entityType === 'school' && (
                         <th style={{ cursor: 'pointer' }} onClick={() => handleSort('npsn')}>
-                          NPSN {getSortIcon('npsn')}
+                          {t('stats.npsn')} {getSortIcon('npsn')}
                         </th>
                       )}
                       {entityType === 'public' && (
                         <th style={{ cursor: 'pointer' }} onClick={() => handleSort('category')}>
-                          Category {getSortIcon('category')}
+                          {t('stats.category')} {getSortIcon('category')}
                         </th>
                       )}
-                      <th>Location</th>
+                      <th>{t('stats.location')}</th>
                       <th style={{ cursor: 'pointer' }} onClick={() => handleSort(entityType === 'school' ? 'student_count' : 'employee_count')}>
-                        Total {entityType === 'school' ? 'Students' : 'Employees'} {getSortIcon(entityType === 'school' ? 'student_count' : 'employee_count')}
+                        {t('stats.totalCount', { people: entityType === 'school' ? t('stats.students') : t('stats.employees') })} {getSortIcon(entityType === 'school' ? 'student_count' : 'employee_count')}
                       </th>
                       <th style={{ cursor: 'pointer' }} onClick={() => handleSort(entityType === 'school' ? 'total_student_educated' : 'total_employee_educated')}>
-                        {entityType === 'school' ? 'Students' : 'Employees'} Educated {getSortIcon(entityType === 'school' ? 'total_student_educated' : 'total_employee_educated')}
+                        {t('stats.educatedCount', { people: entityType === 'school' ? t('stats.students') : t('stats.employees') })} {getSortIcon(entityType === 'school' ? 'total_student_educated' : 'total_employee_educated')}
                       </th>
-                      <th>Coverage</th>
+                      <th>{t('stats.coverage')}</th>
                       <th style={{ cursor: 'pointer' }} onClick={() => handleSort('is_educated')}>
-                        Status {getSortIcon('is_educated')}
+                        {t('stats.status')} {getSortIcon('is_educated')}
                       </th>
                     </tr>
                   </thead>
@@ -535,11 +537,11 @@ const EducationStats = () => {
                           <td>
                             {entity.is_educated ? (
                               <span className="badge bg-success">
-                                <i className="bi bi-check-circle me-1"></i>Educated
+                                <i className="bi bi-check-circle me-1"></i>{t('stats.statusEducated')}
                               </span>
                             ) : (
                               <span className="badge bg-secondary">
-                                <i className="bi bi-x-circle me-1"></i>Not Educated
+                                <i className="bi bi-x-circle me-1"></i>{t('stats.statusNotEducated')}
                               </span>
                             )}
                           </td>
@@ -554,12 +556,17 @@ const EducationStats = () => {
               {(stats.total_schools || stats.total_publics || 0) > pagination.limit && (
                 <div className="d-flex justify-content-between align-items-center mt-3">
                   <div className="text-muted">
-                    Showing {((pagination.page - 1) * pagination.limit) + 1} to {Math.min(pagination.page * pagination.limit, stats.total_schools || stats.total_publics || 0)} of {stats.total_schools || stats.total_publics || 0} {getEntityLabelPlural().toLowerCase()}
+                    {t('stats.showing', {
+                      start: ((pagination.page - 1) * pagination.limit) + 1,
+                      end: Math.min(pagination.page * pagination.limit, stats.total_schools || stats.total_publics || 0),
+                      total: stats.total_schools || stats.total_publics || 0,
+                      entity: getEntityLabelPlural().toLowerCase()
+                    })}
                   </div>
                   <nav>
                     <ul className="pagination mb-0">
                       <li className={`page-item ${pagination.page === 1 ? 'disabled' : ''}`}>
-                        <button className="page-link" onClick={() => handlePageChange(pagination.page - 1)}>Previous</button>
+                        <button className="page-link" onClick={() => handlePageChange(pagination.page - 1)}>{t('common.previous')}</button>
                       </li>
                       {[...Array(Math.ceil((stats.total_schools || stats.total_publics || 0) / pagination.limit))].map((_, index) => (
                         <li key={index + 1} className={`page-item ${pagination.page === index + 1 ? 'active' : ''}`}>
@@ -567,7 +574,7 @@ const EducationStats = () => {
                         </li>
                       )).slice(Math.max(0, pagination.page - 3), Math.min(pagination.page + 2, Math.ceil((stats.total_schools || stats.total_publics || 0) / pagination.limit)))}
                       <li className={`page-item ${pagination.page >= Math.ceil((stats.total_schools || stats.total_publics || 0) / pagination.limit) ? 'disabled' : ''}`}>
-                        <button className="page-link" onClick={() => handlePageChange(pagination.page + 1)}>Next</button>
+                        <button className="page-link" onClick={() => handlePageChange(pagination.page + 1)}>{t('common.next')}</button>
                       </li>
                     </ul>
                   </nav>
@@ -577,7 +584,7 @@ const EducationStats = () => {
           ) : (
             <div className="text-center py-5 text-muted">
               <i className="bi bi-inbox" style={{ fontSize: '3rem' }}></i>
-              <p className="mt-2">No {getEntityLabelPlural().toLowerCase()} found</p>
+              <p className="mt-2">{t('stats.noData', { entity: getEntityLabelPlural().toLowerCase() })}</p>
             </div>
           )}
         </div>

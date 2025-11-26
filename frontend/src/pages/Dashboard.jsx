@@ -9,6 +9,7 @@ import locationService from '../services/locationService';
 import marketShareService from '../services/marketShareService';
 import { toast } from 'react-toastify';
 import { useAuth } from '../contexts/AuthContext';
+import { useTranslation } from 'react-i18next';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
@@ -23,6 +24,7 @@ import PriorityMatrixChart from '../components/charts/PriorityMatrixChart';
 
 const Dashboard = () => {
   const { hasPermission } = useAuth();
+  const { t, i18n } = useTranslation();
   const [stats, setStats] = useState({
     schools: 0,
     publics: 0,
@@ -78,7 +80,7 @@ const Dashboard = () => {
   const [selectedProvince, setSelectedProvince] = useState('');
   const [selectedCity, setSelectedCity] = useState('');
 
-  const formatUnits = (value) => new Intl.NumberFormat('id-ID', {
+  const formatUnits = (value) => new Intl.NumberFormat(i18n.language === 'id' ? 'id-ID' : 'en-US', {
     maximumFractionDigits: 0
   }).format(value || 0);
 
@@ -86,7 +88,7 @@ const Dashboard = () => {
 
   const getMonthLabel = (month) => {
     if (!month) return '';
-    return new Date(0, month - 1).toLocaleString('en-US', { month: 'long' });
+    return new Date(0, month - 1).toLocaleString(i18n.language === 'id' ? 'id-ID' : 'en-US', { month: 'long' });
   };
 
   useEffect(() => {
@@ -225,7 +227,7 @@ const Dashboard = () => {
 
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
-      toast.error('Failed to load dashboard data');
+      toast.error(t('dashboard.failed'));
     } finally {
       setLoading(false);
     }
@@ -325,7 +327,7 @@ const Dashboard = () => {
 
   const handleRefresh = () => {
     fetchDashboardData();
-    toast.success('Dashboard refreshed');
+    toast.success(t('dashboard.refreshed'));
   };
 
   const handleResetFilters = () => {
@@ -339,7 +341,7 @@ const Dashboard = () => {
 
   const formatDate = (dateStr) => {
     if (!dateStr) return '-';
-    return new Date(dateStr).toLocaleDateString('en-US', {
+    return new Date(dateStr).toLocaleDateString(i18n.language === 'id' ? 'id-ID' : 'en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric'
@@ -351,7 +353,7 @@ const Dashboard = () => {
       <>
         <div className="d-flex justify-content-center align-items-center" style={{ height: '60vh' }}>
           <div className="spinner-border text-danger" role="status">
-            <span className="visually-hidden">Loading...</span>
+            <span className="visually-hidden">{t('dashboard.loading')}</span>
           </div>
         </div>
       </>
@@ -366,9 +368,9 @@ const Dashboard = () => {
         }
       `}</style>
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2>Dashboard Overview</h2>
+        <h2>{t('dashboard.title')}</h2>
         <button className="btn btn-outline-primary" onClick={handleRefresh}>
-          <i className="bi bi-arrow-clockwise me-2"></i>Refresh
+          <i className="bi bi-arrow-clockwise me-2"></i>{t('dashboard.refresh')}
         </button>
       </div>
 
@@ -377,9 +379,9 @@ const Dashboard = () => {
         <div className="d-flex justify-content-between align-items-center mb-3">
           <h4 className="mb-0">
             <i className="bi bi-lightbulb-fill me-2 text-warning"></i>
-            Recommended Districts for Next Month
+            {t('dashboard.recommendations.title')}
           </h4>
-          {/*<span className="badge bg-info">AI-Powered Insights</span>*/}
+          {/*<span className="badge bg-info">{t('dashboard.recommendations.subtitle')}</span>*/}
         </div>
         <DistrictRecommendation
           schools={allSchools}
@@ -395,22 +397,22 @@ const Dashboard = () => {
           <div>
             <h5 className="mb-0">
               <i className="bi bi-grid-3x3-gap-fill me-2 text-danger"></i>
-              Education Priority Matrix
+              {t('dashboard.priorityMatrix.title')}
             </h5>
             <small className="text-muted">
-              Areas requiring safety riding education based on market share ({educationPriority?.market_threshold || 87}% threshold), schools & accidents
+              {t('dashboard.priorityMatrix.subtitle', { threshold: educationPriority?.market_threshold || 87 })}
             </small>
           </div>
           <Link to="/education/priority" className="btn btn-sm btn-outline-primary">
             <i className="bi bi-box-arrow-up-right me-1"></i>
-            View Details
+            {t('dashboard.priorityMatrix.viewDetails')}
           </Link>
         </div>
         <div className="card-body">
           {priorityLoading ? (
             <div className="text-center py-4">
               <div className="spinner-border spinner-border-sm text-primary" role="status">
-                <span className="visually-hidden">Loading...</span>
+                <span className="visually-hidden">{t('dashboard.loading')}</span>
               </div>
             </div>
           ) : educationPriority ? (
@@ -423,7 +425,7 @@ const Dashboard = () => {
                         <i className="bi bi-exclamation-triangle-fill fs-4"></i>
                       </div>
                       <h3 className="mb-1 text-danger">{educationPriority.critical_count || 0}</h3>
-                      <small className="text-muted">Critical</small>
+                      <small className="text-muted">{t('dashboard.priorityMatrix.critical')}</small>
                     </div>
                   </div>
                 </div>
@@ -434,7 +436,7 @@ const Dashboard = () => {
                         <i className="bi bi-exclamation-circle-fill fs-4"></i>
                       </div>
                       <h3 className="mb-1 text-warning">{educationPriority.high_priority_count || 0}</h3>
-                      <small className="text-muted">High</small>
+                      <small className="text-muted">{t('dashboard.priorityMatrix.high')}</small>
                     </div>
                   </div>
                 </div>
@@ -445,7 +447,7 @@ const Dashboard = () => {
                         <i className="bi bi-info-circle-fill fs-4"></i>
                       </div>
                       <h3 className="mb-1 text-info">{educationPriority.medium_count || 0}</h3>
-                      <small className="text-muted">Medium</small>
+                      <small className="text-muted">{t('dashboard.priorityMatrix.medium')}</small>
                     </div>
                   </div>
                 </div>
@@ -456,7 +458,7 @@ const Dashboard = () => {
                         <i className="bi bi-check-circle-fill fs-4"></i>
                       </div>
                       <h3 className="mb-1 text-success">{educationPriority.low_count || 0}</h3>
-                      <small className="text-muted">Low</small>
+                      <small className="text-muted">{t('dashboard.priorityMatrix.low')}</small>
                     </div>
                   </div>
                 </div>
@@ -473,19 +475,19 @@ const Dashboard = () => {
               ) : (
                 <div className="alert alert-warning mt-4">
                   <i className="bi bi-info-circle me-2"></i>
-                  <strong>Matrix visualization not available.</strong> Add market share, school, and accident data to see the priority matrix.
+                  <strong>{t('dashboard.priorityMatrix.matrixNotAvailable')}</strong>
                 </div>
               )}
             </>
           ) : (
-            <p className="text-muted text-center mb-0">No priority data available</p>
+            <p className="text-muted text-center mb-0">{t('dashboard.priorityMatrix.noData')}</p>
           )}
           {educationPriority && educationPriority.total_items > 0 && (
             <div className="mt-3 text-center">
               <small className="text-muted">
-                Total {educationPriority.total_items} districts analyzed -
+                {t('dashboard.priorityMatrix.summary', { total: educationPriority.total_items })}
                 <strong className="text-danger ms-1">
-                  {(educationPriority.critical_count || 0) + (educationPriority.high_priority_count || 0)} require immediate attention
+                  {t('dashboard.priorityMatrix.attention', { count: (educationPriority.critical_count || 0) + (educationPriority.high_priority_count || 0) })}
                 </strong>
               </small>
             </div>
@@ -499,18 +501,18 @@ const Dashboard = () => {
           <div className="stats-card">
             <div className="d-flex justify-content-between align-items-center">
               <div className="flex-grow-1 pe-2">
-                <h6 className="text-muted mb-1 small">Total Entities</h6>
+                <h6 className="text-muted mb-1 small">{t('dashboard.stats.totalEntities')}</h6>
                 <div className="stats-number">{(stats.schools || 0) + (stats.publics || 0)}</div>
                 <small className="text-success d-block">
                   <i className="bi bi-check-circle me-1"></i>
-                  {(additionalStats.activeSchools || 0) + (additionalStats.activePublics || 0)} of {(stats.schools || 0) + (stats.publics || 0)} trained (6M)
+                  {t('dashboard.stats.trained', { active: (additionalStats.activeSchools || 0) + (additionalStats.activePublics || 0), total: (stats.schools || 0) + (stats.publics || 0) })}
                   <span className="stats-info-tooltip">
                     <i
                       className="bi bi-info-circle ms-1"
                       style={{ cursor: 'help', fontSize: '0.85rem' }}
                     ></i>
                     <span className="tooltiptext">
-                      Schools and public entities that received safety riding training in the last 6 months. Total: {stats.schools || 0} schools + {stats.publics || 0} public entities
+                      {t('dashboard.stats.trainedTooltip', { schools: stats.schools || 0, publics: stats.publics || 0 })}
                     </span>
                   </span>
                 </small>
@@ -524,15 +526,15 @@ const Dashboard = () => {
           <div className="stats-card">
             <div className="d-flex justify-content-between align-items-center">
               <div className="flex-grow-1 pe-2">
-                <h6 className="text-muted mb-1 small">Total Events</h6>
+                <h6 className="text-muted mb-1 small">{t('dashboard.stats.totalEvents')}</h6>
                 <div className="stats-number">{stats.events}</div>
                 <small className="text-info d-flex align-items-center">
                   <i className="bi bi-people me-1"></i>
-                  Avg {additionalStats.avgAttendeesPerEvent} attendees
+                  {t('dashboard.stats.avgAttendees', { count: additionalStats.avgAttendeesPerEvent })}
                   <span className="stats-info-tooltip ms-1">
                     <i className="bi bi-info-circle" style={{ cursor: 'help', fontSize: '0.85rem' }}></i>
                     <span className="tooltiptext">
-                      Average participants per event based on all recorded activities
+                      {t('dashboard.stats.avgAttendeesTooltip')}
                     </span>
                   </span>
                 </small>
@@ -546,15 +548,15 @@ const Dashboard = () => {
           <div className="stats-card">
             <div className="d-flex justify-content-between align-items-center">
               <div className="flex-grow-1 pe-2">
-                <h6 className="text-muted mb-1 small">Total Accidents</h6>
+                <h6 className="text-muted mb-1 small">{t('dashboard.stats.totalAccidents')}</h6>
                 <div className="stats-number">{stats.accidents}</div>
                 <small className="text-danger d-flex align-items-center">
                   <i className="bi bi-exclamation-triangle me-1"></i>
-                  {additionalStats.totalDeaths} deaths, {additionalStats.totalInjured} injured
+                  {t('dashboard.stats.casualties', { deaths: additionalStats.totalDeaths, injured: additionalStats.totalInjured })}
                   <span className="stats-info-tooltip ms-1">
                     <i className="bi bi-info-circle" style={{ cursor: 'help', fontSize: '0.85rem' }}></i>
                     <span className="tooltiptext">
-                      Total fatalities and injuries aggregated from the entire accident dataset
+                      {t('dashboard.stats.casualtiesTooltip')}
                     </span>
                   </span>
                 </small>
@@ -568,15 +570,15 @@ const Dashboard = () => {
           <div className="stats-card">
             <div className="d-flex justify-content-between align-items-center">
               <div className="flex-grow-1 pe-2">
-                <h6 className="text-muted mb-1 small">Budget Utilization</h6>
+                <h6 className="text-muted mb-1 small">{t('dashboard.stats.budgetUtilization')}</h6>
                 <div className="stats-number">{additionalStats.budgetUtilizationRate}%</div>
                 <small className={`${additionalStats.budgetUtilizationRate > 100 ? 'text-danger' : 'text-success'} d-flex align-items-center`}>
                   <i className={`bi bi-${additionalStats.budgetUtilizationRate > 100 ? 'exclamation' : 'check'}-circle me-1`}></i>
-                  {additionalStats.budgetUtilizationRate > 100 ? 'Over budget' : 'On track'}
+                  {additionalStats.budgetUtilizationRate > 100 ? t('dashboard.stats.overBudget') : t('dashboard.stats.onTrack')}
                   <span className="stats-info-tooltip ms-1">
                     <i className="bi bi-info-circle" style={{ cursor: 'help', fontSize: '0.85rem' }}></i>
                     <span className="tooltiptext">
-                      Percentage of overall actual spending compared to total allocated budgets
+                      {t('dashboard.stats.budgetTooltip')}
                     </span>
                   </span>
                 </small>
@@ -591,13 +593,13 @@ const Dashboard = () => {
       <div className="card mb-4">
         <div className="card-header">
           <h5 className="mb-0">
-            <i className="bi bi-funnel me-2"></i>Filters
+            <i className="bi bi-funnel me-2"></i>{t('dashboard.filters.title')}
           </h5>
         </div>
         <div className="card-body">
           <div className="row g-3">
             <div className="col-md-4">
-              <label className="form-label small">Date Range</label>
+              <label className="form-label small">{t('dashboard.filters.dateRange')}</label>
               <div className="d-flex gap-2">
                 <DatePicker
                   selected={dateRange.startDate}
@@ -607,7 +609,7 @@ const Dashboard = () => {
                   endDate={dateRange.endDate}
                   className="form-control form-control-sm"
                   dateFormat="dd/MM/yyyy"
-                  placeholderText="Start Date"
+                  placeholderText={t('dashboard.filters.startDate')}
                   portalId="root-portal"
                 />
                 <DatePicker
@@ -619,33 +621,33 @@ const Dashboard = () => {
                   minDate={dateRange.startDate}
                   className="form-control form-control-sm"
                   dateFormat="dd/MM/yyyy"
-                  placeholderText="End Date"
+                  placeholderText={t('dashboard.filters.endDate')}
                   portalId="root-portal"
                 />
               </div>
             </div>
             <div className="col-md-3">
-              <label className="form-label small">Province</label>
+              <label className="form-label small">{t('dashboard.filters.province')}</label>
               <select
                 className="form-select form-select-sm"
                 value={selectedProvince}
                 onChange={(e) => setSelectedProvince(e.target.value)}
               >
-                <option value="">All Provinces</option>
+                <option value="">{t('dashboard.filters.allProvinces')}</option>
                 {provinces.map(prov => (
                   <option key={prov.code} value={prov.code}>{prov.name}</option>
                 ))}
               </select>
             </div>
             <div className="col-md-3">
-              <label className="form-label small">City</label>
+              <label className="form-label small">{t('dashboard.filters.city')}</label>
               <select
                 className="form-select form-select-sm"
                 value={selectedCity}
                 onChange={(e) => setSelectedCity(e.target.value)}
                 disabled={!selectedProvince}
               >
-                <option value="">All Cities</option>
+                <option value="">{t('dashboard.filters.allCities')}</option>
                 {cities.map(city => (
                   <option key={city.code} value={city.code}>{city.name}</option>
                 ))}
@@ -653,7 +655,7 @@ const Dashboard = () => {
             </div>
             <div className="col-md-2 d-flex align-items-end">
               <button className="btn btn-sm btn-outline-secondary w-100" onClick={handleResetFilters}>
-                <i className="bi bi-x-circle me-1"></i>Reset
+                <i className="bi bi-x-circle me-1"></i>{t('dashboard.filters.reset')}
               </button>
             </div>
           </div>
@@ -668,7 +670,7 @@ const Dashboard = () => {
             <div className="card-header">
               <h5 className="mb-0">
                 <i className="bi bi-graph-up me-2 text-danger"></i>
-                Accident Trends Over Time
+                {t('dashboard.charts.accidentTrends')}
               </h5>
             </div>
             <div className="card-body">
@@ -683,7 +685,7 @@ const Dashboard = () => {
             <div className="card-header">
               <h5 className="mb-0">
                 <i className="bi bi-pie-chart me-2 text-danger"></i>
-                Event Type Distribution
+                {t('dashboard.charts.eventTypeDist')}
               </h5>
             </div>
             <div className="card-body">
@@ -701,7 +703,7 @@ const Dashboard = () => {
             <div className="card-header">
               <h5 className="mb-0">
                 <i className="bi bi-building me-2 text-danger"></i>
-                Top 10 Schools by City
+                {t('dashboard.charts.topSchools')}
               </h5>
             </div>
             <div className="card-body">
@@ -716,7 +718,7 @@ const Dashboard = () => {
             <div className="card-header">
               <h5 className="mb-0">
                 <i className="bi bi-people me-2 text-danger"></i>
-                Top 10 Public Entities by City
+                {t('dashboard.charts.topPublics')}
               </h5>
             </div>
             <div className="card-body">
@@ -731,7 +733,7 @@ const Dashboard = () => {
             <div className="card-header">
               <h5 className="mb-0">
                 <i className="bi bi-cash-stack me-2 text-danger"></i>
-                Top 10 Budget vs Spending
+                {t('dashboard.charts.budgetVsSpending')}
               </h5>
             </div>
             <div className="card-body">
@@ -745,9 +747,9 @@ const Dashboard = () => {
       <div className="card mb-4">
         <div className="card-header d-flex justify-content-between align-items-center">
           <div>
-            <h5 className="mb-0">Market Share Focus</h5>
+            <h5 className="mb-0">{t('dashboard.marketShare.title')}</h5>
             <small className="text-muted">
-              {marketShareSuggestions.month ? `${getMonthLabel(marketShareSuggestions.month)} ${marketShareSuggestions.year}` : 'Latest available period'}
+              {marketShareSuggestions.month ? `${getMonthLabel(marketShareSuggestions.month)} ${marketShareSuggestions.year}` : t('dashboard.marketShare.latestPeriod')}
             </small>
           </div>
           <button
@@ -761,7 +763,7 @@ const Dashboard = () => {
             ) : (
               <>
                 <i className="bi bi-arrow-clockwise me-1"></i>
-                Refresh
+                {t('dashboard.marketShare.refresh')}
               </>
             )}
           </button>
@@ -769,7 +771,7 @@ const Dashboard = () => {
         <div className="card-body">
           <div className="row g-4">
             <div className="col-md-6">
-              <h6 className="text-uppercase text-muted mb-3">Top Cities / Regencies</h6>
+              <h6 className="text-uppercase text-muted mb-3">{t('dashboard.marketShare.topCities')}</h6>
               {marketShareSuggestions.topCities.length > 0 ? (
                 <div className="list-group list-group-flush">
                   {marketShareSuggestions.topCities.map((item, index) => (
@@ -780,9 +782,9 @@ const Dashboard = () => {
                           <div className="text-muted small">{item.province_name}</div>
                         </div>
                         <div className="text-end">
-                          <div className="fw-semibold text-primary">{formatUnits(item.total_sales || 0)} units</div>
+                          <div className="fw-semibold text-primary">{formatUnits(item.total_sales || 0)} {t('dashboard.marketShare.units')}</div>
                           <div className="small text-muted">
-                            Share {formatPercentage(item.market_share || 0)} · Comp {formatPercentage(item.competitor_share || 0)}
+                            {t('dashboard.marketShare.share')} {formatPercentage(item.market_share || 0)} · {t('dashboard.marketShare.comp')} {formatPercentage(item.competitor_share || 0)}
                           </div>
                         </div>
                       </div>
@@ -790,12 +792,12 @@ const Dashboard = () => {
                   ))}
                 </div>
               ) : (
-                <p className="text-muted mb-0">No market share data available.</p>
+                <p className="text-muted mb-0">{t('dashboard.marketShare.noData')}</p>
               )}
             </div>
 
             <div className="col-md-6">
-              <h6 className="text-uppercase text-muted mb-3">Top Districts</h6>
+              <h6 className="text-uppercase text-muted mb-3">{t('dashboard.marketShare.topDistricts')}</h6>
               {marketShareSuggestions.topDistricts.length > 0 ? (
                 <div className="list-group list-group-flush">
                   {marketShareSuggestions.topDistricts.map((item, index) => (
@@ -867,12 +869,11 @@ const Dashboard = () => {
                             {formatDate(event.event_date)}
                           </p>
                         </div>
-                        <span className={`badge ${
-                          event.status === 'completed' ? 'bg-success' :
-                          event.status === 'ongoing' ? 'bg-primary' :
-                          event.status === 'cancelled' ? 'bg-danger' :
-                          'bg-warning'
-                        }`}>
+                        <span className={`badge ${event.status === 'completed' ? 'bg-success' :
+                            event.status === 'ongoing' ? 'bg-primary' :
+                              event.status === 'cancelled' ? 'bg-danger' :
+                                'bg-warning'
+                          }`}>
                           {event.status}
                         </span>
                       </div>

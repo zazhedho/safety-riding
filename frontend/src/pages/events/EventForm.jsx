@@ -6,8 +6,10 @@ import publicService from '../../services/publicService';
 import locationService from '../../services/locationService';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTranslation } from 'react-i18next';
 
 const EventForm = () => {
+  const { t } = useTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
   const { hasRole } = useAuth();
@@ -78,10 +80,10 @@ const EventForm = () => {
       const eventData = response.data.data;
       const sales = (eventData.on_the_spot_sales && eventData.on_the_spot_sales.length > 0)
         ? eventData.on_the_spot_sales.map(item => ({
-            vehicle_type: item.vehicle_type || '',
-            payment_method: item.payment_method || 'cash',
-            quantity: item.quantity !== undefined && item.quantity !== null ? item.quantity.toString() : ''
-          }))
+          vehicle_type: item.vehicle_type || '',
+          payment_method: item.payment_method || 'cash',
+          quantity: item.quantity !== undefined && item.quantity !== null ? item.quantity.toString() : ''
+        }))
         : [{ vehicle_type: '', payment_method: 'cash', quantity: '' }];
 
       // Determine entity type based on which ID is set
@@ -115,7 +117,7 @@ const EventForm = () => {
         setShowOtherEventType(true);
       }
     } catch (error) {
-      toast.error('Failed to fetch event');
+      toast.error(t('events.form.fetchFailed'));
     } finally {
       setLoading(false);
     }
@@ -126,7 +128,7 @@ const EventForm = () => {
       const response = await schoolService.getAll({ limit: 1000 });
       setSchools(response.data.data || []);
     } catch (error) {
-      toast.error('Failed to load schools');
+      toast.error(t('schools.loadFailed'));
     }
   };
 
@@ -135,7 +137,7 @@ const EventForm = () => {
       const response = await publicService.getAll({ limit: 1000 });
       setPublics(response.data.data || []);
     } catch (error) {
-      toast.error('Failed to load public entities');
+      toast.error(t('common.error'));
     }
   };
 
@@ -144,7 +146,7 @@ const EventForm = () => {
       const response = await locationService.getProvinces();
       setProvinces(response.data.data || []);
     } catch (error) {
-      toast.error('Failed to load provinces');
+      toast.error(t('common.error'));
     }
   };
 
@@ -153,7 +155,7 @@ const EventForm = () => {
       const response = await locationService.getCities(provinceCode);
       setCities(response.data.data || []);
     } catch (error) {
-      toast.error('Failed to load cities');
+      toast.error(t('common.error'));
     }
   };
 
@@ -162,7 +164,7 @@ const EventForm = () => {
       const response = await locationService.getDistricts(provinceCode, cityCode);
       setDistricts(response.data.data || []);
     } catch (error) {
-      toast.error('Failed to load districts');
+      toast.error(t('common.error'));
     }
   };
 
@@ -321,19 +323,19 @@ const EventForm = () => {
     try {
       if (id) {
         await eventService.update(id, submitData);
-        toast.success('Event updated successfully');
+        toast.success(t('events.form.updateSuccess'));
       } else {
         await eventService.create(submitData);
-        toast.success('Event created successfully');
+        toast.success(t('events.form.createSuccess'));
       }
       navigate('/events');
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to save event');
+      toast.error(error.response?.data?.message || t('events.form.saveFailed'));
     }
   };
 
   if (loading) {
-    return <>Loading...</>;
+    return <>{t('common.loading')}</>;
   }
 
   const isAdmin = hasRole(['admin']);
@@ -364,26 +366,25 @@ const EventForm = () => {
 
   return (
     <>
-      <h2>{id ? 'Edit Event' : 'Add Event'}</h2>
+      <h2>{id ? t('events.edit') : t('events.add')}</h2>
 
       {/* Warning for finalized events */}
       {isFinalized && !isAdminOrSuperadmin && (
         <div className="alert alert-warning mb-4" role="alert">
           <i className="bi bi-exclamation-triangle-fill me-2"></i>
-          <strong>Event is Finalized!</strong> This event has status "{formData.status}" and cannot be modified.
-          All fields are read-only.
+          <strong>{t('events.form.finalizedWarning', { status: formData.status })}</strong>
         </div>
       )}
       {isFinalized && isSuperadmin && (
         <div className="alert alert-info mb-4" role="alert">
           <i className="bi bi-info-circle-fill me-2"></i>
-          <strong>Superadmin Access:</strong> This event has status "{formData.status}" (finalized), but you can still modify it as a superadmin.
+          <strong>{t('events.form.superadminAccess', { status: formData.status })}</strong>
         </div>
       )}
       {isFinalized && isAdmin && !isSuperadmin && (
         <div className="alert alert-info mb-4" role="alert">
           <i className="bi bi-info-circle-fill me-2"></i>
-          <strong>Admin Access:</strong> This event has status "{formData.status}" (finalized), but you can still modify it as an admin.
+          <strong>{t('events.form.adminAccess', { status: formData.status })}</strong>
         </div>
       )}
 
@@ -392,44 +393,44 @@ const EventForm = () => {
         <div className="card mb-4">
           <div className="card-header bg-primary text-white">
             <h5 className="mb-0">
-              <i className="bi bi-info-circle me-2"></i>Basic Information
+              <i className="bi bi-info-circle me-2"></i>{t('events.form.basicInfo')}
             </h5>
           </div>
           <div className="card-body">
             <div className="row">
               <div className="col-md-6 mb-3">
-                <label className="form-label">Title <span className="text-danger">*</span></label>
+                <label className="form-label">{t('events.form.title')} <span className="text-danger">*</span></label>
                 <input type="text" className="form-control" name="title" value={formData.title} onChange={handleChange} placeholder="e.g., Safety Riding Seminar for Students" required disabled={shouldDisable} />
               </div>
               <div className="col-md-6 mb-3">
-                <label className="form-label">Entity Type <span className="text-danger">*</span></label>
+                <label className="form-label">{t('events.form.entityType')} <span className="text-danger">*</span></label>
                 <select className="form-select" value={entityType} onChange={handleEntityTypeChange} disabled={shouldDisable}>
-                  <option value="school">School</option>
-                  <option value="public">Public Entity</option>
+                  <option value="school">{t('events.form.school')}</option>
+                  <option value="public">{t('events.form.publicEntity')}</option>
                 </select>
               </div>
             </div>
             <div className="mb-3">
               {entityType === 'school' ? (
                 <>
-                  <label className="form-label">School <span className="text-danger">*</span></label>
+                  <label className="form-label">{t('events.form.school')} <span className="text-danger">*</span></label>
                   <select className="form-select" name="school_id" value={formData.school_id} onChange={handleEntitySelect} required disabled={shouldDisable}>
-                    <option value="">Select School</option>
+                    <option value="">{t('events.form.selectSchool')}</option>
                     {schools.map(school => <option key={school.id} value={school.id}>{school.name}</option>)}
                   </select>
                 </>
               ) : (
                 <>
-                  <label className="form-label">Public Entity <span className="text-danger">*</span></label>
+                  <label className="form-label">{t('events.form.publicEntity')} <span className="text-danger">*</span></label>
                   <select className="form-select" name="public_id" value={formData.public_id} onChange={handleEntitySelect} required disabled={shouldDisable}>
-                    <option value="">Select Public Entity</option>
+                    <option value="">{t('events.form.selectPublic')}</option>
                     {publics.map(pub => <option key={pub.id} value={pub.id}>{pub.name} - {pub.category}</option>)}
                   </select>
                 </>
               )}
             </div>
             <div className="mb-3">
-              <label className="form-label">Description <span className="text-danger">*</span></label>
+              <label className="form-label">{t('events.form.description')} <span className="text-danger">*</span></label>
               <textarea className="form-control" rows="3" name="description" value={formData.description} onChange={handleChange} placeholder="e.g., A seminar on the importance of safe driving for high school students" required disabled={shouldDisable} />
             </div>
           </div>
@@ -439,47 +440,47 @@ const EventForm = () => {
         <div className="card mb-4">
           <div className="card-header bg-success text-white">
             <h5 className="mb-0">
-              <i className="bi bi-calendar-event me-2"></i>Event Schedule & Location
+              <i className="bi bi-calendar-event me-2"></i>{t('events.form.scheduleLocation')}
             </h5>
           </div>
           <div className="card-body">
             <div className="row">
               <div className="col-md-4 mb-3">
-                <label className="form-label">Event Date <span className="text-danger">*</span></label>
+                <label className="form-label">{t('events.form.eventDate')} <span className="text-danger">*</span></label>
                 <input type="date" className="form-control" name="event_date" value={formData.event_date} onChange={handleChange} required disabled={shouldDisable} />
               </div>
               <div className="col-md-4 mb-3">
-                <label className="form-label">Start Time <span className="text-danger">*</span></label>
+                <label className="form-label">{t('events.form.startTime')} <span className="text-danger">*</span></label>
                 <input type="time" className="form-control" name="start_time" value={formData.start_time} onChange={handleChange} required disabled={shouldDisable} />
               </div>
               <div className="col-md-4 mb-3">
-                <label className="form-label">End Time <span className="text-danger">*</span></label>
+                <label className="form-label">{t('events.form.endTime')} <span className="text-danger">*</span></label>
                 <input type="time" className="form-control" name="end_time" value={formData.end_time} onChange={handleChange} required disabled={shouldDisable} />
               </div>
             </div>
             <div className="mb-3">
-              <label className="form-label">Location <span className="text-danger">*</span></label>
+              <label className="form-label">{t('events.form.location')} <span className="text-danger">*</span></label>
               <input type="text" className="form-control" name="location" value={formData.location} onChange={handleChange} placeholder="e.g., School Auditorium" required disabled={shouldDisable} />
             </div>
             <div className="row">
               <div className="col-md-4 mb-3">
-                <label className="form-label">Province <span className="text-danger">*</span></label>
+                <label className="form-label">{t('events.form.province')} <span className="text-danger">*</span></label>
                 <select className="form-select" name="province_id" value={formData.province_id} onChange={handleChange} required disabled={shouldDisable}>
-                  <option value="">Select Province</option>
+                  <option value="">{t('events.form.selectProvince')}</option>
                   {provinces.map(prov => <option key={prov.code} value={prov.code}>{prov.name}</option>)}
                 </select>
               </div>
               <div className="col-md-4 mb-3">
-                <label className="form-label">City <span className="text-danger">*</span></label>
+                <label className="form-label">{t('events.form.city')} <span className="text-danger">*</span></label>
                 <select className="form-select" name="city_id" value={formData.city_id} onChange={handleChange} required disabled={!formData.province_id || shouldDisable}>
-                  <option value="">Select City</option>
+                  <option value="">{t('events.form.selectCity')}</option>
                   {cities.map(city => <option key={city.code} value={city.code}>{city.name}</option>)}
                 </select>
               </div>
               <div className="col-md-4 mb-3">
-                <label className="form-label">District <span className="text-danger">*</span></label>
+                <label className="form-label">{t('events.form.district')} <span className="text-danger">*</span></label>
                 <select className="form-select" name="district_id" value={formData.district_id} onChange={handleChange} required disabled={!formData.city_id || shouldDisable}>
-                  <option value="">Select District</option>
+                  <option value="">{t('events.form.selectDistrict')}</option>
                   {districts.map(dist => <option key={dist.code} value={dist.code}>{dist.name}</option>)}
                 </select>
               </div>
@@ -491,36 +492,36 @@ const EventForm = () => {
         <div className="card mb-4">
           <div className="card-header bg-info text-white">
             <h5 className="mb-0">
-              <i className="bi bi-card-list me-2"></i>Event Details
+              <i className="bi bi-card-list me-2"></i>{t('events.form.details')}
             </h5>
           </div>
           <div className="card-body">
             <div className="row">
               <div className="col-md-6 mb-3">
-                <label className="form-label">Event Type <span className="text-danger">*</span></label>
+                <label className="form-label">{t('events.form.eventType')} <span className="text-danger">*</span></label>
                 <select className="form-select" name="event_type" value={showOtherEventType ? 'other' : formData.event_type} onChange={handleChange} required disabled={shouldDisable}>
-                  <option value="seminar">Seminar</option>
-                  <option value="workshop">Workshop</option>
-                  <option value="training">Training</option>
-                  <option value="other">Other</option>
+                  <option value="seminar">{t('events.type.seminar')}</option>
+                  <option value="workshop">{t('events.type.workshop')}</option>
+                  <option value="training">{t('events.type.training')}</option>
+                  <option value="other">{t('events.type.other')}</option>
                 </select>
                 {showOtherEventType && (
-                  <input type="text" className="form-control mt-2" name="event_type" value={formData.event_type} onChange={handleChange} placeholder="Enter event type" required disabled={shouldDisable} />
+                  <input type="text" className="form-control mt-2" name="event_type" value={formData.event_type} onChange={handleChange} placeholder={t('events.form.enterEventType')} required disabled={shouldDisable} />
                 )}
               </div>
               <div className="col-md-6 mb-3">
-                <label className="form-label">Target Audience</label>
+                <label className="form-label">{t('events.form.targetAudience')}</label>
                 <input type="text" className="form-control" name="target_audience" value={formData.target_audience} onChange={handleChange} placeholder="e.g., High School Students, Grade 10-12" disabled={shouldDisable} />
               </div>
             </div>
             <div className="row">
               <div className="col-md-6 mb-3">
-                <label className="form-label">Status <span className="text-danger">*</span></label>
+                <label className="form-label">{t('events.form.status')} <span className="text-danger">*</span></label>
                 <select className="form-select" name="status" value={formData.status} onChange={handleChange} required disabled={shouldDisable}>
-                  <option value="planned">Planned</option>
-                  <option value="ongoing">Ongoing</option>
-                  <option value="completed">Completed</option>
-                  <option value="cancelled">Cancelled</option>
+                  <option value="planned">{t('events.status.planned')}</option>
+                  <option value="ongoing">{t('events.status.ongoing')}</option>
+                  <option value="completed">{t('events.status.completed')}</option>
+                  <option value="cancelled">{t('events.status.cancelled')}</option>
                 </select>
               </div>
             </div>
@@ -531,13 +532,13 @@ const EventForm = () => {
         <div className="card mb-4">
           <div className="card-header bg-warning text-dark">
             <h5 className="mb-0">
-              <i className="bi bi-people me-2"></i>Participants & Achievement
+              <i className="bi bi-people me-2"></i>{t('events.form.participantsAchievement')}
             </h5>
           </div>
           <div className="card-body">
             <div className="row">
               <div className="col-md-4 mb-3">
-                <label className="form-label">Target Attendees</label>
+                <label className="form-label">{t('events.form.targetAttendees')}</label>
                 <input type="number" className="form-control" name="target_attendees" value={formData.target_attendees} onChange={handleChange} onFocus={handleNumberFocus} onKeyDown={handleNumberKeyDown} placeholder="e.g., 200" min="0" disabled={shouldDisable} />
                 <small className="text-muted">
                   <i className="bi bi-info-circle me-1"></i>
@@ -546,7 +547,7 @@ const EventForm = () => {
               </div>
               <div className="col-md-4 mb-3">
                 <label className="form-label">
-                  Actual Attendees
+                  {t('events.form.actualAttendees')}
                   {formData.status === 'completed' && <span className="text-danger"> *</span>}
                 </label>
                 <input type="number" className="form-control" name="attendees_count" value={formData.attendees_count} onChange={handleChange} onFocus={handleNumberFocus} onKeyDown={handleNumberKeyDown} placeholder="e.g., 150" min="0" disabled={shouldDisable} required={formData.status === 'completed'} />
@@ -556,7 +557,7 @@ const EventForm = () => {
                 </small>
               </div>
               <div className="col-md-4 mb-3">
-                <label className="form-label">Achievement</label>
+                <label className="form-label">{t('events.form.achievement')}</label>
                 <div className="d-flex align-items-center" style={{ height: '38px' }}>
                   <span className={`badge bg-${achievementBadge.color} fs-6 px-3 py-2`}>
                     <i className="bi bi-graph-up-arrow me-2"></i>
@@ -577,15 +578,15 @@ const EventForm = () => {
         <div className="card mb-4">
           <div className="card-header bg-secondary text-white">
             <h5 className="mb-0">
-              <i className="bi bi-cart me-2"></i>Sales & Services
+              <i className="bi bi-cart me-2"></i>{t('events.form.salesServices')}
             </h5>
           </div>
           <div className="card-body">
             <div className="mb-4">
               <div className="d-flex justify-content-between align-items-center mb-2">
-                <h5 className="mb-0">On the Spot Sales</h5>
+                <h5 className="mb-0">{t('events.form.onTheSpotSales')}</h5>
                 <button type="button" className="btn btn-sm btn-outline-primary" onClick={addOnTheSpotSaleRow} disabled={shouldDisable}>
-                  <i className="bi bi-plus-circle me-1"></i>Add Row
+                  <i className="bi bi-plus-circle me-1"></i>{t('events.form.addSaleRow')}
                 </button>
               </div>
               {formData.on_the_spot_sales.map((sale, index) => (
@@ -593,7 +594,7 @@ const EventForm = () => {
                   <div className="card-body">
                     <div className="row">
                       <div className="col-md-4 mb-3">
-                        <label className="form-label">Vehicle Type</label>
+                        <label className="form-label">{t('events.form.vehicleType')}</label>
                         <input
                           type="text"
                           className="form-control"
@@ -604,7 +605,7 @@ const EventForm = () => {
                         />
                       </div>
                       <div className="col-md-4 mb-3">
-                        <label className="form-label">Payment Method</label>
+                        <label className="form-label">{t('events.form.paymentMethod')}</label>
                         <select
                           className="form-select"
                           value={sale.payment_method}
@@ -616,7 +617,7 @@ const EventForm = () => {
                         </select>
                       </div>
                       <div className="col-md-3 mb-3">
-                        <label className="form-label">Quantity</label>
+                        <label className="form-label">{t('events.form.quantity')}</label>
                         <input
                           type="number"
                           className="form-control"
@@ -653,10 +654,10 @@ const EventForm = () => {
             <hr className="my-4" />
 
             {/* Visiting Service */}
-            <h6 className="mb-3"><i className="bi bi-briefcase me-2"></i>Visiting Service</h6>
+            <h6 className="mb-3"><i className="bi bi-briefcase me-2"></i>{t('events.form.visitingService')}</h6>
             <div className="row">
               <div className="col-md-6 mb-3">
-                <label className="form-label">Unit Entry</label>
+                <label className="form-label">{t('events.form.unitEntry')}</label>
                 <input
                   type="number"
                   className="form-control"
@@ -671,7 +672,7 @@ const EventForm = () => {
                 />
               </div>
               <div className="col-md-6 mb-3">
-                <label className="form-label">Profit (IDR)</label>
+                <label className="form-label">{t('events.form.profit')}</label>
                 <div className="input-group">
                   <span className="input-group-text">Rp</span>
                   <input
@@ -694,10 +695,10 @@ const EventForm = () => {
             <hr className="my-4" />
 
             {/* App Downloads */}
-            <h6 className="mb-3"><i className="bi bi-download me-2"></i>App Downloads</h6>
+            <h6 className="mb-3"><i className="bi bi-download me-2"></i>{t('events.form.appDownloads')}</h6>
             <div className="row">
               <div className="col-md-6 mb-3">
-                <label className="form-label">Number of Downloads</label>
+                <label className="form-label">{t('events.form.numberOfDownloads')}</label>
                 <input
                   type="number"
                   className="form-control"
@@ -716,9 +717,9 @@ const EventForm = () => {
                 </small>
               </div>
               <div className="col-md-6 mb-3">
-                <label className="form-label">App Name</label>
+                <label className="form-label">{t('events.form.appName')}</label>
                 <select className="form-select" name="apps_name" value={formData.apps_name} onChange={handleChange} disabled={shouldDisable}>
-                  <option value="">Select App</option>
+                  <option value="">{t('events.form.selectApp')}</option>
                   <option value="Motorkux">Motorkux</option>
                   <option value="Other">Other</option>
                 </select>
@@ -735,17 +736,17 @@ const EventForm = () => {
         <div className="card mb-4">
           <div className="card-header bg-dark text-white">
             <h5 className="mb-0">
-              <i className="bi bi-person-badge me-2"></i>Instructor Information
+              <i className="bi bi-person-badge me-2"></i>{t('events.form.instructorInfo')}
             </h5>
           </div>
           <div className="card-body">
             <div className="row">
               <div className="col-md-6 mb-3">
-                <label className="form-label">Instructor Name</label>
+                <label className="form-label">{t('events.form.instructorName')}</label>
                 <input type="text" className="form-control" name="instructor_name" value={formData.instructor_name} onChange={handleChange} placeholder="e.g., John Doe" disabled={shouldDisable} />
               </div>
               <div className="col-md-6 mb-3">
-                <label className="form-label">Instructor Phone</label>
+                <label className="form-label">{t('events.form.instructorPhone')}</label>
                 <input type="text" className="form-control" name="instructor_phone" value={formData.instructor_phone} onChange={handleChange} placeholder="e.g., 081234567890" disabled={shouldDisable} />
               </div>
             </div>
@@ -756,12 +757,12 @@ const EventForm = () => {
         <div className="card mb-4">
           <div className="card-header">
             <h5 className="mb-0">
-              <i className="bi bi-pencil-square me-2"></i>Notes
+              <i className="bi bi-pencil-square me-2"></i>{t('events.form.notes')}
             </h5>
           </div>
           <div className="card-body">
             <div className="mb-3">
-              <label className="form-label">Additional Notes</label>
+              <label className="form-label">{t('events.form.additionalNotes')}</label>
               <textarea className="form-control" rows="4" name="notes" value={formData.notes} onChange={handleChange} placeholder="e.g., The event was a great success, with enthusiastic participation from students." disabled={shouldDisable} />
             </div>
           </div>
@@ -770,10 +771,10 @@ const EventForm = () => {
         {/* Form Actions */}
         <div className="d-flex justify-content-end gap-2 mb-4">
           <button type="button" className="btn btn-secondary" onClick={() => navigate('/events')}>
-            <i className="bi bi-x-circle me-2"></i>Cancel
+            <i className="bi bi-x-circle me-2"></i>{t('events.form.cancel')}
           </button>
           <button type="submit" className="btn btn-primary" disabled={shouldDisable}>
-            <i className="bi bi-save me-2"></i>{id ? 'Update Event' : 'Create Event'}
+            <i className="bi bi-save me-2"></i>{id ? t('events.form.update') : t('events.form.create')}
           </button>
         </div>
       </form>

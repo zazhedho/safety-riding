@@ -4,8 +4,11 @@ import { useState, useEffect, useRef } from 'react';
 import schoolService from '../../services/schoolService';
 import eventService from '../../services/eventService';
 import accidentService from '../../services/accidentService';
+import LanguageSwitcher from './LanguageSwitcher';
+import { useTranslation } from 'react-i18next';
 
 const TopNav = ({ onToggleMobileMenu, isMobileMenuOpen }) => {
+  const { t } = useTranslation();
   const { user, logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
@@ -102,7 +105,7 @@ const TopNav = ({ onToggleMobileMenu, isMobileMenuOpen }) => {
   // Generate breadcrumbs from current path
   const generateBreadcrumbs = () => {
     const paths = location.pathname.split('/').filter(Boolean);
-    const breadcrumbs = [{ label: 'Home', path: '/dashboard' }];
+    const breadcrumbs = [{ label: t('common.dashboard'), path: '/dashboard' }];
 
     let currentPath = '';
     paths.forEach((segment, index) => {
@@ -120,9 +123,9 @@ const TopNav = ({ onToggleMobileMenu, isMobileMenuOpen }) => {
         .join(' ');
 
       // Handle special cases
-      if (segment === 'new') label = 'Create New';
-      if (segment === 'edit') label = 'Edit';
-      if (segment === 'education-stats') label = 'Education Statistics';
+      if (segment === 'new') label = t('common.create');
+      if (segment === 'edit') label = t('common.edit');
+      // TODO: Add more specific translations for breadcrumbs if needed
 
       breadcrumbs.push({ label, path: currentPath });
     });
@@ -133,7 +136,7 @@ const TopNav = ({ onToggleMobileMenu, isMobileMenuOpen }) => {
   const breadcrumbs = generateBreadcrumbs();
 
   // Get page title from last breadcrumb
-  const pageTitle = breadcrumbs[breadcrumbs.length - 1]?.label || 'Dashboard';
+  const pageTitle = breadcrumbs[breadcrumbs.length - 1]?.label || t('common.dashboard');
 
   const handleMobileToggle = () => {
     if (typeof onToggleMobileMenu === 'function') {
@@ -182,11 +185,16 @@ const TopNav = ({ onToggleMobileMenu, isMobileMenuOpen }) => {
 
         {/* Right Section - Actions */}
         <div className="topnav-right">
+          {/* Language Switcher */}
+          <div className="me-2">
+            <LanguageSwitcher />
+          </div>
+
           {/* Search Button */}
           <button
             className="topnav-icon-btn"
             onClick={() => setShowSearchBar(!showSearchBar)}
-            title="Search"
+            title={t('common.search')}
           >
             <i className="bi bi-search"></i>
           </button>
@@ -225,18 +233,18 @@ const TopNav = ({ onToggleMobileMenu, isMobileMenuOpen }) => {
                 <li><hr className="dropdown-divider" /></li>
                 <li>
                   <Link className="dropdown-item" to="/profile">
-                    <i className="bi bi-person-circle me-2"></i>My Profile
+                    <i className="bi bi-person-circle me-2"></i>{t('topnav.myProfile')}
                   </Link>
                 </li>
                 <li>
                   <Link className="dropdown-item" to="/profile">
-                    <i className="bi bi-gear me-2"></i>Settings
+                    <i className="bi bi-gear me-2"></i>{t('topnav.settings')}
                   </Link>
                 </li>
                 <li><hr className="dropdown-divider" /></li>
                 <li>
                   <button className="dropdown-item text-danger" onClick={handleLogout}>
-                    <i className="bi bi-box-arrow-right me-2"></i>Logout
+                    <i className="bi bi-box-arrow-right me-2"></i>{t('topnav.logout')}
                   </button>
                 </li>
               </ul>
@@ -253,7 +261,7 @@ const TopNav = ({ onToggleMobileMenu, isMobileMenuOpen }) => {
             <input
               type="text"
               className="form-control"
-              placeholder="Search schools, events, accidents..."
+              placeholder={t('topnav.searchPlaceholder')}
               autoFocus
               value={searchQuery}
               onChange={handleSearchChange}
@@ -261,7 +269,7 @@ const TopNav = ({ onToggleMobileMenu, isMobileMenuOpen }) => {
             {isSearching && (
               <div className="search-loading">
                 <div className="spinner-border spinner-border-sm text-primary" role="status">
-                  <span className="visually-hidden">Searching...</span>
+                  <span className="visually-hidden">{t('topnav.searching')}</span>
                 </div>
               </div>
             )}
@@ -281,7 +289,7 @@ const TopNav = ({ onToggleMobileMenu, isMobileMenuOpen }) => {
                 <div className="search-category">
                   <div className="search-category-header">
                     <i className="bi bi-building me-2"></i>
-                    Schools ({searchResults.schools.length})
+                    {t('topnav.schools')} ({searchResults.schools.length})
                   </div>
                   {searchResults.schools.map(school => (
                     <div
@@ -309,7 +317,7 @@ const TopNav = ({ onToggleMobileMenu, isMobileMenuOpen }) => {
                 <div className="search-category">
                   <div className="search-category-header">
                     <i className="bi bi-calendar-event me-2"></i>
-                    Events ({searchResults.events.length})
+                    {t('topnav.events')} ({searchResults.events.length})
                   </div>
                   {searchResults.events.map(event => (
                     <div
@@ -337,7 +345,7 @@ const TopNav = ({ onToggleMobileMenu, isMobileMenuOpen }) => {
                 <div className="search-category">
                   <div className="search-category-header">
                     <i className="bi bi-exclamation-triangle me-2"></i>
-                    Accidents ({searchResults.accidents.length})
+                    {t('topnav.accidents')} ({searchResults.accidents.length})
                   </div>
                   {searchResults.accidents.map(accident => (
                     <div
@@ -366,15 +374,15 @@ const TopNav = ({ onToggleMobileMenu, isMobileMenuOpen }) => {
 
           {/* No Results */}
           {showResults && searchQuery.length >= 2 &&
-           searchResults.schools.length === 0 &&
-           searchResults.events.length === 0 &&
-           searchResults.accidents.length === 0 &&
-           !isSearching && (
-            <div className="search-no-results">
-              <i className="bi bi-inbox"></i>
-              <p>No results found for "{searchQuery}"</p>
-            </div>
-          )}
+            searchResults.schools.length === 0 &&
+            searchResults.events.length === 0 &&
+            searchResults.accidents.length === 0 &&
+            !isSearching && (
+              <div className="search-no-results">
+                <i className="bi bi-inbox"></i>
+                <p>{t('topnav.noResults')} "{searchQuery}"</p>
+              </div>
+            )}
         </div>
       )}
     </div>

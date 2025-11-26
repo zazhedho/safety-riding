@@ -3,8 +3,10 @@ import { useParams, useNavigate } from 'react-router-dom';
 import accidentService from '../../services/accidentService';
 import locationService from '../../services/locationService';
 import { toast } from 'react-toastify';
+import { useTranslation } from 'react-i18next';
 
 const AccidentForm = () => {
+  const { t } = useTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -88,7 +90,7 @@ const AccidentForm = () => {
       const response = await accidentService.getById(accidentId);
       setFormData(response.data.data);
     } catch (error) {
-      toast.error('Failed to fetch accident');
+      toast.error(t('accidents.form.fetchFailed'));
     } finally {
       setLoading(false);
     }
@@ -99,7 +101,7 @@ const AccidentForm = () => {
       const response = await locationService.getProvinces();
       setProvinces(response.data.data || []);
     } catch (error) {
-      toast.error('Failed to load provinces');
+      toast.error(t('accidents.loadProvincesFailed'));
     }
   };
 
@@ -108,7 +110,7 @@ const AccidentForm = () => {
       const response = await locationService.getCities(provinceCode);
       setCities(response.data.data || []);
     } catch (error) {
-      toast.error('Failed to load cities');
+      toast.error(t('accidents.loadCitiesFailed'));
     }
   };
 
@@ -117,7 +119,7 @@ const AccidentForm = () => {
       const response = await locationService.getDistricts(provinceCode, cityCode);
       setDistricts(response.data.data || []);
     } catch (error) {
-      toast.error('Failed to load districts');
+      toast.error(t('accidents.loadDistrictsFailed'));
     }
   };
 
@@ -153,7 +155,7 @@ const AccidentForm = () => {
     const files = Array.from(e.target.files);
 
     if (files.length > 5) {
-      toast.error('Maximum 5 photos allowed');
+      toast.error(t('accidents.detail.photos.maxPhotos'));
       return;
     }
 
@@ -162,14 +164,14 @@ const AccidentForm = () => {
     const invalidFiles = files.filter(file => !validTypes.includes(file.type));
 
     if (invalidFiles.length > 0) {
-      toast.error('Only JPEG, PNG, and GIF images are allowed');
+      toast.error(t('accidents.detail.photos.invalidType'));
       return;
     }
 
     // Validate file sizes (max 5MB per file)
     const oversizedFiles = files.filter(file => file.size > 5 * 1024 * 1024);
     if (oversizedFiles.length > 0) {
-      toast.error('Each photo must be less than 5MB');
+      toast.error(t('accidents.detail.photos.maxSize'));
       return;
     }
 
@@ -225,14 +227,14 @@ const AccidentForm = () => {
       });
 
       await accidentService.addPhotos(accidentId, formData);
-      toast.success('Photos uploaded successfully');
+      toast.success(t('accidents.detail.photos.uploadSuccess'));
 
       // Clear selection
       setSelectedFiles([]);
       setPhotoPreviews([]);
       setCaptions({});
     } catch (error) {
-      toast.error(error.response?.data?.error || 'Failed to upload photos');
+      toast.error(error.response?.data?.error || t('accidents.detail.photos.uploadFailed'));
     } finally {
       setUploading(false);
     }
@@ -270,11 +272,11 @@ const AccidentForm = () => {
 
       if (id) {
         await accidentService.update(id, dataToSend);
-        toast.success('Accident updated successfully');
+        toast.success(t('accidents.form.updateSuccess'));
       } else {
         const response = await accidentService.create(dataToSend);
         accidentId = response.data.data.id;
-        toast.success('Accident created successfully');
+        toast.success(t('accidents.form.createSuccess'));
       }
 
       // Upload photos if any are selected
@@ -284,69 +286,69 @@ const AccidentForm = () => {
 
       navigate('/accidents');
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to save accident');
+      toast.error(error.response?.data?.message || t('accidents.form.saveFailed'));
     }
   };
 
   if (loading) {
-    return <>Loading...</>;
+    return <>{t('common.loading')}</>;
   }
 
   return (
     <>
-      <h2>{id ? 'Edit Accident' : 'Add Accident'}</h2>
+      <h2>{id ? t('accidents.form.editTitle') : t('accidents.form.addTitle')}</h2>
       <div className="card">
         <div className="card-body">
           <form onSubmit={handleSubmit}>
             <div className="row">
               <div className="col-md-6 mb-3">
-                <label className="form-label">Police Report Number</label>
-                <input type="text" className="form-control" name="police_report_no" value={formData.police_report_no} onChange={handleChange} placeholder="e.g., LP/001/I/2024/SPKT" required />
+                <label className="form-label">{t('accidents.form.policeReportNo')}</label>
+                <input type="text" className="form-control" name="police_report_no" value={formData.police_report_no} onChange={handleChange} placeholder={t('accidents.form.policeReportNoPlaceholder')} required />
               </div>
               <div className="col-md-3 mb-3">
-                <label className="form-label">Accident Date</label>
+                <label className="form-label">{t('accidents.form.accidentDate')}</label>
                 <input type="date" className="form-control" name="accident_date" value={formData.accident_date} onChange={handleChange} required />
               </div>
               <div className="col-md-3 mb-3">
-                <label className="form-label">Accident Time</label>
+                <label className="form-label">{t('accidents.form.accidentTime')}</label>
                 <input type="time" className="form-control" name="accident_time" value={formData.accident_time} onChange={handleChange} required />
               </div>
             </div>
             <div className="mb-3">
-              <label className="form-label">Location</label>
-              <textarea className="form-control" name="location" value={formData.location} onChange={handleChange} placeholder="e.g., Jl. Jenderal Sudirman, in front of Graha Pena" required />
+              <label className="form-label">{t('accidents.form.location')}</label>
+              <textarea className="form-control" name="location" value={formData.location} onChange={handleChange} placeholder={t('accidents.form.locationPlaceholder')} required />
             </div>
             <div className="row">
               <div className="col-md-4 mb-3">
-                <label className="form-label">Province</label>
+                <label className="form-label">{t('accidents.form.province')}</label>
                 <select className="form-select" name="province_id" value={formData.province_id} onChange={handleChange} required>
-                  <option value="">Select Province</option>
+                  <option value="">{t('accidents.form.selectProvince')}</option>
                   {provinces.map(prov => <option key={prov.code} value={prov.code}>{prov.name}</option>)}
                 </select>
               </div>
               <div className="col-md-4 mb-3">
-                <label className="form-label">City/Regency</label>
+                <label className="form-label">{t('accidents.form.city')}</label>
                 <select className="form-select" name="city_id" value={formData.city_id} onChange={handleChange} required disabled={!formData.province_id}>
-                  <option value="">Select City/Regency</option>
+                  <option value="">{t('accidents.form.selectCity')}</option>
                   {cities.map(city => <option key={city.code} value={city.code}>{city.name}</option>)}
                 </select>
               </div>
               <div className="col-md-4 mb-3">
-                <label className="form-label">District</label>
+                <label className="form-label">{t('accidents.form.district')}</label>
                 <select className="form-select" name="district_id" value={formData.district_id} onChange={handleChange} required disabled={!formData.city_id}>
-                  <option value="">Select District</option>
+                  <option value="">{t('accidents.form.selectDistrict')}</option>
                   {districts.map(dist => <option key={dist.code} value={dist.code}>{dist.name}</option>)}
                 </select>
               </div>
             </div>
             <div className="row">
               <div className="col-md-6 mb-3">
-                <label className="form-label">Latitude</label>
-                <input type="number" step="any" className="form-control" name="latitude" value={formData.latitude} onChange={handleChange} placeholder="e.g., -6.2345" />
+                <label className="form-label">{t('accidents.form.latitude')}</label>
+                <input type="number" step="any" className="form-control" name="latitude" value={formData.latitude} onChange={handleChange} placeholder={t('accidents.form.latitudePlaceholder')} />
               </div>
               <div className="col-md-6 mb-3">
-                <label className="form-label">Longitude</label>
-                <input type="number" step="any" className="form-control" name="longitude" value={formData.longitude} onChange={handleChange} placeholder="e.g., 106.8294" />
+                <label className="form-label">{t('accidents.form.longitude')}</label>
+                <input type="number" step="any" className="form-control" name="longitude" value={formData.longitude} onChange={handleChange} placeholder={t('accidents.form.longitudePlaceholder')} />
               </div>
             </div>
             <div className="row">
