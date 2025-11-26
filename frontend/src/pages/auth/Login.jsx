@@ -243,9 +243,9 @@ const Login = () => {
         <div style={{ width: '100%', maxWidth: '400px' }}>
           <div className="text-center mb-5 d-md-none">
             <div className="d-inline-flex align-items-center justify-content-center bg-primary text-white rounded-circle mb-3" style={{ width: '60px', height: '60px' }}>
-              <i className="bi bi-shield-check fs-2"></i>
+              <i className="bi bi-shield-check fs-2" aria-hidden="true"></i>
             </div>
-            <h2 className="fw-bold text-dark">Safety Riding</h2>
+            <h1 className="fw-bold text-dark h2">Promotion & Safety Riding</h1>
           </div>
 
           <div className="mb-5">
@@ -255,7 +255,7 @@ const Login = () => {
 
           <form onSubmit={handleSubmit}>
             <div className={`input-wrapper ${focusedInput === 'email' ? 'focused' : ''}`}>
-              <i className="bi bi-envelope"></i>
+              <i className="bi bi-envelope" aria-hidden="true"></i>
               <input
                 type="email"
                 name="email"
@@ -265,11 +265,12 @@ const Login = () => {
                 onBlur={() => setFocusedInput(null)}
                 placeholder="Email Address"
                 required
+                aria-label="Email Address"
               />
             </div>
 
             <div className={`input-wrapper ${focusedInput === 'password' ? 'focused' : ''}`}>
-              <i className="bi bi-lock"></i>
+              <i className="bi bi-lock" aria-hidden="true"></i>
               <input
                 type={showPassword ? 'text' : 'password'}
                 name="password"
@@ -279,13 +280,15 @@ const Login = () => {
                 onBlur={() => setFocusedInput(null)}
                 placeholder="Password"
                 required
+                aria-label="Password"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 style={{ background: 'none', border: 'none', padding: 0, color: '#94a3b8', cursor: 'pointer' }}
+                aria-label={showPassword ? "Hide password" : "Show password"}
               >
-                <i className={`bi bi-eye${showPassword ? '-slash' : ''} m-0`}></i>
+                <i className={`bi bi-eye${showPassword ? '-slash' : ''} m-0`} aria-hidden="true"></i>
               </button>
             </div>
 

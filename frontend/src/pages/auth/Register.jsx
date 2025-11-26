@@ -307,9 +307,9 @@ const Register = () => {
         <div style={{ width: '100%', maxWidth: '480px' }}>
           <div className="text-center mb-4 d-md-none">
             <div className="d-inline-flex align-items-center justify-content-center bg-primary text-white rounded-circle mb-3" style={{ width: '60px', height: '60px' }}>
-              <i className="bi bi-shield-check fs-2"></i>
+              <i className="bi bi-shield-check fs-2" aria-hidden="true"></i>
             </div>
-            <h2 className="fw-bold text-dark">Safety Riding</h2>
+            <h1 className="fw-bold text-dark h2">Promotion & Safety Riding</h1>
           </div>
 
           <div className="mb-4">
@@ -321,7 +321,7 @@ const Register = () => {
             <div className="row g-2">
               <div className="col-md-6">
                 <div className={`input-wrapper ${focusedInput === 'name' ? 'focused' : ''}`}>
-                  <i className="bi bi-person"></i>
+                  <i className="bi bi-person" aria-hidden="true"></i>
                   <input
                     type="text"
                     name="name"
@@ -331,12 +331,13 @@ const Register = () => {
                     onBlur={() => setFocusedInput(null)}
                     placeholder="Full Name"
                     required
+                    aria-label="Full Name"
                   />
                 </div>
               </div>
               <div className="col-md-6">
                 <div className={`input-wrapper ${focusedInput === 'phone' ? 'focused' : ''}`}>
-                  <i className="bi bi-telephone"></i>
+                  <i className="bi bi-telephone" aria-hidden="true"></i>
                   <input
                     type="text"
                     name="phone"
@@ -346,13 +347,14 @@ const Register = () => {
                     onBlur={() => setFocusedInput(null)}
                     placeholder="Phone"
                     required
+                    aria-label="Phone Number"
                   />
                 </div>
               </div>
             </div>
 
             <div className={`input-wrapper ${focusedInput === 'email' ? 'focused' : ''}`}>
-              <i className="bi bi-envelope"></i>
+              <i className="bi bi-envelope" aria-hidden="true"></i>
               <input
                 type="email"
                 name="email"
@@ -362,11 +364,12 @@ const Register = () => {
                 onBlur={() => setFocusedInput(null)}
                 placeholder="Email Address"
                 required
+                aria-label="Email Address"
               />
             </div>
 
             <div className={`input-wrapper ${focusedInput === 'password' ? 'focused' : ''}`}>
-              <i className="bi bi-lock"></i>
+              <i className="bi bi-lock" aria-hidden="true"></i>
               <input
                 type={showPassword ? 'text' : 'password'}
                 name="password"
@@ -376,13 +379,15 @@ const Register = () => {
                 onBlur={() => setFocusedInput(null)}
                 placeholder="Password"
                 required
+                aria-label="Password"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 style={{ background: 'none', border: 'none', padding: 0, color: '#94a3b8', cursor: 'pointer' }}
+                aria-label={showPassword ? "Hide password" : "Show password"}
               >
-                <i className={`bi bi-eye${showPassword ? '-slash' : ''} m-0`}></i>
+                <i className={`bi bi-eye${showPassword ? '-slash' : ''} m-0`} aria-hidden="true"></i>
               </button>
             </div>
 
@@ -409,21 +414,21 @@ const Register = () => {
                 <div className="row g-1 mt-2">
                   <div className="col-6">
                     <small className={`d-block ${passwordValidation.minLength ? 'text-success' : 'text-muted'}`} style={{ fontSize: '0.75rem' }}>
-                      <i className={`bi bi-${passwordValidation.minLength ? 'check-circle-fill' : 'circle'} me-1`}></i> Min 8 chars
+                      <i className={`bi bi-${passwordValidation.minLength ? 'check-circle-fill' : 'circle'} me-1`} aria-hidden="true"></i> Min 8 chars
                     </small>
                     <small className={`d-block ${passwordValidation.hasLowercase ? 'text-success' : 'text-muted'}`} style={{ fontSize: '0.75rem' }}>
-                      <i className={`bi bi-${passwordValidation.hasLowercase ? 'check-circle-fill' : 'circle'} me-1`}></i> Lowercase
+                      <i className={`bi bi-${passwordValidation.hasLowercase ? 'check-circle-fill' : 'circle'} me-1`} aria-hidden="true"></i> Lowercase
                     </small>
                     <small className={`d-block ${passwordValidation.hasUppercase ? 'text-success' : 'text-muted'}`} style={{ fontSize: '0.75rem' }}>
-                      <i className={`bi bi-${passwordValidation.hasUppercase ? 'check-circle-fill' : 'circle'} me-1`}></i> Uppercase
+                      <i className={`bi bi-${passwordValidation.hasUppercase ? 'check-circle-fill' : 'circle'} me-1`} aria-hidden="true"></i> Uppercase
                     </small>
                   </div>
                   <div className="col-6">
                     <small className={`d-block ${passwordValidation.hasNumber ? 'text-success' : 'text-muted'}`} style={{ fontSize: '0.75rem' }}>
-                      <i className={`bi bi-${passwordValidation.hasNumber ? 'check-circle-fill' : 'circle'} me-1`}></i> Number
+                      <i className={`bi bi-${passwordValidation.hasNumber ? 'check-circle-fill' : 'circle'} me-1`} aria-hidden="true"></i> Number
                     </small>
                     <small className={`d-block ${passwordValidation.hasSymbol ? 'text-success' : 'text-muted'}`} style={{ fontSize: '0.75rem' }}>
-                      <i className={`bi bi-${passwordValidation.hasSymbol ? 'check-circle-fill' : 'circle'} me-1`}></i> Symbol
+                      <i className={`bi bi-${passwordValidation.hasSymbol ? 'check-circle-fill' : 'circle'} me-1`} aria-hidden="true"></i> Symbol
                     </small>
                   </div>
                 </div>
@@ -431,7 +436,7 @@ const Register = () => {
             )}
 
             <div className={`input-wrapper ${focusedInput === 'confirmPassword' ? 'focused' : ''}`}>
-              <i className="bi bi-shield-lock"></i>
+              <i className="bi bi-shield-lock" aria-hidden="true"></i>
               <input
                 type={showConfirmPassword ? 'text' : 'password'}
                 name="confirmPassword"
@@ -441,13 +446,15 @@ const Register = () => {
                 onBlur={() => setFocusedInput(null)}
                 placeholder="Confirm Password"
                 required
+                aria-label="Confirm Password"
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 style={{ background: 'none', border: 'none', padding: 0, color: '#94a3b8', cursor: 'pointer' }}
+                aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
               >
-                <i className={`bi bi-eye${showConfirmPassword ? '-slash' : ''} m-0`}></i>
+                <i className={`bi bi-eye${showConfirmPassword ? '-slash' : ''} m-0`} aria-hidden="true"></i>
               </button>
             </div>
 

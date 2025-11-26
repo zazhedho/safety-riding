@@ -268,9 +268,9 @@ const ForgotPassword = () => {
         <div style={{ width: '100%', maxWidth: '400px' }}>
           <div className="text-center mb-5 d-md-none">
             <div className="d-inline-flex align-items-center justify-content-center bg-primary text-white rounded-circle mb-3" style={{ width: '60px', height: '60px' }}>
-              <i className="bi bi-shield-lock fs-2"></i>
+              <i className="bi bi-shield-lock fs-2" aria-hidden="true"></i>
             </div>
-            <h2 className="fw-bold text-dark">Safety Riding</h2>
+            <h1 className="fw-bold text-dark h2">Promotion & Safety Riding</h1>
           </div>
 
           <div className="mb-5">
@@ -281,13 +281,14 @@ const ForgotPassword = () => {
           {!submitted ? (
             <form onSubmit={handleSubmit}>
               <div className="input-wrapper">
-                <i className="bi bi-envelope"></i>
+                <i className="bi bi-envelope" aria-hidden="true"></i>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Enter your email"
                   required
+                  aria-label="Email address"
                 />
               </div>
 
@@ -309,7 +310,7 @@ const ForgotPassword = () => {
           ) : (
             <div className="text-center mb-4">
               <div className="mb-3 text-success">
-                <i className="bi bi-check-circle-fill" style={{ fontSize: '3rem' }}></i>
+                <i className="bi bi-check-circle-fill" style={{ fontSize: '3rem' }} aria-hidden="true"></i>
               </div>
               <h4 className="fw-bold">Check your email</h4>
               <p className="text-secondary mb-3">
@@ -317,8 +318,8 @@ const ForgotPassword = () => {
               </p>
 
               {countdown > 0 && (
-                <div className="alert alert-warning py-2 mb-3">
-                  <small><i className="bi bi-hourglass-split me-1"></i> Please wait {formatTime(countdown)} before trying again.</small>
+                <div className="alert alert-warning py-2 mb-3" role="alert" aria-live="polite">
+                  <small><i className="bi bi-hourglass-split me-1" aria-hidden="true"></i> Please wait {formatTime(countdown)} before trying again.</small>
                 </div>
               )}
 
@@ -349,7 +350,7 @@ const ForgotPassword = () => {
 
           <div className="text-center">
             <Link to="/login" className="text-secondary text-decoration-none fw-semibold">
-              <i className="bi bi-arrow-left me-2"></i>
+              <i className="bi bi-arrow-left me-2" aria-hidden="true"></i>
               Back to Login
             </Link>
           </div>

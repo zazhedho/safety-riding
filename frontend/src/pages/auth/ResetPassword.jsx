@@ -255,9 +255,9 @@ const ResetPassword = () => {
         <div style={{ width: '100%', maxWidth: '400px' }}>
           <div className="text-center mb-5 d-md-none">
             <div className="d-inline-flex align-items-center justify-content-center bg-primary text-white rounded-circle mb-3" style={{ width: '60px', height: '60px' }}>
-              <i className="bi bi-shield-check fs-2"></i>
+              <i className="bi bi-shield-check fs-2" aria-hidden="true"></i>
             </div>
-            <h2 className="fw-bold text-dark">Safety Riding</h2>
+            <h1 className="fw-bold text-dark h2">Promotion & Safety Riding</h1>
           </div>
 
           <div className="mb-5">
@@ -267,7 +267,7 @@ const ResetPassword = () => {
 
           <form onSubmit={handleSubmit}>
             <div className="input-wrapper">
-              <i className="bi bi-lock"></i>
+              <i className="bi bi-lock" aria-hidden="true"></i>
               <input
                 type={showNewPassword ? 'text' : 'password'}
                 name="newPassword"
@@ -276,13 +276,15 @@ const ResetPassword = () => {
                 placeholder="New Password"
                 required
                 minLength={8}
+                aria-label="New Password"
               />
               <button
                 type="button"
                 onClick={() => setShowNewPassword(!showNewPassword)}
                 style={{ background: 'none', border: 'none', padding: 0, color: '#94a3b8', cursor: 'pointer' }}
+                aria-label={showNewPassword ? "Hide new password" : "Show new password"}
               >
-                <i className={`bi bi-eye${showNewPassword ? '-slash' : ''} m-0`}></i>
+                <i className={`bi bi-eye${showNewPassword ? '-slash' : ''} m-0`} aria-hidden="true"></i>
               </button>
             </div>
 
@@ -291,23 +293,23 @@ const ResetPassword = () => {
                 <small className="d-block fw-bold mb-2 text-secondary">Password Requirements:</small>
                 <div className="d-flex flex-column gap-1">
                   <small className={passwordValidation.minLength ? 'text-success' : 'text-danger'}>
-                    <i className={`bi bi-${passwordValidation.minLength ? 'check-circle-fill' : 'x-circle-fill'} me-1`}></i>
+                    <i className={`bi bi-${passwordValidation.minLength ? 'check-circle-fill' : 'x-circle-fill'} me-1`} aria-hidden="true"></i>
                     Minimum 8 characters
                   </small>
                   <small className={passwordValidation.hasLowercase ? 'text-success' : 'text-danger'}>
-                    <i className={`bi bi-${passwordValidation.hasLowercase ? 'check-circle-fill' : 'x-circle-fill'} me-1`}></i>
+                    <i className={`bi bi-${passwordValidation.hasLowercase ? 'check-circle-fill' : 'x-circle-fill'} me-1`} aria-hidden="true"></i>
                     At least 1 lowercase letter (a-z)
                   </small>
                   <small className={passwordValidation.hasUppercase ? 'text-success' : 'text-danger'}>
-                    <i className={`bi bi-${passwordValidation.hasUppercase ? 'check-circle-fill' : 'x-circle-fill'} me-1`}></i>
+                    <i className={`bi bi-${passwordValidation.hasUppercase ? 'check-circle-fill' : 'x-circle-fill'} me-1`} aria-hidden="true"></i>
                     At least 1 uppercase letter (A-Z)
                   </small>
                   <small className={passwordValidation.hasNumber ? 'text-success' : 'text-danger'}>
-                    <i className={`bi bi-${passwordValidation.hasNumber ? 'check-circle-fill' : 'x-circle-fill'} me-1`}></i>
+                    <i className={`bi bi-${passwordValidation.hasNumber ? 'check-circle-fill' : 'x-circle-fill'} me-1`} aria-hidden="true"></i>
                     At least 1 number (0-9)
                   </small>
                   <small className={passwordValidation.hasSymbol ? 'text-success' : 'text-danger'}>
-                    <i className={`bi bi-${passwordValidation.hasSymbol ? 'check-circle-fill' : 'x-circle-fill'} me-1`}></i>
+                    <i className={`bi bi-${passwordValidation.hasSymbol ? 'check-circle-fill' : 'x-circle-fill'} me-1`} aria-hidden="true"></i>
                     At least 1 symbol (!@#$%^&*...)
                   </small>
                 </div>
@@ -315,7 +317,7 @@ const ResetPassword = () => {
             )}
 
             <div className="input-wrapper">
-              <i className="bi bi-shield-lock"></i>
+              <i className="bi bi-shield-lock" aria-hidden="true"></i>
               <input
                 type={showConfirmPassword ? 'text' : 'password'}
                 name="confirmPassword"
@@ -324,13 +326,15 @@ const ResetPassword = () => {
                 placeholder="Confirm New Password"
                 required
                 minLength={8}
+                aria-label="Confirm New Password"
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 style={{ background: 'none', border: 'none', padding: 0, color: '#94a3b8', cursor: 'pointer' }}
+                aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
               >
-                <i className={`bi bi-eye${showConfirmPassword ? '-slash' : ''} m-0`}></i>
+                <i className={`bi bi-eye${showConfirmPassword ? '-slash' : ''} m-0`} aria-hidden="true"></i>
               </button>
             </div>
 
@@ -351,7 +355,7 @@ const ResetPassword = () => {
 
             <div className="text-center">
               <Link to="/login" className="text-secondary text-decoration-none fw-semibold">
-                <i className="bi bi-arrow-left me-2"></i>
+                <i className="bi bi-arrow-left me-2" aria-hidden="true"></i>
                 Back to Login
               </Link>
             </div>
