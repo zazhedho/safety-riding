@@ -230,9 +230,9 @@ const Login = () => {
           <i className="bi bi-shield-check" style={{ fontSize: '3.5rem' }}></i>
         </div>
 
-        <h1 className="fw-bold mb-3 display-5 text-center">Safety Riding</h1>
+        <h1 className="fw-bold mb-3 display-5 text-center">Promotion & Safety Riding</h1>
         <p className="text-center text-light opacity-75 fs-5" style={{ maxWidth: '400px' }}>
-          Promotion & Safety Management System
+          Management System
         </p>
 
         <div className="safety-pattern"></div>
