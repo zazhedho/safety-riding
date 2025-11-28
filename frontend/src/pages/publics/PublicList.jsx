@@ -10,11 +10,13 @@ import { useAuth } from '../../contexts/AuthContext';
 const PublicList = () => {
   const { hasPermission } = useAuth();
   const [publics, setPublics] = useState([]);
+  const [allPublics, setAllPublics] = useState([]); // For map view - all publics without pagination
   const [provinces, setProvinces] = useState([]);
   const [cities, setCities] = useState([]);
   const [districts, setDistricts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState('table'); // 'table' or 'map'
+  const [showAllOnMap, setShowAllOnMap] = useState(true); // true = show all publics, false = show current page only
   const [filters, setFilters] = useState({
     province_id: '',
     city_id: '',
@@ -60,6 +62,10 @@ const PublicList = () => {
   useEffect(() => {
     fetchPublics();
   }, [pagination.page, appliedFilters, sorting]);
+
+  useEffect(() => {
+    fetchAllPublics();
+  }, [appliedFilters, sorting]);
 
   useEffect(() => {
     if (filters.province_id) {
@@ -131,6 +137,27 @@ const PublicList = () => {
       toast.error('Failed to load public entities');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchAllPublics = async () => {
+    try {
+      const params = {
+        page: 1,
+        limit: 10000, // Large limit to get all public entities
+        order_by: sorting.order_by,
+        order_direction: sorting.order_direction,
+      };
+      if (appliedFilters.province_id) params['filters[province_id]'] = appliedFilters.province_id;
+      if (appliedFilters.city_id) params['filters[city_id]'] = appliedFilters.city_id;
+      if (appliedFilters.district_id) params['filters[district_id]'] = appliedFilters.district_id;
+      if (appliedFilters.category) params['filters[category]'] = appliedFilters.category;
+      if (appliedFilters.search) params.search = appliedFilters.search;
+
+      const response = await publicService.getAll(params);
+      setAllPublics(response.data.data || []);
+    } catch (error) {
+      toast.error('Failed to load public entities for map');
     }
   };
 
@@ -317,11 +344,38 @@ const PublicList = () => {
       </div>
 
       {viewMode === 'map' ? (
-        <div className="card">
-          <div className="card-body p-0">
-            <PublicMap publics={publics} selectedPublic={selectedPublicForMap} />
+        <>
+          <div className="card mb-3">
+            <div className="card-body py-2">
+              <div className="d-flex justify-content-between align-items-center">
+                <span className="text-muted small">
+                  Showing {showAllOnMap ? allPublics.length : publics.length} public entit{showAllOnMap ? (allPublics.length === 1 ? 'y' : 'ies') : (publics.length === 1 ? 'y' : 'ies')} on map
+                </span>
+                <div className="btn-group btn-group-sm">
+                  <button
+                    className={`btn ${showAllOnMap ? 'btn-primary' : 'btn-outline-primary'}`}
+                    onClick={() => setShowAllOnMap(true)}
+                    aria-label="Show all public entities on map"
+                  >
+                    <i className="bi bi-globe me-1"></i>All Entities
+                  </button>
+                  <button
+                    className={`btn ${!showAllOnMap ? 'btn-primary' : 'btn-outline-primary'}`}
+                    onClick={() => setShowAllOnMap(false)}
+                    aria-label="Show current page only on map"
+                  >
+                    <i className="bi bi-file-earmark me-1"></i>Current Page Only
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
+          <div className="card">
+            <div className="card-body p-0">
+              <PublicMap publics={showAllOnMap ? allPublics : publics} selectedPublic={selectedPublicForMap} />
+            </div>
+          </div>
+        </>
       ) : (
         <div className="card">
           <div className="card-body">
