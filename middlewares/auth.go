@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"safety-riding/internal/interfaces/auth"
+	"safety-riding/internal/interfaces/permission"
 	"safety-riding/pkg/logger"
 	"safety-riding/pkg/messages"
 	"safety-riding/pkg/response"
@@ -18,13 +19,15 @@ import (
 
 // Middleware struct to hold dependencies
 type Middleware struct {
-	BlacklistRepo interfaceauth.RepoAuthInterface
+	BlacklistRepo  interfaceauth.RepoAuthInterface
+	PermissionRepo interfacepermission.RepoPermissionInterface
 }
 
 // NewMiddleware creates a new middleware with its dependencies
-func NewMiddleware(blacklistRepo interfaceauth.RepoAuthInterface) *Middleware {
+func NewMiddleware(blacklistRepo interfaceauth.RepoAuthInterface, permissionRepo interfacepermission.RepoPermissionInterface) *Middleware {
 	return &Middleware{
-		BlacklistRepo: blacklistRepo,
+		BlacklistRepo:  blacklistRepo,
+		PermissionRepo: permissionRepo,
 	}
 }
 
@@ -115,6 +118,71 @@ func (m *Middleware) RoleMiddleware(allowedRoles ...string) gin.HandlerFunc {
 		isAllowed := slices.Contains(allowedRoles, userRole)
 		if !isAllowed {
 			logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; User with role '%s' tried to access a restricted route;", logPrefix, userRole))
+			res := response.Response(http.StatusForbidden, messages.MsgDenied, logId, nil)
+			res.Error = response.Errors{Code: http.StatusForbidden, Message: messages.AccessDenied}
+			ctx.AbortWithStatusJSON(http.StatusForbidden, res)
+			return
+		}
+
+		ctx.Next()
+	}
+}
+
+func (m *Middleware) PermissionMiddleware(resource, action string) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		var (
+			logId     uuid.UUID
+			logPrefix string
+		)
+
+		logId = utils.GenerateLogId(ctx)
+		logPrefix = fmt.Sprintf("[%s][PermissionMiddleware]", logId)
+
+		authData, exists := ctx.Get(utils.CtxKeyAuthData)
+		if !exists {
+			logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; AuthData not found", logPrefix))
+			res := response.Response(http.StatusForbidden, messages.MsgDenied, logId, nil)
+			res.Error = "auth data not found"
+			ctx.AbortWithStatusJSON(http.StatusForbidden, res)
+			return
+		}
+		dataJWT := authData.(map[string]interface{})
+
+		userRole, ok := dataJWT["role"].(string)
+		if !ok {
+			logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; there is no role user", logPrefix))
+			res := response.Response(http.StatusForbidden, messages.MsgDenied, logId, nil)
+			res.Error = "there is no role user"
+			ctx.AbortWithStatusJSON(http.StatusForbidden, res)
+			return
+		}
+
+		// Superadmin bypasses all permission checks
+		if userRole == utils.RoleSuperAdmin {
+			ctx.Next()
+			return
+		}
+
+		userId := utils.InterfaceString(dataJWT["user_id"])
+		permissions, err := m.PermissionRepo.GetUserPermissions(userId)
+		if err != nil {
+			logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; Failed to get user permissions: %s", logPrefix, err.Error()))
+			res := response.Response(http.StatusInternalServerError, messages.MsgFail, logId, nil)
+			res.Error = "failed to check permissions"
+			ctx.AbortWithStatusJSON(http.StatusInternalServerError, res)
+			return
+		}
+
+		hasPermission := false
+		for _, perm := range permissions {
+			if perm.Resource == resource && perm.Action == action {
+				hasPermission = true
+				break
+			}
+		}
+
+		if !hasPermission {
+			logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; User '%s' lacks permission '%s:%s'", logPrefix, userId, resource, action))
 			res := response.Response(http.StatusForbidden, messages.MsgDenied, logId, nil)
 			res.Error = response.Errors{Code: http.StatusForbidden, Message: messages.AccessDenied}
 			ctx.AbortWithStatusJSON(http.StatusForbidden, res)

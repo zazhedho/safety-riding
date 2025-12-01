@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import api from '../services/api';
 import userService from '../services/userService';
+import permissionService from '../services/permissionService';
 
 const AuthContext = createContext();
 
@@ -14,6 +15,7 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [permissions, setPermissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState(localStorage.getItem('token'));
 
@@ -30,6 +32,16 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await api.get('/user');
       setUser(response.data.data);
+      
+      // Fetch user permissions
+      try {
+        const permResponse = await permissionService.getUserPermissions();
+        setPermissions(permResponse.data.data || []);
+      } catch (permError) {
+        console.error('Failed to fetch permissions:', permError);
+        setPermissions([]);
+      }
+      
       return response.data.data;
     } catch (error) {
       console.error('Failed to fetch user:', error);
@@ -104,6 +116,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem('token');
       setToken(null);
       setUser(null);
+      setPermissions([]);
       delete api.defaults.headers.common['Authorization'];
     }
   };
@@ -211,13 +224,25 @@ export const AuthProvider = ({ children }) => {
     return roles.includes(user.role);
   };
 
-  const hasPermission = (permission) => {
-    if (!user || !user.permissions) return false;
-    return user.permissions.includes(permission);
+  const hasPermission = (resourceOrPermissionName, action) => {
+    if (!user) return false;
+    // Superadmin bypasses all permission checks
+    if (user.role === 'superadmin') return true;
+    
+    // New format: hasPermission('schools', 'create')
+    if (action) {
+      return permissions.some(p => p.resource === resourceOrPermissionName && p.action === action);
+    }
+    
+    // Old format (backward compatible): hasPermission('create_schools')
+    // Parse permission name like 'create_schools' to resource='schools' and action='create'
+    const permName = resourceOrPermissionName;
+    return permissions.some(p => p.name === permName);
   };
 
   const value = {
     user,
+    permissions,
     login,
     register,
     logout,
