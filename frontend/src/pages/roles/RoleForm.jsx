@@ -69,6 +69,17 @@ const RoleForm = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    
+    // Validate name field: lowercase, no spaces
+    if (name === 'name') {
+      const sanitizedValue = value.toLowerCase().replace(/\s/g, '');
+      setFormData(prev => ({
+        ...prev,
+        [name]: sanitizedValue,
+      }));
+      return;
+    }
+    
     setFormData(prev => ({
       ...prev,
       [name]: value,
