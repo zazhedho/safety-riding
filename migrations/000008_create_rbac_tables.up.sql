@@ -121,6 +121,7 @@ INSERT INTO permissions (id, name, display_name, resource, action) VALUES
     (gen_random_uuid(), 'update_schools', 'Update Schools', 'schools', 'update'),
     (gen_random_uuid(), 'delete_schools', 'Delete Schools', 'schools', 'delete'),
     (gen_random_uuid(), 'view_education_stats', 'View Education Statistics', 'education_stats', 'view'),
+    (gen_random_uuid(), 'view_education_priority', 'View Education Priority', 'Permission to view education priority matrix', 'education_priority', 'view'),
 
     -- Event permissions
     (gen_random_uuid(), 'view_events', 'View Events', 'events', 'view'),
