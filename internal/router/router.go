@@ -145,7 +145,7 @@ func (r *Routes) SchoolRoutes() {
 	r.App.GET("/api/schools", mdw.AuthMiddleware(), h.FetchSchool)
 
 	// Education endpoints (cross-domain analytics)
-	r.App.GET("/api//stats", mdw.AuthMiddleware(), h.GetEducationStats)
+	r.App.GET("/api/education/stats", mdw.AuthMiddleware(), h.GetEducationStats)
 	r.App.GET("/api/education/priority", mdw.AuthMiddleware(), h.GetEducationPriority)
 
 	school := r.App.Group("/api/school").Use(mdw.AuthMiddleware())
