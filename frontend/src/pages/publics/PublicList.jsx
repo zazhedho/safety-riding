@@ -251,7 +251,13 @@ const PublicList = () => {
   return (
     <>
       <div className="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
-        <h2>Public Entities Management</h2>
+        <div>
+          <h2 className="mb-1">Public Entities Management</h2>
+          <p className="text-muted mb-0">
+            <i className="bi bi-people me-2"></i>
+            Total: <strong>{pagination.total.toLocaleString()}</strong> {pagination.total !== 1 ? 'entities' : 'entity'}
+          </p>
+        </div>
         <div className="d-flex flex-wrap gap-2">
           <div className="btn-group">
             <button

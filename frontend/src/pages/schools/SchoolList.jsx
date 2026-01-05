@@ -236,7 +236,13 @@ const SchoolList = () => {
   return (
     <>
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2>Schools Management</h2>
+        <div>
+          <h2 className="mb-1">Schools Management</h2>
+          <p className="text-muted mb-0">
+            <i className="bi bi-building me-2"></i>
+            Total: <strong>{pagination.total.toLocaleString()}</strong> school{pagination.total !== 1 ? 's' : ''}
+          </p>
+        </div>
         <div className="d-flex gap-2">
           <div className="btn-group">
             <button
