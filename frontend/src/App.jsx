@@ -40,6 +40,11 @@ const AccidentList = lazy(() => import('./pages/accidents/AccidentList'));
 const AccidentForm = lazy(() => import('./pages/accidents/AccidentForm'));
 const AccidentDetail = lazy(() => import('./pages/accidents/AccidentDetail'));
 
+// POLDA Accidents
+const PoldaList = lazy(() => import('./pages/polda/PoldaList'));
+const PoldaForm = lazy(() => import('./pages/polda/PoldaForm'));
+const PoldaDetail = lazy(() => import('./pages/polda/PoldaDetail'));
+
 // Budgets
 const BudgetList = lazy(() => import('./pages/budgets/BudgetList'));
 const BudgetForm = lazy(() => import('./pages/budgets/BudgetForm'));
@@ -110,6 +115,12 @@ function App() {
               <Route path="/accidents/new" element={<AccidentForm />} />
               <Route path="/accidents/:id" element={<AccidentDetail />} />
               <Route path="/accidents/:id/edit" element={<AccidentForm />} />
+
+              {/* POLDA Accidents */}
+              <Route path="/polda-accidents" element={<PoldaList />} />
+              <Route path="/polda-accidents/create" element={<PoldaForm />} />
+              <Route path="/polda-accidents/:id" element={<PoldaDetail />} />
+              <Route path="/polda-accidents/:id/edit" element={<PoldaForm />} />
 
               {/* Budgets */}
               <Route path="/budgets" element={<BudgetList />} />

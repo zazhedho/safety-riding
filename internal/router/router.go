@@ -19,6 +19,7 @@ import (
 	marketshareHandler "safety-riding/internal/handlers/http/marketshare"
 	menuHandler "safety-riding/internal/handlers/http/menu"
 	permissionHandler "safety-riding/internal/handlers/http/permission"
+	poldaHandler "safety-riding/internal/handlers/http/polda"
 	provinceHandler "safety-riding/internal/handlers/http/province"
 	publicsHandler "safety-riding/internal/handlers/http/publics"
 	roleHandler "safety-riding/internal/handlers/http/role"
@@ -32,6 +33,7 @@ import (
 	marketshareRepo "safety-riding/internal/repositories/marketshare"
 	menuRepo "safety-riding/internal/repositories/menu"
 	permissionRepo "safety-riding/internal/repositories/permission"
+	poldaRepo "safety-riding/internal/repositories/polda"
 	publicsRepo "safety-riding/internal/repositories/publics"
 	roleRepo "safety-riding/internal/repositories/role"
 	schoolRepo "safety-riding/internal/repositories/school"
@@ -45,6 +47,7 @@ import (
 	marketshareSvc "safety-riding/internal/services/marketshare"
 	menuSvc "safety-riding/internal/services/menu"
 	permissionSvc "safety-riding/internal/services/permission"
+	poldaSvc "safety-riding/internal/services/polda"
 	provinsiSvc "safety-riding/internal/services/province"
 	publicsSvc "safety-riding/internal/services/publics"
 	roleSvc "safety-riding/internal/services/role"
@@ -418,4 +421,22 @@ func (r *Routes) SessionRoutes() {
 	}
 
 	logger.WriteLog(logger.LogLevelInfo, "Session management routes registered")
+}
+
+func (r *Routes) PoldaRoutes() {
+	repo := poldaRepo.NewPoldaAccidentRepo(r.DB)
+	svc := poldaSvc.NewPoldaAccidentService(repo)
+	h := poldaHandler.NewPoldaAccidentHandler(svc)
+	blacklistRepo := authRepo.NewBlacklistRepo(r.DB)
+	pRepo := permissionRepo.NewPermissionRepo(r.DB)
+	mdw := middlewares.NewMiddleware(blacklistRepo, pRepo)
+
+	r.App.GET("/api/polda-accidents", mdw.AuthMiddleware(), mdw.PermissionMiddleware("polda_accidents", "list"), h.GetAll)
+	polda := r.App.Group("/api/polda-accident").Use(mdw.AuthMiddleware())
+	{
+		polda.POST("", mdw.PermissionMiddleware("polda_accidents", "create"), h.Create)
+		polda.GET("/:id", mdw.PermissionMiddleware("polda_accidents", "view"), h.GetByID)
+		polda.PUT("/:id", mdw.PermissionMiddleware("polda_accidents", "update"), h.Update)
+		polda.DELETE("/:id", mdw.PermissionMiddleware("polda_accidents", "delete"), h.Delete)
+	}
 }
