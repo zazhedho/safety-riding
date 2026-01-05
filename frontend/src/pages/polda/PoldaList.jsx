@@ -5,6 +5,17 @@ import poldaService from '../../services/poldaService';
 import { toast } from 'react-toastify';
 import { useAuth } from '../../contexts/AuthContext';
 
+const currentYear = new Date().getFullYear();
+const years = Array.from({ length: 6 }, (_, i) => currentYear - 5 + i);
+const months = [
+  { value: '01', label: 'Jan' }, { value: '02', label: 'Feb' },
+  { value: '03', label: 'Mar' }, { value: '04', label: 'Apr' },
+  { value: '05', label: 'May' }, { value: '06', label: 'Jun' },
+  { value: '07', label: 'Jul' }, { value: '08', label: 'Aug' },
+  { value: '09', label: 'Sep' }, { value: '10', label: 'Oct' },
+  { value: '11', label: 'Nov' }, { value: '12', label: 'Dec' }
+];
+
 const PoldaList = () => {
   const { hasPermission } = useAuth();
   const [poldaData, setPoldaData] = useState([]);
@@ -12,13 +23,13 @@ const PoldaList = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null);
   const [filters, setFilters] = useState({
-    police_unit: '',
-    period: '',
+    period_year: '',
+    period_month: '',
     search: ''
   });
   const [appliedFilters, setAppliedFilters] = useState({
-    police_unit: '',
-    period: '',
+    period_year: '',
+    period_month: '',
     search: ''
   });
   const [pagination, setPagination] = useState({
@@ -27,21 +38,30 @@ const PoldaList = () => {
     total: 0,
     totalPages: 0
   });
+  const [sorting, setSorting] = useState({
+    order_by: 'period',
+    order_direction: 'desc'
+  });
 
   useEffect(() => {
     fetchPoldaData();
-  }, [pagination.page, appliedFilters]);
+  }, [pagination.page, appliedFilters, sorting]);
 
   const fetchPoldaData = async () => {
     try {
       setLoading(true);
+      const period = appliedFilters.period_year 
+        ? (appliedFilters.period_month ? `${appliedFilters.period_year}-${appliedFilters.period_month}` : appliedFilters.period_year)
+        : '';
+      
       const params = {
         page: pagination.page,
         limit: pagination.limit,
         search: appliedFilters.search,
+        order_by: sorting.order_by,
+        order_direction: sorting.order_direction,
         filters: JSON.stringify({
-          police_unit: appliedFilters.police_unit,
-          period: appliedFilters.period
+          period: period
         })
       };
 
@@ -72,8 +92,8 @@ const PoldaList = () => {
 
   const resetFilters = () => {
     const resetFilters = {
-      police_unit: '',
-      period: '',
+      period_year: '',
+      period_month: '',
       search: ''
     };
     setFilters(resetFilters);
@@ -92,6 +112,22 @@ const PoldaList = () => {
       console.error('Error deleting POLDA data:', error);
       toast.error('Failed to delete POLDA data');
     }
+  };
+
+  const handleSort = (column) => {
+    setSorting(prev => ({
+      order_by: column,
+      order_direction: prev.order_by === column && prev.order_direction === 'asc' ? 'desc' : 'asc'
+    }));
+  };
+
+  const getSortIcon = (column) => {
+    if (sorting.order_by !== column) {
+      return <i className="bi bi-arrow-down-up ms-1 text-muted"></i>;
+    }
+    return sorting.order_direction === 'asc'
+      ? <i className="bi bi-arrow-up ms-1"></i>
+      : <i className="bi bi-arrow-down ms-1"></i>;
   };
 
   const handlePageChange = (newPage) => {
@@ -128,44 +164,52 @@ const PoldaList = () => {
 
             <div className="card-body">
               {/* Filters */}
-              <div className="row mb-3">
-                <div className="col-md-3">
+              <div className="row mb-3 g-2 align-items-center">
+                <div className="col-md-5">
                   <input
                     type="text"
                     className="form-control"
-                    placeholder="Search..."
+                    placeholder="Search police unit..."
                     name="search"
                     value={filters.search}
                     onChange={handleFilterChange}
                   />
                 </div>
-                <div className="col-md-3">
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Police Unit"
-                    name="police_unit"
-                    value={filters.police_unit}
+                <div className="col-md-2">
+                  <select
+                    className="form-select"
+                    name="period_year"
+                    value={filters.period_year}
                     onChange={handleFilterChange}
-                  />
+                  >
+                    <option value="">All Years</option>
+                    {years.map(y => (
+                      <option key={y} value={y}>{y}</option>
+                    ))}
+                  </select>
+                </div>
+                <div className="col-md-2">
+                  <select
+                    className="form-select"
+                    name="period_month"
+                    value={filters.period_month}
+                    onChange={handleFilterChange}
+                  >
+                    <option value="">All Months</option>
+                    {months.map(m => (
+                      <option key={m.value} value={m.value}>{m.label}</option>
+                    ))}
+                  </select>
                 </div>
                 <div className="col-md-3">
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Period (e.g., 2024-01)"
-                    name="period"
-                    value={filters.period}
-                    onChange={handleFilterChange}
-                  />
-                </div>
-                <div className="col-md-3">
-                  <button className="btn btn-outline-primary me-2" onClick={applyFilters}>
-                    <i className="bi bi-search me-1"></i>Filter
-                  </button>
-                  <button className="btn btn-outline-secondary" onClick={resetFilters}>
-                    <i className="bi bi-arrow-clockwise me-1"></i>Reset
-                  </button>
+                  <div className="d-flex gap-2">
+                    <button className="btn btn-primary" onClick={applyFilters}>
+                      <i className="bi bi-search me-2"></i>Search
+                    </button>
+                    <button className="btn btn-outline-secondary" onClick={resetFilters} title="Clear all filters">
+                      <i className="bi bi-x-circle"></i>
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -174,12 +218,24 @@ const PoldaList = () => {
                 <table className="table table-striped table-hover">
                   <thead className="table-dark">
                     <tr>
-                      <th>Police Unit</th>
-                      <th>Period</th>
-                      <th className="text-center">Total Accidents</th>
-                      <th className="text-center">Deaths</th>
-                      <th className="text-center">Severe Injury</th>
-                      <th className="text-center">Minor Injury</th>
+                      <th style={{ cursor: 'pointer' }} onClick={() => handleSort('police_unit')}>
+                        Police Unit {getSortIcon('police_unit')}
+                      </th>
+                      <th style={{ cursor: 'pointer' }} onClick={() => handleSort('period')}>
+                        Period {getSortIcon('period')}
+                      </th>
+                      <th className="text-center" style={{ cursor: 'pointer' }} onClick={() => handleSort('total_accidents')}>
+                        Total Accidents {getSortIcon('total_accidents')}
+                      </th>
+                      <th className="text-center" style={{ cursor: 'pointer' }} onClick={() => handleSort('total_deaths')}>
+                        Deaths {getSortIcon('total_deaths')}
+                      </th>
+                      <th className="text-center" style={{ cursor: 'pointer' }} onClick={() => handleSort('total_severe_injury')}>
+                        Severe Injury {getSortIcon('total_severe_injury')}
+                      </th>
+                      <th className="text-center" style={{ cursor: 'pointer' }} onClick={() => handleSort('total_minor_injury')}>
+                        Minor Injury {getSortIcon('total_minor_injury')}
+                      </th>
                       <th className="text-center">Actions</th>
                     </tr>
                   </thead>

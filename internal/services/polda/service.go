@@ -6,6 +6,7 @@ import (
 	interfacepolda "safety-riding/internal/interfaces/polda"
 	"safety-riding/pkg/filter"
 	"safety-riding/utils"
+	"strings"
 )
 
 type PoldaAccidentService struct {
@@ -32,7 +33,7 @@ func (s *PoldaAccidentService) Create(req *dto.CreatePoldaAccidentRequest, userI
 
 	data := &domainpolda.PoldaAccident{
 		ID:                utils.CreateUUID(),
-		PoliceUnit:        req.PoliceUnit,
+		PoliceUnit:        strings.ToUpper(req.PoliceUnit),
 		TotalAccidents:    req.TotalAccidents,
 		TotalDeaths:       req.TotalDeaths,
 		TotalSevereInjury: req.TotalSevereInjury,
@@ -62,7 +63,7 @@ func (s *PoldaAccidentService) Update(id string, req *dto.UpdatePoldaAccidentReq
 		return err
 	}
 
-	existing.PoliceUnit = req.PoliceUnit
+	existing.PoliceUnit = strings.ToUpper(req.PoliceUnit)
 	existing.TotalAccidents = req.TotalAccidents
 	existing.TotalDeaths = req.TotalDeaths
 	existing.TotalSevereInjury = req.TotalSevereInjury

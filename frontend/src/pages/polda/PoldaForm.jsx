@@ -4,6 +4,24 @@ import poldaService from '../../services/poldaService';
 import locationService from '../../services/locationService';
 import { toast } from 'react-toastify';
 
+const currentYear = new Date().getFullYear();
+const currentMonth = String(new Date().getMonth() + 1).padStart(2, '0');
+const years = Array.from({ length: 6 }, (_, i) => currentYear - 5 + i);
+const months = [
+  { value: '01', label: 'January' },
+  { value: '02', label: 'February' },
+  { value: '03', label: 'March' },
+  { value: '04', label: 'April' },
+  { value: '05', label: 'May' },
+  { value: '06', label: 'June' },
+  { value: '07', label: 'July' },
+  { value: '08', label: 'August' },
+  { value: '09', label: 'September' },
+  { value: '10', label: 'October' },
+  { value: '11', label: 'November' },
+  { value: '12', label: 'December' }
+];
+
 const PoldaForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -15,7 +33,8 @@ const PoldaForm = () => {
     total_deaths: 0,
     total_severe_injury: 0,
     total_minor_injury: 0,
-    period: '',
+    period_year: String(currentYear),
+    period_month: currentMonth,
     province_id: '',
     province_name: '',
     city_id: '',
@@ -63,7 +82,14 @@ const PoldaForm = () => {
     try {
       setLoading(true);
       const response = await poldaService.getById(id);
-      setFormData(response.data.data);
+      const data = response.data.data;
+      // Parse period (YYYY-MM) into year and month
+      const [year, month] = (data.period || '').split('-');
+      setFormData({
+        ...data,
+        period_year: year || '',
+        period_month: month || ''
+      });
     } catch (error) {
       console.error('Error fetching POLDA data:', error);
       toast.error('Failed to fetch POLDA data');
@@ -113,8 +139,11 @@ const PoldaForm = () => {
     if (!formData.police_unit.trim()) {
       newErrors.police_unit = 'Police unit is required';
     }
-    if (!formData.period.trim()) {
-      newErrors.period = 'Period is required';
+    if (!formData.period_year) {
+      newErrors.period_year = 'Year is required';
+    }
+    if (!formData.period_month) {
+      newErrors.period_month = 'Month is required';
     }
     if (!formData.province_id) {
       newErrors.province_id = 'Province is required';
@@ -158,11 +187,16 @@ const PoldaForm = () => {
       setLoading(true);
       
       const submitData = {
-        ...formData,
+        police_unit: formData.police_unit,
+        period: `${formData.period_year}-${formData.period_month}`,
         total_accidents: formData.total_accidents === '' ? 0 : formData.total_accidents,
         total_deaths: formData.total_deaths === '' ? 0 : formData.total_deaths,
         total_severe_injury: formData.total_severe_injury === '' ? 0 : formData.total_severe_injury,
         total_minor_injury: formData.total_minor_injury === '' ? 0 : formData.total_minor_injury,
+        province_id: formData.province_id,
+        province_name: formData.province_name,
+        city_id: formData.city_id,
+        city_name: formData.city_name
       };
       
       if (isEdit) {
@@ -228,21 +262,43 @@ const PoldaForm = () => {
 
                   {/* Period */}
                   <div className="col-md-6 mb-3">
-                    <label htmlFor="period" className="form-label">
+                    <label className="form-label">
                       Period <span className="text-danger">*</span>
                     </label>
-                    <input
-                      type="text"
-                      className={`form-control ${errors.period ? 'is-invalid' : ''}`}
-                      id="period"
-                      name="period"
-                      value={formData.period}
-                      onChange={handleInputChange}
-                      placeholder="e.g., 2024-01"
-                    />
-                    {errors.period && (
-                      <div className="invalid-feedback">{errors.period}</div>
-                    )}
+                    <div className="row g-2">
+                      <div className="col-6">
+                        <select
+                          className={`form-select ${errors.period_year ? 'is-invalid' : ''}`}
+                          name="period_year"
+                          value={formData.period_year}
+                          onChange={handleInputChange}
+                        >
+                          <option value="">Year</option>
+                          {years.map(y => (
+                            <option key={y} value={y}>{y}</option>
+                          ))}
+                        </select>
+                        {errors.period_year && (
+                          <div className="invalid-feedback">{errors.period_year}</div>
+                        )}
+                      </div>
+                      <div className="col-6">
+                        <select
+                          className={`form-select ${errors.period_month ? 'is-invalid' : ''}`}
+                          name="period_month"
+                          value={formData.period_month}
+                          onChange={handleInputChange}
+                        >
+                          <option value="">Month</option>
+                          {months.map(m => (
+                            <option key={m.value} value={m.value}>{m.label}</option>
+                          ))}
+                        </select>
+                        {errors.period_month && (
+                          <div className="invalid-feedback">{errors.period_month}</div>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
 
