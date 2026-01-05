@@ -592,13 +592,19 @@ body {
   border-bottom: none;
 }
 
-[data-theme='dark'] .table thead {
-  background: linear-gradient(135deg, var(--primary-color-light) 0%, #1f3a5a 100%);
-  color: var(--text-color);
+/* Fix Bootstrap table-dark in dark theme */
+[data-theme='dark'] .table-dark,
+[data-theme='dark'] .table-dark > th,
+[data-theme='dark'] .table-dark > td {
+  background-color: #1e3a5f !important;
+  color: #ffffff !important;
+  border-color: rgba(123, 163, 224, 0.3) !important;
 }
 
-[data-theme='dark'] .table thead th {
-  border-bottom: 2px solid rgba(123, 163, 224, 0.3);
+[data-theme='dark'] thead.table-dark th {
+  background: linear-gradient(135deg, #1e3a5f 0%, #0f2744 100%) !important;
+  color: #ffffff !important;
+  border-bottom: 2px solid rgba(123, 163, 224, 0.3) !important;
 }
 
 [data-theme='dark'] .table tbody tr:hover {

@@ -173,9 +173,9 @@
 }
 
 [data-theme='dark'] .table thead th {
-  background-color: var(--light-gray) !important;
-  color: var(--text-color) !important;
-  border-color: var(--border-color) !important;
+  background: linear-gradient(135deg, #1e3a5f 0%, #0f2744 100%) !important;
+  color: #ffffff !important;
+  border-color: rgba(123, 163, 224, 0.3) !important;
 }
 
 [data-theme='dark'] .table tbody tr {
