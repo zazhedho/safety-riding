@@ -57,42 +57,24 @@ func (s *PoldaAccidentService) GetByID(id string) (*domainpolda.PoldaAccident, e
 }
 
 func (s *PoldaAccidentService) Update(id string, req *dto.UpdatePoldaAccidentRequest, userID string) error {
-	data := &domainpolda.PoldaAccident{
-		UpdatedBy: userID,
+	existing, err := s.repo.GetByID(id)
+	if err != nil {
+		return err
 	}
 
-	if req.PoliceUnit != "" {
-		data.PoliceUnit = req.PoliceUnit
-	}
-	if req.TotalAccidents >= 0 {
-		data.TotalAccidents = req.TotalAccidents
-	}
-	if req.TotalDeaths >= 0 {
-		data.TotalDeaths = req.TotalDeaths
-	}
-	if req.TotalSevereInjury >= 0 {
-		data.TotalSevereInjury = req.TotalSevereInjury
-	}
-	if req.TotalMinorInjury >= 0 {
-		data.TotalMinorInjury = req.TotalMinorInjury
-	}
-	if req.Period != "" {
-		data.Period = req.Period
-	}
-	if req.CityId != "" {
-		data.CityId = req.CityId
-	}
-	if req.CityName != "" {
-		data.CityName = req.CityName
-	}
-	if req.ProvinceId != "" {
-		data.ProvinceId = req.ProvinceId
-	}
-	if req.ProvinceName != "" {
-		data.ProvinceName = req.ProvinceName
-	}
+	existing.PoliceUnit = req.PoliceUnit
+	existing.TotalAccidents = req.TotalAccidents
+	existing.TotalDeaths = req.TotalDeaths
+	existing.TotalSevereInjury = req.TotalSevereInjury
+	existing.TotalMinorInjury = req.TotalMinorInjury
+	existing.Period = req.Period
+	existing.CityId = req.CityId
+	existing.CityName = req.CityName
+	existing.ProvinceId = req.ProvinceId
+	existing.ProvinceName = req.ProvinceName
+	existing.UpdatedBy = userID
 
-	return s.repo.Update(id, data)
+	return s.repo.Update(existing)
 }
 
 func (s *PoldaAccidentService) Delete(id string) error {

@@ -100,8 +100,8 @@ func (r *poldaAccidentRepo) GetByID(id string) (*domainpolda.PoldaAccident, erro
 	return &data, nil
 }
 
-func (r *poldaAccidentRepo) Update(id string, data *domainpolda.PoldaAccident) error {
-	return r.db.Where("id = ?", id).Updates(data).Error
+func (r *poldaAccidentRepo) Update(data *domainpolda.PoldaAccident) error {
+	return r.db.Save(data).Error
 }
 
 func (r *poldaAccidentRepo) Delete(id string) error {

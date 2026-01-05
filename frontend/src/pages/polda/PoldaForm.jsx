@@ -135,14 +135,11 @@ const PoldaForm = () => {
       newErrors.total_minor_injury = 'Total minor injury cannot be negative';
     }
 
+    // Validasi: tidak boleh ada korban jika kecelakaan = 0
     const totalAccidents = formData.total_accidents === '' ? 0 : formData.total_accidents;
-    const totalDeaths = formData.total_deaths === '' ? 0 : formData.total_deaths;
-    const totalSevere = formData.total_severe_injury === '' ? 0 : formData.total_severe_injury;
-    const totalMinor = formData.total_minor_injury === '' ? 0 : formData.total_minor_injury;
-    
-    const totalCasualties = totalDeaths + totalSevere + totalMinor;
-    if (totalCasualties > totalAccidents && totalAccidents > 0) {
-      newErrors.total_accidents = 'Total casualties cannot exceed total accidents';
+    const totalCasualties = (formData.total_deaths || 0) + (formData.total_severe_injury || 0) + (formData.total_minor_injury || 0);
+    if (totalAccidents === 0 && totalCasualties > 0) {
+      newErrors.total_accidents = 'Cannot have casualties without accidents';
     }
 
     setErrors(newErrors);

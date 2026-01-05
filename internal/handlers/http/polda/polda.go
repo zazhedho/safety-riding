@@ -62,8 +62,9 @@ func (h *PoldaAccidentHandler) Create(c *gin.Context) {
 		return
 	}
 
-	userID := c.GetString("user_id")
-	if err := h.service.Create(&req, userID); err != nil {
+	authData := utils.GetAuthData(c)
+	username := utils.InterfaceString(authData["username"])
+	if err := h.service.Create(&req, username); err != nil {
 		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; Service.Create; Error: %+v", logPrefix, err))
 		res := response.Response(http.StatusInternalServerError, messages.MsgFail, logId, nil)
 		res.Error = err.Error()
@@ -173,8 +174,9 @@ func (h *PoldaAccidentHandler) Update(c *gin.Context) {
 		return
 	}
 
-	userID := c.GetString("user_id")
-	if err := h.service.Update(id, &req, userID); err != nil {
+	authData := utils.GetAuthData(c)
+	username := utils.InterfaceString(authData["username"])
+	if err := h.service.Update(id, &req, username); err != nil {
 		res := response.Response(http.StatusInternalServerError, messages.MsgFail, logId, nil)
 		c.JSON(http.StatusInternalServerError, res)
 		return

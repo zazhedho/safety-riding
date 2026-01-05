@@ -293,12 +293,11 @@ const PoldaDetail = () => {
       {/* Delete Confirmation Modal */}
       <ConfirmationModal
         show={showDeleteModal}
-        onHide={() => setShowDeleteModal(false)}
+        onCancel={() => setShowDeleteModal(false)}
         onConfirm={handleDelete}
         title="Delete POLDA Data"
         message={`Are you sure you want to delete data for ${poldaData.police_unit} - ${poldaData.period}? This action cannot be undone.`}
         confirmText="Delete"
-        confirmVariant="danger"
       />
     </div>
   );

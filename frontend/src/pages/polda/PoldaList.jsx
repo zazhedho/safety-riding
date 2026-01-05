@@ -313,12 +313,11 @@ const PoldaList = () => {
       {/* Delete Confirmation Modal */}
       <ConfirmationModal
         show={showDeleteModal}
-        onHide={() => setShowDeleteModal(false)}
+        onCancel={() => setShowDeleteModal(false)}
         onConfirm={handleDelete}
         title="Delete POLDA Data"
         message={`Are you sure you want to delete data for ${itemToDelete?.police_unit} - ${itemToDelete?.period}?`}
         confirmText="Delete"
-        confirmVariant="danger"
       />
     </div>
   );
