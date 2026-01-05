@@ -38,6 +38,10 @@ func (s *PoldaAccidentService) Create(req *dto.CreatePoldaAccidentRequest, userI
 		TotalSevereInjury: req.TotalSevereInjury,
 		TotalMinorInjury:  req.TotalMinorInjury,
 		Period:            req.Period,
+		CityId:            req.CityId,
+		CityName:          req.CityName,
+		ProvinceId:        req.ProvinceId,
+		ProvinceName:      req.ProvinceName,
 		CreatedBy:         userID,
 		UpdatedBy:         userID,
 	}
@@ -74,6 +78,18 @@ func (s *PoldaAccidentService) Update(id string, req *dto.UpdatePoldaAccidentReq
 	}
 	if req.Period != "" {
 		data.Period = req.Period
+	}
+	if req.CityId != "" {
+		data.CityId = req.CityId
+	}
+	if req.CityName != "" {
+		data.CityName = req.CityName
+	}
+	if req.ProvinceId != "" {
+		data.ProvinceId = req.ProvinceId
+	}
+	if req.ProvinceName != "" {
+		data.ProvinceName = req.ProvinceName
 	}
 
 	return s.repo.Update(id, data)

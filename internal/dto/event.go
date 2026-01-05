@@ -73,3 +73,17 @@ type UpdateEventPhoto struct {
 	Caption    string `json:"caption,omitempty"`
 	PhotoOrder int    `json:"photo_order,omitempty"`
 }
+
+type EventMapData struct {
+	ID             string  `json:"id"`
+	Title          string  `json:"title"`
+	EventDate      string  `json:"event_date"`
+	EventType      string  `json:"event_type"`
+	Location       string  `json:"location"`
+	AttendeesCount int     `json:"attendees_count"`
+	Status         string  `json:"status"`
+	Latitude       float64 `json:"latitude"`
+	Longitude      float64 `json:"longitude"`
+	VenueName      string  `json:"venue_name"`
+	VenueType      string  `json:"venue_type"`
+}

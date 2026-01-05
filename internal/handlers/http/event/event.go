@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 	"reflect"
+	"time"
+
 	"safety-riding/internal/dto"
 	interfaceevent "safety-riding/internal/interfaces/event"
 	"safety-riding/pkg/filter"
@@ -245,6 +247,34 @@ func (h *EventHandler) DeleteEvent(ctx *gin.Context) {
 
 	res := response.Response(http.StatusOK, "Delete event successfully", logId, nil)
 	logger.WriteLog(logger.LogLevelDebug, fmt.Sprintf("%s; Success;", logPrefix))
+	ctx.JSON(http.StatusOK, res)
+}
+
+// GetEventsForMap godoc
+// @Summary Get completed events for map display
+// @Description Retrieve completed events from last 6 months with coordinates
+// @Tags Events
+// @Accept json
+// @Produce json
+// @Success 200 {object} response.Success
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /events/map [get]
+func (h *EventHandler) GetEventsForMap(ctx *gin.Context) {
+	logId := utils.GenerateLogId(ctx)
+	logPrefix := fmt.Sprintf("[%s][EventHandler][GetEventsForMap]", logId)
+
+	since := time.Now().AddDate(0, -6, 0)
+	data, err := h.Service.GetCompletedEventsForMap(since)
+	if err != nil {
+		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; Error: %+v", logPrefix, err))
+		res := response.Response(http.StatusInternalServerError, messages.MsgFail, logId, nil)
+		res.Error = err.Error()
+		ctx.JSON(http.StatusInternalServerError, res)
+		return
+	}
+
+	res := response.Response(http.StatusOK, messages.MsgSuccess, logId, data)
 	ctx.JSON(http.StatusOK, res)
 }
 

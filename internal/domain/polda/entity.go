@@ -18,6 +18,10 @@ type PoldaAccident struct {
 	TotalSevereInjury int    `json:"total_severe_injury" gorm:"column:total_severe_injury"`
 	TotalMinorInjury  int    `json:"total_minor_injury" gorm:"column:total_minor_injury"`
 	Period            string `json:"period" gorm:"column:period"`
+	CityId            string `json:"city_id" gorm:"column:city_id"`
+	CityName          string `json:"city_name" gorm:"column:city_name"`
+	ProvinceId        string `json:"province_id" gorm:"column:province_id"`
+	ProvinceName      string `json:"province_name" gorm:"column:province_name"`
 
 	CreatedAt time.Time      `json:"created_at" gorm:"column:created_at"`
 	CreatedBy string         `json:"created_by" gorm:"column:created_by"`

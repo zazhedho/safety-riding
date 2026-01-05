@@ -7,6 +7,7 @@ import accidentService from '../services/accidentService';
 import budgetService from '../services/budgetService';
 import locationService from '../services/locationService';
 import marketShareService from '../services/marketShareService';
+import poldaService from '../services/poldaService';
 import { toast } from 'react-toastify';
 import { useAuth } from '../contexts/AuthContext';
 import DatePicker from 'react-datepicker';
@@ -20,6 +21,7 @@ import SchoolsByProvinceChart from '../components/charts/SchoolsByProvinceChart'
 import PublicsByCityChart from '../components/charts/PublicsByCityChart';
 import DistrictRecommendation from '../components/recommendations/DistrictRecommendation';
 import PriorityMatrixChart from '../components/charts/PriorityMatrixChart';
+import EventMap from '../components/maps/EventMap';
 
 const Dashboard = () => {
   const { hasPermission } = useAuth();
@@ -59,6 +61,13 @@ const Dashboard = () => {
   const [educationPriority, setEducationPriority] = useState(null);
   const [priorityLoading, setPriorityLoading] = useState(false);
 
+  // Events Map data
+  const [eventsMapData, setEventsMapData] = useState([]);
+  const [eventsMapLoading, setEventsMapLoading] = useState(false);
+
+  // POLDA accidents data
+  const [poldaAccidents, setPoldaAccidents] = useState([]);
+
   // Filtered data
   const [filteredEvents, setFilteredEvents] = useState([]);
   const [filteredAccidents, setFilteredAccidents] = useState([]);
@@ -94,6 +103,7 @@ const Dashboard = () => {
     fetchDashboardData();
     fetchMarketShareSuggestions();
     fetchEducationPriority();
+    fetchEventsMapData();
   }, []);
 
   const fetchEducationPriority = async () => {
@@ -110,6 +120,18 @@ const Dashboard = () => {
       console.error('Failed to load education priority', error);
     } finally {
       setPriorityLoading(false);
+    }
+  };
+
+  const fetchEventsMapData = async () => {
+    try {
+      setEventsMapLoading(true);
+      const response = await eventService.getEventsForMap();
+      setEventsMapData(response.data.data || []);
+    } catch (error) {
+      console.error('Failed to load events map data', error);
+    } finally {
+      setEventsMapLoading(false);
     }
   };
 
@@ -191,12 +213,13 @@ const Dashboard = () => {
       });
 
       // Fetch all data for charts (with reasonable limits)
-      const [schoolsData, publicsData, eventsData, accidentsData, budgetsData] = await Promise.all([
+      const [schoolsData, publicsData, eventsData, accidentsData, budgetsData, poldaData] = await Promise.all([
         schoolService.getAll({ limit: 10000 }),
         publicService.getAll({ limit: 10000 }),
         eventService.getAll({ limit: 10000 }),
         accidentService.getAll({ limit: 10000 }),
-        budgetService.getAll({ limit: 10000 })
+        budgetService.getAll({ limit: 10000 }),
+        poldaService.getAll({ limit: 10000 })
       ]);
 
       setAllSchools(schoolsData.data.data || []);
@@ -204,6 +227,7 @@ const Dashboard = () => {
       setAllEvents(eventsData.data.data || []);
       setAllAccidents(accidentsData.data.data || []);
       setAllBudgets(budgetsData.data.data || []);
+      setPoldaAccidents(poldaData.data.data || []);
 
       // Fetch recent data
       const [recentEventsRes, recentAccidentsRes] = await Promise.all([
@@ -385,8 +409,39 @@ const Dashboard = () => {
           schools={allSchools}
           events={allEvents}
           accidents={allAccidents}
+          poldaAccidents={poldaAccidents}
           marketShare={marketShareSuggestions}
         />
+      </div>
+
+      {/* Completed Events Map */}
+      <div className="card mb-4">
+        <div className="card-header d-flex justify-content-between align-items-center">
+          <div>
+            <h5 className="mb-0">
+              <i className="bi bi-geo-alt-fill me-2 text-success"></i>
+              Completed Events Map
+            </h5>
+            <small className="text-muted">Events completed in the last 6 months</small>
+          </div>
+          <span className="badge bg-success">{eventsMapData.length} events</span>
+        </div>
+        <div className="card-body p-0">
+          {eventsMapLoading ? (
+            <div className="d-flex justify-content-center align-items-center" style={{ height: '400px' }}>
+              <div className="spinner-border text-success" role="status">
+                <span className="visually-hidden">Loading...</span>
+              </div>
+            </div>
+          ) : eventsMapData.length > 0 ? (
+            <EventMap events={eventsMapData} height="400px" />
+          ) : (
+            <div className="text-center py-5 text-muted">
+              <i className="bi bi-geo-alt display-4 d-block mb-2"></i>
+              No completed events with location data in the last 6 months
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Education Priority Summary */}

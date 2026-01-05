@@ -6,6 +6,10 @@ CREATE TABLE IF NOT EXISTS polda_accidents (
     total_severe_injury     INTEGER NOT NULL DEFAULT 0,
     total_minor_injury      INTEGER NOT NULL DEFAULT 0,
     period                  VARCHAR(50) NOT NULL,
+    city_id                 VARCHAR(20),
+    city_name               VARCHAR(100),
+    province_id             VARCHAR(20),
+    province_name           VARCHAR(100),
 
     created_at              TIMESTAMP NOT NULL DEFAULT NOW(),
     created_by              TEXT,
@@ -19,6 +23,8 @@ CREATE TABLE IF NOT EXISTS polda_accidents (
 CREATE INDEX IF NOT EXISTS idx_polda_accidents_police_unit ON polda_accidents (police_unit);
 CREATE INDEX IF NOT EXISTS idx_polda_accidents_period ON polda_accidents (period);
 CREATE INDEX IF NOT EXISTS idx_polda_accidents_deleted_at ON polda_accidents (deleted_at);
+CREATE INDEX IF NOT EXISTS idx_polda_accidents_city_id ON polda_accidents (city_id);
+CREATE INDEX IF NOT EXISTS idx_polda_accidents_province_id ON polda_accidents (province_id);
 
 -- Unique constraint for police_unit + period combination
 CREATE UNIQUE INDEX IF NOT EXISTS ux_polda_accidents_police_unit_period 

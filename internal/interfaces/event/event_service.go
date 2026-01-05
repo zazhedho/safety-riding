@@ -3,6 +3,7 @@ package interfaceevent
 import (
 	"context"
 	"mime/multipart"
+	"time"
 
 	domainevent "safety-riding/internal/domain/event"
 	"safety-riding/internal/dto"
@@ -18,4 +19,5 @@ type ServiceEventInterface interface {
 	AddEventPhotos(eventId, username string, photos []dto.AddEventPhoto) ([]domainevent.EventPhoto, error)
 	DeleteEventPhoto(photoId, username string) error
 	AddEventPhotosFromFiles(ctx context.Context, eventId, username string, files []*multipart.FileHeader, captions []string, photoOrders []string) ([]domainevent.EventPhoto, error)
+	GetCompletedEventsForMap(since time.Time) ([]dto.EventMapData, error)
 }

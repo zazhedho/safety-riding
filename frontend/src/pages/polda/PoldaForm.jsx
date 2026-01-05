@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import poldaService from '../../services/poldaService';
+import locationService from '../../services/locationService';
 import { toast } from 'react-toastify';
 
 const PoldaForm = () => {
@@ -14,16 +15,49 @@ const PoldaForm = () => {
     total_deaths: 0,
     total_severe_injury: 0,
     total_minor_injury: 0,
-    period: ''
+    period: '',
+    province_id: '',
+    province_name: '',
+    city_id: '',
+    city_name: ''
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const [provinces, setProvinces] = useState([]);
+  const [cities, setCities] = useState([]);
 
   useEffect(() => {
+    fetchProvinces();
     if (isEdit) {
       fetchPoldaData();
     }
   }, [id, isEdit]);
+
+  useEffect(() => {
+    if (formData.province_id) {
+      fetchCities(formData.province_id);
+    } else {
+      setCities([]);
+    }
+  }, [formData.province_id]);
+
+  const fetchProvinces = async () => {
+    try {
+      const response = await locationService.getProvinces();
+      setProvinces(response.data.data || []);
+    } catch (error) {
+      console.error('Failed to load provinces');
+    }
+  };
+
+  const fetchCities = async (provinceCode) => {
+    try {
+      const response = await locationService.getCities(provinceCode);
+      setCities(response.data.data || []);
+    } catch (error) {
+      console.error('Failed to load cities');
+    }
+  };
 
   const fetchPoldaData = async () => {
     try {
@@ -46,10 +80,31 @@ const PoldaForm = () => {
       [name]: type === 'number' ? (value === '' ? '' : parseInt(value) || 0) : value
     }));
     
-    // Clear error when user starts typing
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
+  };
+
+  const handleProvinceChange = (e) => {
+    const provinceId = e.target.value;
+    const province = provinces.find(p => p.code === provinceId);
+    setFormData(prev => ({
+      ...prev,
+      province_id: provinceId,
+      province_name: province?.name || '',
+      city_id: '',
+      city_name: ''
+    }));
+  };
+
+  const handleCityChange = (e) => {
+    const cityId = e.target.value;
+    const city = cities.find(c => c.code === cityId);
+    setFormData(prev => ({
+      ...prev,
+      city_id: cityId,
+      city_name: city?.name || ''
+    }));
   };
 
   const validateForm = () => {
@@ -58,28 +113,28 @@ const PoldaForm = () => {
     if (!formData.police_unit.trim()) {
       newErrors.police_unit = 'Police unit is required';
     }
-
     if (!formData.period.trim()) {
       newErrors.period = 'Period is required';
     }
-
+    if (!formData.province_id) {
+      newErrors.province_id = 'Province is required';
+    }
+    if (!formData.city_id) {
+      newErrors.city_id = 'City is required';
+    }
     if (formData.total_accidents < 0 || formData.total_accidents === '') {
       newErrors.total_accidents = 'Total accidents cannot be negative';
     }
-
     if (formData.total_deaths < 0 || formData.total_deaths === '') {
       newErrors.total_deaths = 'Total deaths cannot be negative';
     }
-
     if (formData.total_severe_injury < 0 || formData.total_severe_injury === '') {
       newErrors.total_severe_injury = 'Total severe injury cannot be negative';
     }
-
     if (formData.total_minor_injury < 0 || formData.total_minor_injury === '') {
       newErrors.total_minor_injury = 'Total minor injury cannot be negative';
     }
 
-    // Logical validation
     const totalAccidents = formData.total_accidents === '' ? 0 : formData.total_accidents;
     const totalDeaths = formData.total_deaths === '' ? 0 : formData.total_deaths;
     const totalSevere = formData.total_severe_injury === '' ? 0 : formData.total_severe_injury;
@@ -105,7 +160,6 @@ const PoldaForm = () => {
     try {
       setLoading(true);
       
-      // Convert empty strings to 0 for number fields before submit
       const submitData = {
         ...formData,
         total_accidents: formData.total_accidents === '' ? 0 : formData.total_accidents,
@@ -129,10 +183,6 @@ const PoldaForm = () => {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleCancel = () => {
-    navigate('/polda-accidents');
   };
 
   if (loading && isEdit) {
@@ -191,19 +241,59 @@ const PoldaForm = () => {
                       name="period"
                       value={formData.period}
                       onChange={handleInputChange}
-                      placeholder="e.g., 2024-01, 2024-Q1, 2024"
+                      placeholder="e.g., 2024-01"
                     />
                     {errors.period && (
                       <div className="invalid-feedback">{errors.period}</div>
                     )}
-                    <div className="form-text">
-                      Format examples: 2024-01 (monthly), 2024-Q1 (quarterly), 2024 (yearly)
-                    </div>
+                  </div>
+                </div>
+
+                {/* Location */}
+                <div className="row">
+                  <div className="col-md-6 mb-3">
+                    <label htmlFor="province_id" className="form-label">
+                      Province <span className="text-danger">*</span>
+                    </label>
+                    <select
+                      className={`form-select ${errors.province_id ? 'is-invalid' : ''}`}
+                      id="province_id"
+                      value={formData.province_id}
+                      onChange={handleProvinceChange}
+                    >
+                      <option value="">Select Province</option>
+                      {provinces.map(p => (
+                        <option key={p.code} value={p.code}>{p.name}</option>
+                      ))}
+                    </select>
+                    {errors.province_id && (
+                      <div className="invalid-feedback">{errors.province_id}</div>
+                    )}
+                  </div>
+
+                  <div className="col-md-6 mb-3">
+                    <label htmlFor="city_id" className="form-label">
+                      City/Regency <span className="text-danger">*</span>
+                    </label>
+                    <select
+                      className={`form-select ${errors.city_id ? 'is-invalid' : ''}`}
+                      id="city_id"
+                      value={formData.city_id}
+                      onChange={handleCityChange}
+                      disabled={!formData.province_id}
+                    >
+                      <option value="">Select City/Regency</option>
+                      {cities.map(c => (
+                        <option key={c.code} value={c.code}>{c.name}</option>
+                      ))}
+                    </select>
+                    {errors.city_id && (
+                      <div className="invalid-feedback">{errors.city_id}</div>
+                    )}
                   </div>
                 </div>
 
                 <div className="row">
-                  {/* Total Accidents */}
                   <div className="col-md-6 mb-3">
                     <label htmlFor="total_accidents" className="form-label">
                       Total Accidents <span className="text-danger">*</span>
@@ -222,7 +312,6 @@ const PoldaForm = () => {
                     )}
                   </div>
 
-                  {/* Total Deaths */}
                   <div className="col-md-6 mb-3">
                     <label htmlFor="total_deaths" className="form-label">
                       Total Deaths <span className="text-danger">*</span>
@@ -243,7 +332,6 @@ const PoldaForm = () => {
                 </div>
 
                 <div className="row">
-                  {/* Total Severe Injury */}
                   <div className="col-md-6 mb-3">
                     <label htmlFor="total_severe_injury" className="form-label">
                       Total Severe Injury <span className="text-danger">*</span>
@@ -262,7 +350,6 @@ const PoldaForm = () => {
                     )}
                   </div>
 
-                  {/* Total Minor Injury */}
                   <div className="col-md-6 mb-3">
                     <label htmlFor="total_minor_injury" className="form-label">
                       Total Minor Injury <span className="text-danger">*</span>
@@ -332,37 +419,17 @@ const PoldaForm = () => {
                 </div>
 
                 {/* Form Actions */}
-                <div className="row">
-                  <div className="col-12">
-                    <div className="d-flex justify-content-end gap-2">
-                      <button
-                        type="button"
-                        className="btn btn-secondary"
-                        onClick={handleCancel}
-                        disabled={loading}
-                      >
-                        <i className="bi bi-x-circle me-1"></i>
-                        Cancel
-                      </button>
-                      <button
-                        type="submit"
-                        className="btn btn-primary"
-                        disabled={loading}
-                      >
-                        {loading ? (
-                          <>
-                            <span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-                            {isEdit ? 'Updating...' : 'Creating...'}
-                          </>
-                        ) : (
-                          <>
-                            <i className="bi bi-check-circle me-1"></i>
-                            {isEdit ? 'Update Data' : 'Create Data'}
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  </div>
+                <div className="d-flex justify-content-end gap-2">
+                  <button type="button" className="btn btn-secondary" onClick={() => navigate('/polda-accidents')} disabled={loading}>
+                    <i className="bi bi-x-circle me-1"></i>Cancel
+                  </button>
+                  <button type="submit" className="btn btn-primary" disabled={loading}>
+                    {loading ? (
+                      <><span className="spinner-border spinner-border-sm me-1"></span>Saving...</>
+                    ) : (
+                      <><i className="bi bi-check-circle me-1"></i>{isEdit ? 'Update' : 'Create'}</>
+                    )}
+                  </button>
                 </div>
               </form>
             </div>

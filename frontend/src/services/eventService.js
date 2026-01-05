@@ -6,6 +6,7 @@ const eventService = {
   create: (data) => api.post('/event', data),
   update: (id, data) => api.put(`/event/${id}`, data),
   delete: (id) => api.delete(`/event/${id}`),
+  getEventsForMap: () => api.get('/events/map'),
 
   // Photo endpoints
   addPhotos: (eventId, formData) => api.post(`/event/${eventId}/photos`, formData, {

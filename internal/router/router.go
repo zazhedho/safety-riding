@@ -256,6 +256,7 @@ func (r *Routes) EventRoutes() {
 	mdw := middlewares.NewMiddleware(blacklistRepo, pRepo)
 
 	r.App.GET("/api/events", mdw.AuthMiddleware(), h.FetchEvent)
+	r.App.GET("/api/events/map", mdw.AuthMiddleware(), h.GetEventsForMap)
 	event := r.App.Group("/api/event").Use(mdw.AuthMiddleware())
 	{
 		event.POST("", mdw.PermissionMiddleware("events", "create"), h.AddEvent)

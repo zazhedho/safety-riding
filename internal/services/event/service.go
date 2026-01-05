@@ -469,3 +469,46 @@ func (s *EventService) AddEventPhotosFromFiles(ctx context.Context, eventId, use
 }
 
 var _ interfaceevent.ServiceEventInterface = (*EventService)(nil)
+
+func (s *EventService) GetCompletedEventsForMap(since time.Time) ([]dto.EventMapData, error) {
+	events, err := s.EventRepo.FetchCompletedWithCoords(since)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]dto.EventMapData, 0, len(events))
+	for _, e := range events {
+		var lat, lng float64
+		var venueName, venueType string
+
+		if e.School != nil && (e.School.Latitude != 0 || e.School.Longitude != 0) {
+			lat, lng = e.School.Latitude, e.School.Longitude
+			venueName = e.School.Name
+			venueType = "school"
+		} else if e.Public != nil && (e.Public.Latitude != 0 || e.Public.Longitude != 0) {
+			lat, lng = e.Public.Latitude, e.Public.Longitude
+			venueName = e.Public.Name
+			venueType = "public"
+		}
+
+		if lat == 0 && lng == 0 {
+			continue
+		}
+
+		result = append(result, dto.EventMapData{
+			ID:             e.ID,
+			Title:          e.Title,
+			EventDate:      e.EventDate,
+			EventType:      e.EventType,
+			Location:       e.Location,
+			AttendeesCount: e.AttendeesCount,
+			Status:         e.Status,
+			Latitude:       lat,
+			Longitude:      lng,
+			VenueName:      venueName,
+			VenueType:      venueType,
+		})
+	}
+
+	return result, nil
+}

@@ -1,6 +1,8 @@
 package interfaceevent
 
 import (
+	"time"
+
 	domainevent "safety-riding/internal/domain/event"
 	"safety-riding/pkg/filter"
 )
@@ -12,6 +14,7 @@ type RepoEventInterface interface {
 	UpdateById(id string, event domainevent.Event) error
 	Fetch(params filter.BaseParams) ([]domainevent.Event, int64, error)
 	Delete(id string) error
+	FetchCompletedWithCoords(since time.Time) ([]domainevent.Event, error)
 
 	// Event Photo methods
 	AddPhotos(photos []domainevent.EventPhoto) error

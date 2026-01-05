@@ -2,6 +2,8 @@ package repositoryevent
 
 import (
 	"fmt"
+	"time"
+
 	domainevent "safety-riding/internal/domain/event"
 	interfaceevent "safety-riding/internal/interfaces/event"
 	"safety-riding/pkg/filter"
@@ -148,4 +150,12 @@ func (r *repo) AddOnTheSpotSales(sales []domainevent.EventOnTheSpotSale) error {
 
 func (r *repo) DeleteOnTheSpotSalesByEventID(eventId string) error {
 	return r.DB.Where("event_id = ?", eventId).Delete(&domainevent.EventOnTheSpotSale{}).Error
+}
+
+func (r *repo) FetchCompletedWithCoords(since time.Time) ([]domainevent.Event, error) {
+	var events []domainevent.Event
+	err := r.DB.Preload("School").Preload("Public").
+		Where("status = ? AND event_date >= ?", "completed", since.Format("2006-01-02")).
+		Find(&events).Error
+	return events, err
 }

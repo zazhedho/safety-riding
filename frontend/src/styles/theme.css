@@ -303,16 +303,18 @@ body {
 
 /* Main Content */
 .main-content {
-  margin-left: 250px;
+  margin-left: 250px !important;
   width: calc(100% - 250px);
   min-height: 100vh;
   background-color: var(--background-color);
   color: var(--text-color);
   transition: margin-left 0.3s ease, width 0.3s ease;
+  position: relative;
+  z-index: 1;
 }
 
 .sidebar-collapsed .main-content {
-  margin-left: 70px;
+  margin-left: 70px !important;
   width: calc(100% - 70px);
 }
 
@@ -1293,6 +1295,19 @@ body {
 }
 
 /* Responsive Styles */
+
+/* Desktop - ensure main content stays beside sidebar */
+@media (min-width: 769px) {
+  .main-content {
+    margin-left: 250px !important;
+    position: relative;
+    z-index: 1;
+  }
+
+  .sidebar-collapsed .main-content {
+    margin-left: 70px !important;
+  }
+}
 
 /* Tablets and below (768px) */
 @media (max-width: 768px) {

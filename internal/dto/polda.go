@@ -7,6 +7,10 @@ type CreatePoldaAccidentRequest struct {
 	TotalSevereInjury int    `json:"total_severe_injury" validate:"required,min=0"`
 	TotalMinorInjury  int    `json:"total_minor_injury" validate:"required,min=0"`
 	Period            string `json:"period" validate:"required"`
+	CityId            string `json:"city_id" validate:"required"`
+	CityName          string `json:"city_name"`
+	ProvinceId        string `json:"province_id" validate:"required"`
+	ProvinceName      string `json:"province_name"`
 }
 
 type UpdatePoldaAccidentRequest struct {
@@ -16,6 +20,10 @@ type UpdatePoldaAccidentRequest struct {
 	TotalSevereInjury int    `json:"total_severe_injury" validate:"min=0"`
 	TotalMinorInjury  int    `json:"total_minor_injury" validate:"min=0"`
 	Period            string `json:"period"`
+	CityId            string `json:"city_id"`
+	CityName          string `json:"city_name"`
+	ProvinceId        string `json:"province_id"`
+	ProvinceName      string `json:"province_name"`
 }
 
 type PoldaAccidentResponse struct {
