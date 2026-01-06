@@ -52,7 +52,7 @@ func ConnDb() (db *gorm.DB, sqlDB *sql.DB, err error) {
 	// SetConnMaxLifetime sets the maximum amount of time a connection may be reused.
 	sqlDB.SetConnMaxLifetime(maxLifeTime)
 
-	db.Debug()
+	//db.Debug()
 
 	return
 }
