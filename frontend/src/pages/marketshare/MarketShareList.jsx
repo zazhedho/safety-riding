@@ -540,7 +540,7 @@ const MarketShareList = () => {
                   {marketShares.map(item => (
                     <tr key={item.id}>
                       <td>{getMonthName(item.month)} {item.year}</td>
-                      <td>{item.district_name}, {item.city_name}</td>
+                      <td>{[item.district_name, item.city_name].filter(Boolean).join(', ')}</td>
                       <td>{formatUnits(item.monthly_sales)}</td>
                       <td>{item.monthly_sales_percentage.toFixed(1)}%</td>
                       <td>{formatUnits(item.monthly_competitor_sales)}</td>
