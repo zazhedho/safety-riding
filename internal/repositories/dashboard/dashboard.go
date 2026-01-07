@@ -3,7 +3,6 @@ package repodashboard
 import (
 	"fmt"
 	"math"
-	"strconv"
 	"time"
 
 	"safety-riding/internal/dto"
@@ -371,32 +370,24 @@ func (r *DashboardRepo) GetAccidentRecommendations() ([]dto.AccidentRecommendati
 
 	var recommendations []dto.AccidentRecommendation
 
-	// Get AHASS accidents by district using GORM
-	type DistrictCount struct {
-		CityID       int64  `gorm:"column:city_id"`
-		CityName     string `gorm:"column:city_name"`
-		DistrictID   string `gorm:"column:district_id"`
-		DistrictName string `gorm:"column:district_name"`
-		Count        int64  `gorm:"column:count"`
-	}
-
-	var ahassData []DistrictCount
-	if err := db.Table("accidents").
-		Select("city_id, city_name, district_id, district_name, COUNT(*) as count").
-		Where("deleted_at IS NULL AND accident_date >= ? AND accident_date < ?", startDate, endDate).
-		Group("city_id, city_name, district_id, district_name").
-		Having("COUNT(*) > 0").
-		Find(&ahassData).Error; err != nil {
-		return recommendations, err
-	}
-
-	// Get POLDA accidents by city using GORM (polda_accidents doesn't have district fields)
+	// Get AHASS accidents by city (aggregate from district level)
 	type CityCount struct {
 		CityID   string `gorm:"column:city_id"`
 		CityName string `gorm:"column:city_name"`
 		Count    int64  `gorm:"column:count"`
 	}
 
+	var ahassData []CityCount
+	if err := db.Table("accidents").
+		Select("CAST(city_id AS TEXT) as city_id, city_name, COUNT(*) as count").
+		Where("deleted_at IS NULL AND accident_date >= ? AND accident_date < ?", startDate, endDate).
+		Group("city_id, city_name").
+		Having("COUNT(*) > 0").
+		Find(&ahassData).Error; err != nil {
+		return recommendations, err
+	}
+
+	// Get POLDA accidents by city
 	var poldaData []CityCount
 	query := fmt.Sprintf(`
 		SELECT city_id, city_name, SUM(total_accidents) as count 
@@ -410,51 +401,53 @@ func (r *DashboardRepo) GetAccidentRecommendations() ([]dto.AccidentRecommendati
 		return recommendations, err
 	}
 
-	// Merge AHASS and POLDA data (POLDA by city, AHASS by district)
-	districtMap := make(map[string]struct {
-		CityID       string
-		CityName     string
-		DistrictID   string
-		DistrictName string
-		AhassCount   int64
-		PoldaCount   int64
+	// Merge AHASS and POLDA data by city
+	cityMap := make(map[string]struct {
+		CityID     string
+		CityName   string
+		AhassCount int64
+		PoldaCount int64
 	})
 
+	// Add AHASS data
 	for _, a := range ahassData {
-		districtMap[a.DistrictID] = struct {
-			CityID       string
-			CityName     string
-			DistrictID   string
-			DistrictName string
-			AhassCount   int64
-			PoldaCount   int64
-		}{strconv.FormatInt(a.CityID, 10), a.CityName, a.DistrictID, a.DistrictName, a.Count, 0}
+		cityMap[a.CityID] = struct {
+			CityID     string
+			CityName   string
+			AhassCount int64
+			PoldaCount int64
+		}{a.CityID, a.CityName, a.Count, 0}
 	}
 
-	// Add POLDA data by city (distribute to all districts in that city)
+	// Add POLDA data
 	for _, p := range poldaData {
-		for districtID, existing := range districtMap {
-			if existing.CityID == p.CityID {
-				existing.PoldaCount = p.Count
-				districtMap[districtID] = existing
-			}
+		if existing, exists := cityMap[p.CityID]; exists {
+			existing.PoldaCount = p.Count
+			cityMap[p.CityID] = existing
+		} else {
+			cityMap[p.CityID] = struct {
+				CityID     string
+				CityName   string
+				AhassCount int64
+				PoldaCount int64
+			}{p.CityID, p.CityName, 0, p.Count}
 		}
 	}
 
 	// Calculate weighted scores and create recommendations
-	for _, district := range districtMap {
-		if district.AhassCount > 0 || district.PoldaCount > 0 {
-			score := (float64(district.PoldaCount) * 0.8) + (float64(district.AhassCount) * 0.2)
-			totalCount := district.AhassCount + district.PoldaCount
+	for _, city := range cityMap {
+		if city.AhassCount > 0 || city.PoldaCount > 0 {
+			score := (float64(city.PoldaCount) * 0.8) + (float64(city.AhassCount) * 0.2)
+			totalCount := city.AhassCount + city.PoldaCount
 
 			recommendations = append(recommendations, dto.AccidentRecommendation{
-				CityID:       district.CityID,
-				CityName:     district.CityName,
-				DistrictID:   district.DistrictID,
-				DistrictName: district.DistrictName,
+				CityID:       city.CityID,
+				CityName:     city.CityName,
+				DistrictID:   "",
+				DistrictName: "",
 				Score:        math.Round(score*100) / 100,
-				AhassCount:   district.AhassCount,
-				PoldaCount:   district.PoldaCount,
+				AhassCount:   city.AhassCount,
+				PoldaCount:   city.PoldaCount,
 				TotalCount:   totalCount,
 			})
 		}
