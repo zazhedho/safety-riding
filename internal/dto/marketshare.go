@@ -5,18 +5,18 @@ type AddMarketShare struct {
 	ProvinceName                string  `json:"province_name" binding:"required"`
 	CityID                      string  `json:"city_id" binding:"required"`
 	CityName                    string  `json:"city_name" binding:"required"`
-	DistrictID                  string  `json:"district_id" binding:"required"`
-	DistrictName                string  `json:"district_name" binding:"required"`
+	DistrictID                  string  `json:"district_id,omitempty"`
+	DistrictName                string  `json:"district_name,omitempty"`
 	Month                       int     `json:"month" binding:"required,min=1,max=12"`
 	Year                        int     `json:"year" binding:"required,min=2000"`
 	MonthlySales                float64 `json:"monthly_sales" binding:"required,gte=0"`
 	YearlySales                 float64 `json:"yearly_sales" binding:"required,gte=0"`
 	MonthlySalesPercentage      float64 `json:"monthly_sales_percentage" binding:"required,gte=0,lte=100"`
 	YearlySalesPercentage       float64 `json:"yearly_sales_percentage" binding:"required,gte=0,lte=100"`
-	MonthlyCompetitorSales      float64 `json:"monthly_competitor_sales" binding:"required,gte=0"`
-	YearlyCompetitorSales       float64 `json:"yearly_competitor_sales" binding:"required,gte=0"`
-	MonthlyCompetitorPercentage float64 `json:"monthly_competitor_percentage" binding:"required,gte=0,lte=100"`
-	YearlyCompetitorPercentage  float64 `json:"yearly_competitor_percentage" binding:"required,gte=0,lte=100"`
+	MonthlyCompetitorSales      float64 `json:"monthly_competitor_sales" binding:"gte=0"`
+	YearlyCompetitorSales       float64 `json:"yearly_competitor_sales" binding:"gte=0"`
+	MonthlyCompetitorPercentage float64 `json:"monthly_competitor_percentage" binding:"gte=0,lte=100"`
+	YearlyCompetitorPercentage  float64 `json:"yearly_competitor_percentage" binding:"gte=0,lte=100"`
 	Notes                       string  `json:"notes,omitempty"`
 }
 
