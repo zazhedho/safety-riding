@@ -53,27 +53,49 @@ func (r *DashboardRepo) GetStats() (*dto.DashboardStats, error) {
 		return nil, err
 	}
 
-	// Count events from last 2 months (current + previous)
+	// Count events and sum attendees from last 2 months (COMBINED QUERY)
+	type EventStats struct {
+		EventCount     int64
+		TotalAttendees int64
+	}
+	var eventStats EventStats
 	if err := r.DB.Table("events").
+		Select("COUNT(*) as event_count, COALESCE(SUM(attendees_count), 0) as total_attendees").
 		Where("deleted_at IS NULL AND event_date >= ? AND event_date < ?", startDate, endDate).
-		Count(&stats.Events).Error; err != nil {
+		Scan(&eventStats).Error; err != nil {
 		return nil, err
 	}
+	stats.Events = eventStats.EventCount
 
-	// Count AHASS accidents from last 2 months
+	// Count AHASS accidents and sum deaths/injured from last 2 months (COMBINED QUERY)
+	type AccidentStats struct {
+		AccidentCount int64
+		TotalDeaths   int64
+		TotalInjured  int64
+	}
+	var accidentStats AccidentStats
 	if err := r.DB.Table("accidents").
+		Select("COUNT(*) as accident_count, COALESCE(SUM(death_count), 0) as total_deaths, COALESCE(SUM(injured_count), 0) as total_injured").
 		Where("deleted_at IS NULL AND accident_date >= ? AND accident_date < ?", startDate, endDate).
-		Count(&stats.AhassAccidents).Error; err != nil {
+		Scan(&accidentStats).Error; err != nil {
 		return nil, err
 	}
+	stats.AhassAccidents = accidentStats.AccidentCount
 
-	// Sum POLDA accidents from last 2 months
+	// Sum POLDA accidents, deaths, and injured from last 2 months (COMBINED QUERY)
+	type PoldaStats struct {
+		TotalAccidents int64
+		TotalDeaths    int64
+		TotalInjured   int64
+	}
+	var poldaStats PoldaStats
 	if err := r.DB.Table("polda_accidents").
+		Select("COALESCE(SUM(total_accidents), 0) as total_accidents, COALESCE(SUM(total_deaths), 0) as total_deaths, COALESCE(SUM(total_severe_injury + total_minor_injury), 0) as total_injured").
 		Where("deleted_at IS NULL AND period IN (?, ?)", prevPeriod, currentPeriod).
-		Select("COALESCE(SUM(total_accidents), 0)").
-		Scan(&stats.PoldaAccidents).Error; err != nil {
+		Scan(&poldaStats).Error; err != nil {
 		return nil, err
 	}
+	stats.PoldaAccidents = poldaStats.TotalAccidents
 
 	// Count budgets from last 2 months
 	if err := r.DB.Table("event_budgets").
@@ -86,43 +108,13 @@ func (r *DashboardRepo) GetStats() (*dto.DashboardStats, error) {
 	stats.Accidents = stats.AhassAccidents + stats.PoldaAccidents
 
 	// ===== ADDITIONAL STATS =====
-	// Total deaths and injured from AHASS accidents (last 2 months)
-	type DeathsInjuredSum struct {
-		TotalDeaths  int64
-		TotalInjured int64
-	}
-	var deathsInjured DeathsInjuredSum
-	if err := r.DB.Table("accidents").
-		Select("COALESCE(SUM(death_count), 0) as total_deaths, COALESCE(SUM(injured_count), 0) as total_injured").
-		Where("deleted_at IS NULL AND accident_date >= ? AND accident_date < ?", startDate, endDate).
-		Scan(&deathsInjured).Error; err != nil {
-		return nil, err
-	}
+	// Use data from combined queries above
+	stats.AdditionalStats.TotalDeaths = accidentStats.TotalDeaths + poldaStats.TotalDeaths
+	stats.AdditionalStats.TotalInjured = accidentStats.TotalInjured + poldaStats.TotalInjured
 
-	// Add POLDA deaths and injured
-	var poldaDeathsInjured DeathsInjuredSum
-	r.DB.Table("polda_accidents").
-		Select("COALESCE(SUM(total_deaths), 0) as total_deaths, COALESCE(SUM(total_severe_injury + total_minor_injury), 0) as total_injured").
-		Where("deleted_at IS NULL AND period IN (?, ?)", prevPeriod, currentPeriod).
-		Scan(&poldaDeathsInjured)
-
-	stats.AdditionalStats.TotalDeaths = deathsInjured.TotalDeaths + poldaDeathsInjured.TotalDeaths
-	stats.AdditionalStats.TotalInjured = deathsInjured.TotalInjured + poldaDeathsInjured.TotalInjured
-
-	// Average attendees per event
-	type AvgAttendees struct {
-		TotalAttendees int64
-		EventCount     int64
-	}
-	var avgAtt AvgAttendees
-	if err := r.DB.Table("events").
-		Select("COALESCE(SUM(attendees_count), 0) as total_attendees, COUNT(*) as event_count").
-		Where("deleted_at IS NULL AND event_date >= ? AND event_date < ?", startDate, endDate).
-		Scan(&avgAtt).Error; err != nil {
-		return nil, err
-	}
-	if avgAtt.EventCount > 0 {
-		stats.AdditionalStats.AvgAttendeesPerEvent = avgAtt.TotalAttendees / avgAtt.EventCount
+	// Average attendees per event (using data from combined query)
+	if eventStats.EventCount > 0 {
+		stats.AdditionalStats.AvgAttendeesPerEvent = eventStats.TotalAttendees / eventStats.EventCount
 	}
 
 	// Budget utilization rate
@@ -144,18 +136,28 @@ func (r *DashboardRepo) GetStats() (*dto.DashboardStats, error) {
 
 	// ===== TRAINED ENTITIES (Schools and Publics with completed events) =====
 	// Count schools with completed events
-	r.DB.Table("schools").
-		Joins("JOIN events ON schools.id = events.school_id").
-		Where("schools.deleted_at IS NULL AND events.deleted_at IS NULL AND events.status = ?", "completed").
-		Distinct("schools.id").
-		Count(&stats.AdditionalStats.TrainedSchools)
+	if err := r.DB.Raw(`
+		SELECT COUNT(DISTINCT schools.id)
+		FROM schools
+		JOIN events ON schools.id = events.school_id
+		WHERE schools.deleted_at IS NULL
+		  AND events.deleted_at IS NULL
+		  AND events.status = ?
+	`, "completed").Scan(&stats.AdditionalStats.TrainedSchools).Error; err != nil {
+		return nil, err
+	}
 
 	// Count publics with completed events
-	r.DB.Table("publics").
-		Joins("JOIN events ON publics.id = events.public_id").
-		Where("publics.deleted_at IS NULL AND events.deleted_at IS NULL AND events.status = ?", "completed").
-		Distinct("publics.id").
-		Count(&stats.AdditionalStats.TrainedPublics)
+	if err := r.DB.Raw(`
+		SELECT COUNT(DISTINCT publics.id)
+		FROM publics
+		JOIN events ON publics.id = events.public_id
+		WHERE publics.deleted_at IS NULL
+		  AND events.deleted_at IS NULL
+		  AND events.status = ?
+	`, "completed").Scan(&stats.AdditionalStats.TrainedPublics).Error; err != nil {
+		return nil, err
+	}
 
 	// ===== ACCIDENT TRENDS (Last 12 months) =====
 	type AccidentTrendRaw struct {
@@ -176,12 +178,14 @@ func (r *DashboardRepo) GetStats() (*dto.DashboardStats, error) {
 
 	// Get POLDA trends
 	var poldaTrends []AccidentTrendRaw
-	r.DB.Table("polda_accidents").
+	if err := r.DB.Table("polda_accidents").
 		Select("period as year_month, COALESCE(SUM(total_accidents), 0) as count, COALESCE(SUM(total_deaths), 0) as deaths, COALESCE(SUM(total_severe_injury + total_minor_injury), 0) as injured").
 		Where("deleted_at IS NULL AND period >= ?", firstDay12MonthsAgo.Format("2006-01")).
 		Group("period").
 		Order("period ASC").
-		Scan(&poldaTrends)
+		Scan(&poldaTrends).Error; err != nil {
+		return nil, err
+	}
 
 	// Merge AHASS and POLDA trends
 	trendMap := make(map[string]*dto.AccidentTrendData)
