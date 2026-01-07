@@ -208,9 +208,26 @@ func (r *DashboardRepo) GetStats() (*dto.DashboardStats, error) {
 		}
 	}
 
-	// Convert map to slice and sort
-	for _, trend := range trendMap {
-		stats.AccidentTrends = append(stats.AccidentTrends, *trend)
+	// Convert map to slice and sort chronologically
+	var periods []string
+	for period := range trendMap {
+		periods = append(periods, period)
+	}
+
+	// Sort periods chronologically (YYYY-MM format)
+	for i := 0; i < len(periods); i++ {
+		for j := i + 1; j < len(periods); j++ {
+			if periods[i] > periods[j] {
+				periods[i], periods[j] = periods[j], periods[i]
+			}
+		}
+	}
+
+	// Add trends in chronological order
+	for _, period := range periods {
+		if trend, exists := trendMap[period]; exists {
+			stats.AccidentTrends = append(stats.AccidentTrends, *trend)
+		}
 	}
 
 	// ===== EVENT DISTRIBUTION (Last 2 months) =====

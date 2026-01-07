@@ -223,7 +223,7 @@ const DistrictRecommendation = ({ schools, events, accidents, poldaAccidents = [
   const weightedAccident = getWeightedAccidentRecommendation();
   const marketShareRec = getMarketShareRecommendation();
 
-  if (!uneducatedRec && !weightedAccident.topCity && !marketShareRec) {
+  if (!uneducatedRec && (!accidentRecommendations || accidentRecommendations.length === 0) && !marketShareRec) {
     return (
       <div className="alert alert-info">
         <i className="bi bi-info-circle me-2"></i>
@@ -385,7 +385,7 @@ const DistrictRecommendation = ({ schools, events, accidents, poldaAccidents = [
       )}
 
       {/* Recommendation 3: Weighted Accident Priority (80% POLDA + 20% AHASS) */}
-      {weightedAccident.topCity && (
+      {accidentRecommendations && accidentRecommendations.length > 0 && (
         <div className="col-lg-4">
           <div className="card border-danger h-100">
             <div className="card-header bg-danger bg-opacity-10">
@@ -397,18 +397,15 @@ const DistrictRecommendation = ({ schools, events, accidents, poldaAccidents = [
             <div className="card-body">
               <div className="d-flex align-items-start mb-3">
                 <div className="flex-grow-1">
-                  <h4 className="mb-1">{weightedAccident.topCity.city_name}</h4>
+                  <h4 className="mb-1">{accidentRecommendations[0].city_name}</h4>
                   <p className="text-muted mb-2">
                     <i className="bi bi-geo-alt me-1"></i>
-                    {weightedAccident.topCity.province_name}
-                    {weightedAccident.topCity.police_unit && (
-                      <span className="ms-1">({weightedAccident.topCity.police_unit})</span>
-                    )}
+                    {accidentRecommendations[0].district_name}
                   </p>
                 </div>
                 <div className="text-end">
                   <div className="badge bg-danger fs-6 px-3 py-2">
-                    Score: {(weightedAccident.topCity.total_score * 100).toFixed(0)}
+                    Score: {accidentRecommendations[0].score}
                   </div>
                 </div>
               </div>
@@ -427,9 +424,8 @@ const DistrictRecommendation = ({ schools, events, accidents, poldaAccidents = [
                     <div className="small text-muted mb-1">
                       <i className="bi bi-shield-fill me-1"></i>POLDA (80%)
                     </div>
-                    <div className="fw-bold text-danger">{weightedAccident.topCity.polda_accidents}</div>
+                    <div className="fw-bold text-danger">{accidentRecommendations[0].polda_count}</div>
                     <div className="small">accidents</div>
-                    <div className="small text-muted">{weightedAccident.topCity.polda_deaths} deaths</div>
                   </div>
                 </div>
                 <div className="col-6">
@@ -437,9 +433,8 @@ const DistrictRecommendation = ({ schools, events, accidents, poldaAccidents = [
                     <div className="small text-muted mb-1">
                       <i className="bi bi-shop me-1"></i>AHASS (20%)
                     </div>
-                    <div className="fw-bold text-warning">{weightedAccident.topCity.ahass_count}</div>
+                    <div className="fw-bold text-warning">{accidentRecommendations[0].ahass_count}</div>
                     <div className="small">reports</div>
-                    <div className="small text-muted">{weightedAccident.topCity.ahass_deaths} deaths</div>
                   </div>
                 </div>
               </div>
@@ -449,6 +444,7 @@ const DistrictRecommendation = ({ schools, events, accidents, poldaAccidents = [
                   <i className="bi bi-lightbulb me-2"></i>Action Items:
                 </h6>
                 <ul className="small mb-0">
+                  <li>Schedule safety riding event for next month</li>
                   <li>Prioritize this area for immediate intervention</li>
                   <li>Collaborate with local traffic police</li>
                   <li>Conduct intensive safety awareness campaign</li>
@@ -458,8 +454,8 @@ const DistrictRecommendation = ({ schools, events, accidents, poldaAccidents = [
             <div className="card-footer bg-transparent">
               <div className="d-flex justify-content-between align-items-center">
                 <small className="text-muted">
-                  <i className="bi bi-calculator me-1"></i>
-                  Total: {weightedAccident.poldaTotal} POLDA + {weightedAccident.ahassTotal} AHASS
+                  <i className="bi bi-calendar-check me-1"></i>
+                  Recommended for next month event
                 </small>
                 <span className="badge bg-danger">Critical</span>
               </div>
