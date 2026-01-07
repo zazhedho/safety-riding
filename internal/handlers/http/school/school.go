@@ -201,7 +201,7 @@ func (h *SchoolHandler) FetchSchool(ctx *gin.Context) {
 	}
 
 	res := response.PaginationResponse(http.StatusOK, int(totalData), params.Page, params.Limit, logId, schools)
-	logger.WriteLog(logger.LogLevelDebug, fmt.Sprintf("%s; Response: %+v;", logPrefix, utils.JsonEncode(schools)))
+	logger.WriteLog(logger.LogLevelDebug, fmt.Sprintf("%s; Response: %+v;", logPrefix, int(totalData)))
 	ctx.JSON(http.StatusOK, res)
 
 }

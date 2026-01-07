@@ -1,6 +1,7 @@
 package repodashboard
 
 import (
+	"fmt"
 	"math"
 	"strconv"
 	"time"
@@ -351,42 +352,67 @@ func (r *DashboardRepo) GetStats() (*dto.DashboardStats, error) {
 }
 
 func (r *DashboardRepo) GetAccidentRecommendations() ([]dto.AccidentRecommendation, error) {
+	// Use same date calculation as GetStats()
 	now := time.Now()
-	prevMonth := now.AddDate(0, -1, 0).Format("2006-01")
+	firstDayCurrentMonth := time.Date(now.Year(), now.Month(), 1, 0, 0, 0, 0, now.Location())
+	firstDayPrevMonth := firstDayCurrentMonth.AddDate(0, -1, 0)
+	firstDayNextMonth := firstDayCurrentMonth.AddDate(0, 1, 0)
+
+	// Format dates as strings (YYYY-MM-DD)
+	startDate := firstDayPrevMonth.Format("2006-01-02")
+	endDate := firstDayNextMonth.Format("2006-01-02")
+
+	// Period format for POLDA (YYYY-MM)
+	currentPeriod := firstDayCurrentMonth.Format("2006-01")
+	prevPeriod := firstDayPrevMonth.Format("2006-01")
+
+	// Disable prepared statements to avoid conflicts
+	db := r.DB.Session(&gorm.Session{PrepareStmt: false})
 
 	var recommendations []dto.AccidentRecommendation
 
-	// Simple approach: Get AHASS accidents first
+	// Get AHASS accidents by district using GORM
 	type DistrictCount struct {
-		CityID       int64  `json:"city_id"`
-		CityName     string `json:"city_name"`
-		DistrictID   string `json:"district_id"`
-		DistrictName string `json:"district_name"`
-		Count        int64  `json:"count"`
+		CityID       int64  `gorm:"column:city_id"`
+		CityName     string `gorm:"column:city_name"`
+		DistrictID   string `gorm:"column:district_id"`
+		DistrictName string `gorm:"column:district_name"`
+		Count        int64  `gorm:"column:count"`
 	}
 
 	var ahassData []DistrictCount
-	r.DB.Raw(`
-		SELECT city_id, city_name, district_id, district_name, COUNT(*) as count
-		FROM accidents 
-		WHERE deleted_at IS NULL AND accident_date LIKE ?
-		GROUP BY city_id, city_name, district_id, district_name
-		HAVING COUNT(*) > 0
-	`, prevMonth+"%").Scan(&ahassData)
+	if err := db.Table("accidents").
+		Select("city_id, city_name, district_id, district_name, COUNT(*) as count").
+		Where("deleted_at IS NULL AND accident_date >= ? AND accident_date < ?", startDate, endDate).
+		Group("city_id, city_name, district_id, district_name").
+		Having("COUNT(*) > 0").
+		Find(&ahassData).Error; err != nil {
+		return recommendations, err
+	}
 
-	// Get POLDA accidents
-	var poldaData []DistrictCount
-	r.DB.Raw(`
-		SELECT city_id, city_name, district_id, district_name, SUM(total_accidents) as count
+	// Get POLDA accidents by city using GORM (polda_accidents doesn't have district fields)
+	type CityCount struct {
+		CityID   string `gorm:"column:city_id"`
+		CityName string `gorm:"column:city_name"`
+		Count    int64  `gorm:"column:count"`
+	}
+
+	var poldaData []CityCount
+	query := fmt.Sprintf(`
+		SELECT city_id, city_name, SUM(total_accidents) as count 
 		FROM polda_accidents 
-		WHERE deleted_at IS NULL AND period = ?
-		GROUP BY city_id, city_name, district_id, district_name
+		WHERE deleted_at IS NULL AND period IN ('%s', '%s') 
+		GROUP BY city_id, city_name 
 		HAVING SUM(total_accidents) > 0
-	`, prevMonth).Scan(&poldaData)
+	`, prevPeriod, currentPeriod)
 
-	// Merge data manually
+	if err := db.Raw(query).Scan(&poldaData).Error; err != nil {
+		return recommendations, err
+	}
+
+	// Merge AHASS and POLDA data (POLDA by city, AHASS by district)
 	districtMap := make(map[string]struct {
-		CityID       int64
+		CityID       string
 		CityName     string
 		DistrictID   string
 		DistrictName string
@@ -396,49 +422,35 @@ func (r *DashboardRepo) GetAccidentRecommendations() ([]dto.AccidentRecommendati
 
 	for _, a := range ahassData {
 		districtMap[a.DistrictID] = struct {
-			CityID       int64
+			CityID       string
 			CityName     string
 			DistrictID   string
 			DistrictName string
 			AhassCount   int64
 			PoldaCount   int64
-		}{a.CityID, a.CityName, a.DistrictID, a.DistrictName, a.Count, 0}
+		}{strconv.FormatInt(a.CityID, 10), a.CityName, a.DistrictID, a.DistrictName, a.Count, 0}
 	}
 
+	// Add POLDA data by city (distribute to all districts in that city)
 	for _, p := range poldaData {
-		if existing, exists := districtMap[p.DistrictID]; exists {
-			existing.PoldaCount = p.Count
-			districtMap[p.DistrictID] = existing
-		} else {
-			districtMap[p.DistrictID] = struct {
-				CityID       int64
-				CityName     string
-				DistrictID   string
-				DistrictName string
-				AhassCount   int64
-				PoldaCount   int64
-			}{p.CityID, p.CityName, p.DistrictID, p.DistrictName, 0, p.Count}
+		for districtID, existing := range districtMap {
+			if existing.CityID == p.CityID {
+				existing.PoldaCount = p.Count
+				districtMap[districtID] = existing
+			}
 		}
 	}
 
-	// Calculate scores
+	// Calculate weighted scores and create recommendations
 	for _, district := range districtMap {
 		if district.AhassCount > 0 || district.PoldaCount > 0 {
 			score := (float64(district.PoldaCount) * 0.8) + (float64(district.AhassCount) * 0.2)
 			totalCount := district.AhassCount + district.PoldaCount
 
-			districtIDInt := int64(0)
-			if district.DistrictID != "" {
-				// Simple conversion from string to int64
-				if id, err := strconv.ParseInt(district.DistrictID, 10, 64); err == nil {
-					districtIDInt = id
-				}
-			}
-
 			recommendations = append(recommendations, dto.AccidentRecommendation{
 				CityID:       district.CityID,
 				CityName:     district.CityName,
-				DistrictID:   districtIDInt,
+				DistrictID:   district.DistrictID,
 				DistrictName: district.DistrictName,
 				Score:        math.Round(score*100) / 100,
 				AhassCount:   district.AhassCount,

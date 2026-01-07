@@ -84,9 +84,9 @@ type RecentAccident struct {
 
 // AccidentRecommendation represents district accident recommendation
 type AccidentRecommendation struct {
-	CityID       int64   `json:"city_id"`
+	CityID       string  `json:"city_id"`
 	CityName     string  `json:"city_name"`
-	DistrictID   int64   `json:"district_id"`
+	DistrictID   string  `json:"district_id"`
 	DistrictName string  `json:"district_name"`
 	Score        float64 `json:"score"`
 	AhassCount   int64   `json:"ahass_count"`
