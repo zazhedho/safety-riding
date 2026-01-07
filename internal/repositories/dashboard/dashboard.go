@@ -1,6 +1,8 @@
 package repodashboard
 
 import (
+	"math"
+	"strconv"
 	"time"
 
 	"safety-riding/internal/dto"
@@ -136,8 +138,24 @@ func (r *DashboardRepo) GetStats() (*dto.DashboardStats, error) {
 		return nil, err
 	}
 	if budgetSum.TotalAllocated > 0 {
-		stats.AdditionalStats.BudgetUtilizationRate = (budgetSum.TotalSpent / budgetSum.TotalAllocated) * 100
+		rate := (budgetSum.TotalSpent / budgetSum.TotalAllocated) * 100
+		stats.AdditionalStats.BudgetUtilizationRate = math.Round(rate*100) / 100
 	}
+
+	// ===== TRAINED ENTITIES (Schools and Publics with completed events) =====
+	// Count schools with completed events
+	r.DB.Table("schools").
+		Joins("JOIN events ON schools.id = events.school_id").
+		Where("schools.deleted_at IS NULL AND events.deleted_at IS NULL AND events.status = ?", "completed").
+		Distinct("schools.id").
+		Count(&stats.AdditionalStats.TrainedSchools)
+
+	// Count publics with completed events
+	r.DB.Table("publics").
+		Joins("JOIN events ON publics.id = events.public_id").
+		Where("publics.deleted_at IS NULL AND events.deleted_at IS NULL AND events.status = ?", "completed").
+		Distinct("publics.id").
+		Count(&stats.AdditionalStats.TrainedPublics)
 
 	// ===== ACCIDENT TRENDS (Last 12 months) =====
 	type AccidentTrendRaw struct {
@@ -243,6 +261,7 @@ func (r *DashboardRepo) GetStats() (*dto.DashboardStats, error) {
 	// ===== RECENT EVENTS (Last 5) =====
 	type RecentEventRaw struct {
 		ID         string
+		Title      string
 		EventType  string
 		EventDate  string
 		SchoolName string
@@ -250,7 +269,7 @@ func (r *DashboardRepo) GetStats() (*dto.DashboardStats, error) {
 	}
 	var recentEvents []RecentEventRaw
 	if err := r.DB.Table("events").
-		Select("events.id, events.event_type, events.event_date, schools.name as school_name, publics.name as public_name").
+		Select("events.id, events.title, events.event_type, events.event_date, schools.name as school_name, publics.name as public_name").
 		Joins("LEFT JOIN schools ON events.school_id = schools.id").
 		Joins("LEFT JOIN publics ON events.public_id = publics.id").
 		Where("events.deleted_at IS NULL").
@@ -270,6 +289,7 @@ func (r *DashboardRepo) GetStats() (*dto.DashboardStats, error) {
 		}
 		stats.RecentEvents = append(stats.RecentEvents, dto.RecentEvent{
 			ID:        e.ID,
+			Title:     e.Title,
 			EventType: e.EventType,
 			EventDate: e.EventDate,
 			Location:  location,
@@ -311,6 +331,107 @@ func (r *DashboardRepo) GetStats() (*dto.DashboardStats, error) {
 	}
 
 	return &stats, nil
+}
+
+func (r *DashboardRepo) GetAccidentRecommendations() ([]dto.AccidentRecommendation, error) {
+	now := time.Now()
+	prevMonth := now.AddDate(0, -1, 0).Format("2006-01")
+
+	var recommendations []dto.AccidentRecommendation
+
+	// Simple approach: Get AHASS accidents first
+	type DistrictCount struct {
+		CityID       int64  `json:"city_id"`
+		CityName     string `json:"city_name"`
+		DistrictID   string `json:"district_id"`
+		DistrictName string `json:"district_name"`
+		Count        int64  `json:"count"`
+	}
+
+	var ahassData []DistrictCount
+	r.DB.Raw(`
+		SELECT city_id, city_name, district_id, district_name, COUNT(*) as count
+		FROM accidents 
+		WHERE deleted_at IS NULL AND accident_date LIKE ?
+		GROUP BY city_id, city_name, district_id, district_name
+		HAVING COUNT(*) > 0
+	`, prevMonth+"%").Scan(&ahassData)
+
+	// Get POLDA accidents
+	var poldaData []DistrictCount
+	r.DB.Raw(`
+		SELECT city_id, city_name, district_id, district_name, SUM(total_accidents) as count
+		FROM polda_accidents 
+		WHERE deleted_at IS NULL AND period = ?
+		GROUP BY city_id, city_name, district_id, district_name
+		HAVING SUM(total_accidents) > 0
+	`, prevMonth).Scan(&poldaData)
+
+	// Merge data manually
+	districtMap := make(map[string]struct {
+		CityID       int64
+		CityName     string
+		DistrictID   string
+		DistrictName string
+		AhassCount   int64
+		PoldaCount   int64
+	})
+
+	for _, a := range ahassData {
+		districtMap[a.DistrictID] = struct {
+			CityID       int64
+			CityName     string
+			DistrictID   string
+			DistrictName string
+			AhassCount   int64
+			PoldaCount   int64
+		}{a.CityID, a.CityName, a.DistrictID, a.DistrictName, a.Count, 0}
+	}
+
+	for _, p := range poldaData {
+		if existing, exists := districtMap[p.DistrictID]; exists {
+			existing.PoldaCount = p.Count
+			districtMap[p.DistrictID] = existing
+		} else {
+			districtMap[p.DistrictID] = struct {
+				CityID       int64
+				CityName     string
+				DistrictID   string
+				DistrictName string
+				AhassCount   int64
+				PoldaCount   int64
+			}{p.CityID, p.CityName, p.DistrictID, p.DistrictName, 0, p.Count}
+		}
+	}
+
+	// Calculate scores
+	for _, district := range districtMap {
+		if district.AhassCount > 0 || district.PoldaCount > 0 {
+			score := (float64(district.PoldaCount) * 0.8) + (float64(district.AhassCount) * 0.2)
+			totalCount := district.AhassCount + district.PoldaCount
+
+			districtIDInt := int64(0)
+			if district.DistrictID != "" {
+				// Simple conversion from string to int64
+				if id, err := strconv.ParseInt(district.DistrictID, 10, 64); err == nil {
+					districtIDInt = id
+				}
+			}
+
+			recommendations = append(recommendations, dto.AccidentRecommendation{
+				CityID:       district.CityID,
+				CityName:     district.CityName,
+				DistrictID:   districtIDInt,
+				DistrictName: district.DistrictName,
+				Score:        math.Round(score*100) / 100,
+				AhassCount:   district.AhassCount,
+				PoldaCount:   district.PoldaCount,
+				TotalCount:   totalCount,
+			})
+		}
+	}
+
+	return recommendations, nil
 }
 
 // Helper function to format period from "YYYY-MM" to "Mon YYYY"

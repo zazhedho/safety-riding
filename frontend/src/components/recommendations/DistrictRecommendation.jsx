@@ -11,9 +11,27 @@ const formatDifferenceLabel = (difference) => {
 const POLDA_WEIGHT = 0.8;  // 80% from POLDA data
 const AHASS_WEIGHT = 0.2;  // 20% from AHASS/Dealer data
 
-const DistrictRecommendation = ({ schools, events, accidents, poldaAccidents = [], marketShare }) => {
-  // Calculate weighted accident score combining POLDA (80%) and AHASS (20%)
+const DistrictRecommendation = ({ schools, events, accidents, poldaAccidents = [], marketShare, accidentRecommendations = [] }) => {
+  // Use backend accident recommendations if available, otherwise calculate locally
   const getWeightedAccidentRecommendation = () => {
+    if (accidentRecommendations && accidentRecommendations.length > 0) {
+      // Use backend recommendations (already calculated with proper weighting)
+      return accidentRecommendations
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 5)
+        .map(rec => ({
+          city_id: rec.city_id,
+          city_name: rec.city_name,
+          district_id: rec.district_id,
+          district_name: rec.district_name,
+          score: rec.score,
+          ahass_count: rec.ahass_count,
+          polda_count: rec.polda_count,
+          total_count: rec.total_count
+        }));
+    }
+
+    // Fallback to local calculation if backend data not available
     // Get previous month for filtering
     const now = new Date();
     const prevMonth = new Date(now.getFullYear(), now.getMonth() - 1);

@@ -34,8 +34,8 @@ const Dashboard = () => {
     totalInjured: 0,
     avgAttendeesPerEvent: 0,
     budgetUtilizationRate: 0,
-    activeSchools: 0,
-    activePublics: 0
+    trainedSchools: 0,
+    trainedPublics: 0
   });
 
   // Data for charts (aggregated from backend)
@@ -44,6 +44,9 @@ const Dashboard = () => {
   const [eventDistribution, setEventDistribution] = useState([]);
   const [accidentTrends, setAccidentTrends] = useState([]);
   const [budgetUtilization, setBudgetUtilization] = useState([]);
+
+  // Accident recommendations from backend
+  const [accidentRecommendations, setAccidentRecommendations] = useState([]);
 
   const [marketShareSuggestions, setMarketShareSuggestions] = useState({
     topCities: [],
@@ -147,11 +150,11 @@ const Dashboard = () => {
     try {
       setLoading(true);
 
-      // Fetch aggregated stats and chart data from backend (optimized - only 3 requests!)
+      // Fetch aggregated stats from backend (optimized)
       const [statsRes, schoolsData, publicsData] = await Promise.all([
         dashboardService.getStats(),
-        schoolService.getAll({ limit: 10000 }),  // Get all schools
-        publicService.getAll({ limit: 10000 })    // Get all publics
+        schoolService.getAll({ limit: 1000 }),
+        publicService.getAll({ limit: 1000 })
       ]);
 
       const dashboardData = statsRes.data.data;
@@ -171,8 +174,8 @@ const Dashboard = () => {
         totalInjured: dashboardData.additional_stats.total_injured,
         avgAttendeesPerEvent: dashboardData.additional_stats.avg_attendees_per_event,
         budgetUtilizationRate: dashboardData.additional_stats.budget_utilization_rate,
-        activeSchools: 0,
-        activePublics: 0
+        trainedSchools: dashboardData.additional_stats.trained_schools,
+        trainedPublics: dashboardData.additional_stats.trained_publics
       });
 
       // Set chart data from backend (already aggregated!)
@@ -187,6 +190,9 @@ const Dashboard = () => {
       // Set recent data from backend
       setRecentEvents(dashboardData.recent_events || []);
       setRecentAccidents(dashboardData.recent_accidents || []);
+      
+      // Set accident recommendations from backend
+      setAccidentRecommendations(dashboardData.accident_recommendations || []);
 
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
@@ -256,6 +262,7 @@ const Dashboard = () => {
           accidents={[]}
           poldaAccidents={[]}
           marketShare={marketShareSuggestions}
+          accidentRecommendations={accidentRecommendations}
         />
       </div>
 
@@ -403,7 +410,7 @@ const Dashboard = () => {
                 <div className="stats-number">{(stats.schools || 0) + (stats.publics || 0)}</div>
                 <small className="text-success d-block">
                   <i className="bi bi-check-circle me-1"></i>
-                  {(additionalStats.activeSchools || 0) + (additionalStats.activePublics || 0)} of {(stats.schools || 0) + (stats.publics || 0)} trained (6M)
+                  {(additionalStats.trainedSchools || 0) + (additionalStats.trainedPublics || 0)} of {(stats.schools || 0) + (stats.publics || 0)} trained (6M)
                   <span className="stats-info-tooltip">
                     <i
                       className="bi bi-info-circle ms-1"
@@ -684,19 +691,8 @@ const Dashboard = () => {
                         <div className="flex-grow-1">
                           <h6 className="mb-1">{event.title}</h6>
                           <p className="mb-1 text-muted small">
-                            {event.school ? (
-                              <>
-                                <i className="bi bi-building me-1"></i>
-                                {event.school.name}
-                              </>
-                            ) : event.public ? (
-                              <>
-                                <i className="bi bi-people me-1"></i>
-                                {event.public.name}
-                              </>
-                            ) : (
-                              'N/A'
-                            )}
+                            <i className="bi bi-geo-alt me-1"></i>
+                            {event.location || 'N/A'}
                           </p>
                           <p className="mb-0 text-muted small">
                             <i className="bi bi-calendar3 me-1"></i>

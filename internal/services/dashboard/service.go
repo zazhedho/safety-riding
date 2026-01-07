@@ -19,5 +19,22 @@ func (s *DashboardService) GetSummary() (dto.DashboardSummary, error) {
 }
 
 func (s *DashboardService) GetStats() (*dto.DashboardStats, error) {
-	return s.DashboardRepo.GetStats()
+	stats, err := s.DashboardRepo.GetStats()
+	if err != nil {
+		return nil, err
+	}
+
+	// Get accident recommendations separately
+	recommendations, err := s.DashboardRepo.GetAccidentRecommendations()
+	if err != nil {
+		// Don't fail the whole request if recommendations fail
+		recommendations = []dto.AccidentRecommendation{}
+	}
+	stats.AccidentRecommendations = recommendations
+
+	return stats, nil
+}
+
+func (s *DashboardService) GetAccidentRecommendations() ([]dto.AccidentRecommendation, error) {
+	return s.DashboardRepo.GetAccidentRecommendations()
 }
