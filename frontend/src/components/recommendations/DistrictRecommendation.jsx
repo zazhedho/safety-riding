@@ -14,9 +14,25 @@ const AHASS_WEIGHT = 0.2;  // 20% from AHASS/Dealer data
 const DistrictRecommendation = ({ schools, events, accidents, poldaAccidents = [], marketShare }) => {
   // Calculate weighted accident score combining POLDA (80%) and AHASS (20%)
   const getWeightedAccidentRecommendation = () => {
+    // Get previous month for filtering
+    const now = new Date();
+    const prevMonth = new Date(now.getFullYear(), now.getMonth() - 1);
+    const prevMonthStr = `${prevMonth.getFullYear()}-${String(prevMonth.getMonth() + 1).padStart(2, '0')}`;
+    
+    // Filter POLDA data by previous month
+    const filteredPoldaAccidents = poldaAccidents.filter(p => p.period === prevMonthStr);
+    
+    // Filter AHASS data by previous month
+    const filteredAccidents = accidents.filter(acc => {
+      if (!acc.accident_date) return false;
+      const accDate = new Date(acc.accident_date);
+      return accDate.getFullYear() === prevMonth.getFullYear() && 
+             accDate.getMonth() === prevMonth.getMonth();
+    });
+    
     // Aggregate POLDA data by city_id (now that we have location data)
     const poldaByCity = {};
-    poldaAccidents.forEach(p => {
+    filteredPoldaAccidents.forEach(p => {
       const cityId = p.city_id || 'unknown';
       const cityName = p.city_name || p.police_unit || 'Unknown';
       const provinceName = p.province_name || 'NTB';
@@ -41,7 +57,7 @@ const DistrictRecommendation = ({ schools, events, accidents, poldaAccidents = [
 
     // Aggregate AHASS data by city_id
     const ahassByCity = {};
-    accidents.forEach(acc => {
+    filteredAccidents.forEach(acc => {
       const cityId = acc.city_id || 'unknown';
       const cityName = acc.city_name || 'Unknown City';
       const provinceName = acc.province_name || 'Unknown Province';

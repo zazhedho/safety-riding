@@ -199,39 +199,66 @@ const Dashboard = () => {
     try {
       setLoading(true);
 
-      // Fetch basic statistics
-      const [schoolsRes, publicsRes, eventsRes, accidentsRes, budgetsRes] = await Promise.all([
+      // Get current and previous month for filtering
+      const now = new Date();
+      const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      const prevMonth = new Date(now.getFullYear(), now.getMonth() - 1);
+      const prevMonthStr = `${prevMonth.getFullYear()}-${String(prevMonth.getMonth() + 1).padStart(2, '0')}`;
+
+      // Fetch basic statistics (only need totals)
+      const [schoolsRes, publicsRes, eventsRes, accidentsRes, budgetsRes, poldaRes] = await Promise.all([
         schoolService.getAll({ limit: 1 }),
         publicService.getAll({ limit: 1 }),
         eventService.getAll({ limit: 1 }),
         accidentService.getAll({ limit: 1 }),
-        budgetService.getAll({ limit: 1 })
+        budgetService.getAll({ limit: 1 }),
+        poldaService.getAll({ limit: 1 })
       ]);
+
+      // Fetch all schools and publics (needed for recommendations)
+      const [schoolsData, publicsData] = await Promise.all([
+        schoolService.getAll({ limit: 10000 }),
+        publicService.getAll({ limit: 10000 })
+      ]);
+
+      // Fetch current + previous month data for events, accidents, budgets, polda
+      const [currentEventsData, prevEventsData, currentAccidentsData, prevAccidentsData, 
+             currentBudgetsData, prevBudgetsData, currentPoldaData, prevPoldaData] = await Promise.all([
+        eventService.getAll({ limit: 1000, 'filters[period]': currentMonth }),
+        eventService.getAll({ limit: 1000, 'filters[period]': prevMonthStr }),
+        accidentService.getAll({ limit: 1000, 'filters[period]': currentMonth }),
+        accidentService.getAll({ limit: 1000, 'filters[period]': prevMonthStr }),
+        budgetService.getAll({ limit: 1000, 'filters[period]': currentMonth }),
+        budgetService.getAll({ limit: 1000, 'filters[period]': prevMonthStr }),
+        poldaService.getAll({ limit: 1000, 'filters[period]': currentMonth }),
+        poldaService.getAll({ limit: 1000, 'filters[period]': prevMonthStr })
+      ]);
+
+      // Combine current + previous month data
+      const combinedEvents = [...(currentEventsData.data.data || []), ...(prevEventsData.data.data || [])];
+      const combinedAccidents = [...(currentAccidentsData.data.data || []), ...(prevAccidentsData.data.data || [])];
+      const combinedBudgets = [...(currentBudgetsData.data.data || []), ...(prevBudgetsData.data.data || [])];
+      const combinedPolda = [...(currentPoldaData.data.data || []), ...(prevPoldaData.data.data || [])];
+
+      // Calculate total accidents (AHASS + POLDA)
+      const ahassAccidentCount = combinedAccidents.length;
+      const poldaAccidentCount = combinedPolda.reduce((sum, p) => sum + (p.total_accidents || 0), 0);
+      const totalAccidents = ahassAccidentCount + poldaAccidentCount;
 
       setStats({
         schools: schoolsRes.data.total_data || 0,
         publics: publicsRes.data.total_data || 0,
-        events: eventsRes.data.total_data || 0,
-        accidents: accidentsRes.data.total_data || 0,
-        budgets: budgetsRes.data.total_data || 0
+        events: combinedEvents.length,
+        accidents: totalAccidents,
+        budgets: combinedBudgets.length
       });
-
-      // Fetch all data for charts (with reasonable limits)
-      const [schoolsData, publicsData, eventsData, accidentsData, budgetsData, poldaData] = await Promise.all([
-        schoolService.getAll({ limit: 10000 }),
-        publicService.getAll({ limit: 10000 }),
-        eventService.getAll({ limit: 10000 }),
-        accidentService.getAll({ limit: 10000 }),
-        budgetService.getAll({ limit: 10000 }),
-        poldaService.getAll({ limit: 10000 })
-      ]);
 
       setAllSchools(schoolsData.data.data || []);
       setAllPublics(publicsData.data.data || []);
-      setAllEvents(eventsData.data.data || []);
-      setAllAccidents(accidentsData.data.data || []);
-      setAllBudgets(budgetsData.data.data || []);
-      setPoldaAccidents(poldaData.data.data || []);
+      setAllEvents(combinedEvents);
+      setAllAccidents(combinedAccidents);
+      setAllBudgets(combinedBudgets);
+      setPoldaAccidents(combinedPolda);
 
       // Fetch recent data
       const [recentEventsRes, recentAccidentsRes] = await Promise.all([
@@ -246,9 +273,9 @@ const Dashboard = () => {
       calculateAdditionalStats(
         schoolsData.data.data || [],
         publicsData.data.data || [],
-        eventsData.data.data || [],
-        accidentsData.data.data || [],
-        budgetsData.data.data || []
+        combinedEvents,
+        combinedAccidents,
+        combinedBudgets
       );
 
     } catch (error) {
@@ -731,7 +758,7 @@ const Dashboard = () => {
               </h5>
             </div>
             <div className="card-body">
-              <AccidentTrendsChart data={filteredAccidents} />
+              <AccidentTrendsChart data={filteredAccidents} poldaData={poldaAccidents} />
             </div>
           </div>
         </div>
@@ -855,9 +882,12 @@ const Dashboard = () => {
 
             <div className="col-md-6">
               <h6 className="text-uppercase text-muted mb-3">Top Districts</h6>
-              {marketShareSuggestions.topDistricts.length > 0 ? (
+              {marketShareSuggestions.topDistricts.length > 0 && 
+               marketShareSuggestions.topDistricts.some(item => item.district_name && item.district_name.trim()) ? (
                 <div className="list-group list-group-flush">
-                  {marketShareSuggestions.topDistricts.map((item, index) => (
+                  {marketShareSuggestions.topDistricts
+                    .filter(item => item.district_name && item.district_name.trim())
+                    .map((item, index) => (
                     <div key={`${item.district_id}-${index}`} className="list-group-item px-0">
                       <div className="d-flex justify-content-between align-items-start">
                         <div>

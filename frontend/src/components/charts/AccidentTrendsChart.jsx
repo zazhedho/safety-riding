@@ -23,12 +23,13 @@ ChartJS.register(
   Filler
 );
 
-const AccidentTrendsChart = ({ data }) => {
+const AccidentTrendsChart = ({ data, poldaData = [] }) => {
   // Group accidents by month
   const accidentsByMonth = {};
   const deathsByMonth = {};
   const injuredByMonth = {};
 
+  // Process AHASS data
   data.forEach(accident => {
     if (!accident.accident_date) return;
 
@@ -44,6 +45,26 @@ const AccidentTrendsChart = ({ data }) => {
     accidentsByMonth[monthYear]++;
     deathsByMonth[monthYear] += accident.death_count || 0;
     injuredByMonth[monthYear] += accident.injured_count || 0;
+  });
+
+  // Process POLDA data
+  poldaData.forEach(polda => {
+    if (!polda.period) return;
+
+    // Convert YYYY-MM to "Mon YYYY" format
+    const [year, month] = polda.period.split('-');
+    const date = new Date(parseInt(year), parseInt(month) - 1);
+    const monthYear = `${date.toLocaleString('en-US', { month: 'short' })} ${date.getFullYear()}`;
+
+    if (!accidentsByMonth[monthYear]) {
+      accidentsByMonth[monthYear] = 0;
+      deathsByMonth[monthYear] = 0;
+      injuredByMonth[monthYear] = 0;
+    }
+
+    accidentsByMonth[monthYear] += polda.total_accidents || 0;
+    deathsByMonth[monthYear] += polda.total_deaths || 0;
+    injuredByMonth[monthYear] += (polda.total_severe_injury || 0) + (polda.total_minor_injury || 0);
   });
 
   // Sort by date and get last 12 months
