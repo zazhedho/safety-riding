@@ -139,9 +139,13 @@ const Dashboard = () => {
     try {
       setMarketShareLoading(true);
       const now = new Date();
+      
+      // Get previous month
+      const prevMonth = new Date(now.getFullYear(), now.getMonth() - 1);
+      
       const params = {
-        year: now.getFullYear(),
-        month: now.getMonth() + 1,
+        year: prevMonth.getFullYear(),
+        month: prevMonth.getMonth() + 1,
         city_limit: 5,
         district_limit: 5
       };

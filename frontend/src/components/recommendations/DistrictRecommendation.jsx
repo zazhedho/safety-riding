@@ -357,7 +357,7 @@ const DistrictRecommendation = ({ schools, events, accidents, poldaAccidents = [
             <div className="card-header bg-danger bg-opacity-10">
               <h5 className="mb-0">
                 <i className="bi bi-exclamation-triangle me-2 text-danger"></i>
-                Priority: Accident Hotspot
+                Priority: Accident Blackspot
               </h5>
             </div>
             <div className="card-body">
