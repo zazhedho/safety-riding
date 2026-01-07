@@ -120,6 +120,7 @@ func main() {
 	routes.PermissionRoutes()
 	routes.MenuRoutes()
 	routes.PoldaRoutes()
+	routes.DashboardRoutes()
 
 	// Register session routes if Redis is available
 	if redisClient != nil {

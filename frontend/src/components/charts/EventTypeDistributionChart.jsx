@@ -9,20 +9,19 @@ import {
 // Register Chart.js components
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-const EventTypeDistributionChart = ({ data }) => {
-  // Group events by type
-  const eventsByType = {};
+const EventTypeDistributionChart = ({ data = [] }) => {
+  // Data is already aggregated from backend: [{event_type, count}]
+  if (!data || data.length === 0) {
+    return (
+      <div className="text-center py-5 text-muted">
+        <i className="bi bi-pie-chart" style={{ fontSize: '3rem' }}></i>
+        <p className="mt-2">No event data available</p>
+      </div>
+    );
+  }
 
-  data.forEach(event => {
-    const type = event.event_type || 'Unknown';
-    if (!eventsByType[type]) {
-      eventsByType[type] = 0;
-    }
-    eventsByType[type]++;
-  });
-
-  const types = Object.keys(eventsByType);
-  const counts = Object.values(eventsByType);
+  const types = data.map(d => d.event_type || 'Unknown');
+  const counts = data.map(d => d.count || 0);
 
   // Color palette
   const colors = [
@@ -86,15 +85,6 @@ const EventTypeDistributionChart = ({ data }) => {
       },
     },
   };
-
-  if (types.length === 0) {
-    return (
-      <div className="text-center py-5 text-muted">
-        <i className="bi bi-pie-chart" style={{ fontSize: '3rem' }}></i>
-        <p className="mt-2">No event data available</p>
-      </div>
-    );
-  }
 
   return (
     <div style={{ height: '300px' }}>

@@ -23,63 +23,25 @@ ChartJS.register(
   Filler
 );
 
-const AccidentTrendsChart = ({ data, poldaData = [] }) => {
-  // Group accidents by month
-  const accidentsByMonth = {};
-  const deathsByMonth = {};
-  const injuredByMonth = {};
+const AccidentTrendsChart = ({ data = [] }) => {
+  // Data is already aggregated from backend: [{period, accidents, deaths, injured}]
+  // No need for complex processing!
 
-  // Process AHASS data
-  data.forEach(accident => {
-    if (!accident.accident_date) return;
-
-    const date = new Date(accident.accident_date);
-    const monthYear = `${date.toLocaleString('en-US', { month: 'short' })} ${date.getFullYear()}`;
-
-    if (!accidentsByMonth[monthYear]) {
-      accidentsByMonth[monthYear] = 0;
-      deathsByMonth[monthYear] = 0;
-      injuredByMonth[monthYear] = 0;
-    }
-
-    accidentsByMonth[monthYear]++;
-    deathsByMonth[monthYear] += accident.death_count || 0;
-    injuredByMonth[monthYear] += accident.injured_count || 0;
-  });
-
-  // Process POLDA data
-  poldaData.forEach(polda => {
-    if (!polda.period) return;
-
-    // Convert YYYY-MM to "Mon YYYY" format
-    const [year, month] = polda.period.split('-');
-    const date = new Date(parseInt(year), parseInt(month) - 1);
-    const monthYear = `${date.toLocaleString('en-US', { month: 'short' })} ${date.getFullYear()}`;
-
-    if (!accidentsByMonth[monthYear]) {
-      accidentsByMonth[monthYear] = 0;
-      deathsByMonth[monthYear] = 0;
-      injuredByMonth[monthYear] = 0;
-    }
-
-    accidentsByMonth[monthYear] += polda.total_accidents || 0;
-    deathsByMonth[monthYear] += polda.total_deaths || 0;
-    injuredByMonth[monthYear] += (polda.total_severe_injury || 0) + (polda.total_minor_injury || 0);
-  });
-
-  // Sort by date and get last 12 months
-  const sortedMonths = Object.keys(accidentsByMonth).sort((a, b) => {
-    const dateA = new Date(a);
-    const dateB = new Date(b);
-    return dateA - dateB;
-  }).slice(-12);
+  if (!data || data.length === 0) {
+    return (
+      <div className="text-center py-5 text-muted">
+        <i className="bi bi-graph-up" style={{ fontSize: '3rem' }}></i>
+        <p className="mt-2">No accident data available for trends</p>
+      </div>
+    );
+  }
 
   const chartData = {
-    labels: sortedMonths,
+    labels: data.map(d => d.period),
     datasets: [
       {
         label: 'Total Accidents',
-        data: sortedMonths.map(month => accidentsByMonth[month]),
+        data: data.map(d => d.accidents || 0),
         borderColor: 'rgb(220, 53, 69)',
         backgroundColor: 'rgba(220, 53, 69, 0.1)',
         fill: true,
@@ -87,7 +49,7 @@ const AccidentTrendsChart = ({ data, poldaData = [] }) => {
       },
       {
         label: 'Deaths',
-        data: sortedMonths.map(month => deathsByMonth[month]),
+        data: data.map(d => d.deaths || 0),
         borderColor: 'rgb(13, 110, 253)',
         backgroundColor: 'rgba(13, 110, 253, 0.1)',
         fill: true,
@@ -95,7 +57,7 @@ const AccidentTrendsChart = ({ data, poldaData = [] }) => {
       },
       {
         label: 'Injured',
-        data: sortedMonths.map(month => injuredByMonth[month]),
+        data: data.map(d => d.injured || 0),
         borderColor: 'rgb(255, 193, 7)',
         backgroundColor: 'rgba(255, 193, 7, 0.1)',
         fill: true,
@@ -133,15 +95,6 @@ const AccidentTrendsChart = ({ data, poldaData = [] }) => {
       intersect: false,
     },
   };
-
-  if (sortedMonths.length === 0) {
-    return (
-      <div className="text-center py-5 text-muted">
-        <i className="bi bi-graph-up" style={{ fontSize: '3rem' }}></i>
-        <p className="mt-2">No accident data available for trends</p>
-      </div>
-    );
-  }
 
   return (
     <div style={{ height: '300px' }}>

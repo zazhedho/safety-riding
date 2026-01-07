@@ -3,15 +3,10 @@ import { Link } from 'react-router-dom';
 import schoolService from '../services/schoolService';
 import publicService from '../services/publicService';
 import eventService from '../services/eventService';
-import accidentService from '../services/accidentService';
-import budgetService from '../services/budgetService';
-import locationService from '../services/locationService';
 import marketShareService from '../services/marketShareService';
-import poldaService from '../services/poldaService';
+import dashboardService from '../services/dashboardService';
 import { toast } from 'react-toastify';
 import { useAuth } from '../contexts/AuthContext';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
 
 // Import chart components
 import AccidentTrendsChart from '../components/charts/AccidentTrendsChart';
@@ -43,12 +38,13 @@ const Dashboard = () => {
     activePublics: 0
   });
 
-  // Data for charts
+  // Data for charts (aggregated from backend)
   const [allSchools, setAllSchools] = useState([]);
   const [allPublics, setAllPublics] = useState([]);
-  const [allEvents, setAllEvents] = useState([]);
-  const [allAccidents, setAllAccidents] = useState([]);
-  const [allBudgets, setAllBudgets] = useState([]);
+  const [eventDistribution, setEventDistribution] = useState([]);
+  const [accidentTrends, setAccidentTrends] = useState([]);
+  const [budgetUtilization, setBudgetUtilization] = useState([]);
+
   const [marketShareSuggestions, setMarketShareSuggestions] = useState({
     topCities: [],
     topDistricts: [],
@@ -65,27 +61,9 @@ const Dashboard = () => {
   const [eventsMapData, setEventsMapData] = useState([]);
   const [eventsMapLoading, setEventsMapLoading] = useState(false);
 
-  // POLDA accidents data
-  const [poldaAccidents, setPoldaAccidents] = useState([]);
-
-  // Filtered data
-  const [filteredEvents, setFilteredEvents] = useState([]);
-  const [filteredAccidents, setFilteredAccidents] = useState([]);
-  const [filteredBudgets, setFilteredBudgets] = useState([]);
-
   const [recentEvents, setRecentEvents] = useState([]);
   const [recentAccidents, setRecentAccidents] = useState([]);
   const [loading, setLoading] = useState(true);
-
-  // Filter states
-  const [dateRange, setDateRange] = useState({
-    startDate: new Date(new Date().setMonth(new Date().getMonth() - 6)),
-    endDate: new Date()
-  });
-  const [provinces, setProvinces] = useState([]);
-  const [cities, setCities] = useState([]);
-  const [selectedProvince, setSelectedProvince] = useState('');
-  const [selectedCity, setSelectedCity] = useState('');
 
   const formatUnits = (value) => new Intl.NumberFormat('id-ID', {
     maximumFractionDigits: 0
@@ -99,7 +77,6 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    fetchProvinces();
     fetchDashboardData();
     fetchMarketShareSuggestions();
     fetchEducationPriority();
@@ -164,119 +141,52 @@ const Dashboard = () => {
     }
   };
 
-  useEffect(() => {
-    if (selectedProvince) {
-      fetchCities(selectedProvince);
-    } else {
-      setCities([]);
-      setSelectedCity('');
-    }
-  }, [selectedProvince]);
 
-  useEffect(() => {
-    applyFilters();
-  }, [dateRange, selectedProvince, selectedCity, allEvents, allAccidents, allBudgets]);
-
-  const fetchProvinces = async () => {
-    try {
-      const response = await locationService.getProvinces();
-      setProvinces(response.data.data || []);
-    } catch (error) {
-      console.error('Failed to load provinces');
-    }
-  };
-
-  const fetchCities = async (provinceCode) => {
-    try {
-      const response = await locationService.getCities(provinceCode);
-      setCities(response.data.data || []);
-    } catch (error) {
-      console.error('Failed to load cities');
-    }
-  };
 
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
 
-      // Get current and previous month for filtering
-      const now = new Date();
-      const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-      const prevMonth = new Date(now.getFullYear(), now.getMonth() - 1);
-      const prevMonthStr = `${prevMonth.getFullYear()}-${String(prevMonth.getMonth() + 1).padStart(2, '0')}`;
-
-      // Fetch basic statistics (only need totals)
-      const [schoolsRes, publicsRes, eventsRes, accidentsRes, budgetsRes, poldaRes] = await Promise.all([
-        schoolService.getAll({ limit: 1 }),
-        publicService.getAll({ limit: 1 }),
-        eventService.getAll({ limit: 1 }),
-        accidentService.getAll({ limit: 1 }),
-        budgetService.getAll({ limit: 1 }),
-        poldaService.getAll({ limit: 1 })
+      // Fetch aggregated stats and chart data from backend (optimized - only 3 requests!)
+      const [statsRes, schoolsData, publicsData] = await Promise.all([
+        dashboardService.getStats(),
+        schoolService.getAll({ limit: 10000 }),  // Get all schools
+        publicService.getAll({ limit: 10000 })    // Get all publics
       ]);
 
-      // Fetch all schools and publics (needed for recommendations)
-      const [schoolsData, publicsData] = await Promise.all([
-        schoolService.getAll({ limit: 10000 }),
-        publicService.getAll({ limit: 10000 })
-      ]);
+      const dashboardData = statsRes.data.data;
 
-      // Fetch current + previous month data for events, accidents, budgets, polda
-      const [currentEventsData, prevEventsData, currentAccidentsData, prevAccidentsData, 
-             currentBudgetsData, prevBudgetsData, currentPoldaData, prevPoldaData] = await Promise.all([
-        eventService.getAll({ limit: 1000, 'filters[period]': currentMonth }),
-        eventService.getAll({ limit: 1000, 'filters[period]': prevMonthStr }),
-        accidentService.getAll({ limit: 1000, 'filters[period]': currentMonth }),
-        accidentService.getAll({ limit: 1000, 'filters[period]': prevMonthStr }),
-        budgetService.getAll({ limit: 1000, 'filters[period]': currentMonth }),
-        budgetService.getAll({ limit: 1000, 'filters[period]': prevMonthStr }),
-        poldaService.getAll({ limit: 1000, 'filters[period]': currentMonth }),
-        poldaService.getAll({ limit: 1000, 'filters[period]': prevMonthStr })
-      ]);
-
-      // Combine current + previous month data
-      const combinedEvents = [...(currentEventsData.data.data || []), ...(prevEventsData.data.data || [])];
-      const combinedAccidents = [...(currentAccidentsData.data.data || []), ...(prevAccidentsData.data.data || [])];
-      const combinedBudgets = [...(currentBudgetsData.data.data || []), ...(prevBudgetsData.data.data || [])];
-      const combinedPolda = [...(currentPoldaData.data.data || []), ...(prevPoldaData.data.data || [])];
-
-      // Calculate total accidents (AHASS + POLDA)
-      const ahassAccidentCount = combinedAccidents.length;
-      const poldaAccidentCount = combinedPolda.reduce((sum, p) => sum + (p.total_accidents || 0), 0);
-      const totalAccidents = ahassAccidentCount + poldaAccidentCount;
-
+      // Set stats from backend
       setStats({
-        schools: schoolsRes.data.total_data || 0,
-        publics: publicsRes.data.total_data || 0,
-        events: combinedEvents.length,
-        accidents: totalAccidents,
-        budgets: combinedBudgets.length
+        schools: dashboardData.schools,
+        publics: dashboardData.publics,
+        events: dashboardData.events,
+        accidents: dashboardData.accidents,
+        budgets: dashboardData.budgets
       });
 
+      // Set additional stats from backend
+      setAdditionalStats({
+        totalDeaths: dashboardData.additional_stats.total_deaths,
+        totalInjured: dashboardData.additional_stats.total_injured,
+        avgAttendeesPerEvent: dashboardData.additional_stats.avg_attendees_per_event,
+        budgetUtilizationRate: dashboardData.additional_stats.budget_utilization_rate,
+        activeSchools: 0,
+        activePublics: 0
+      });
+
+      // Set chart data from backend (already aggregated!)
+      setEventDistribution(dashboardData.event_distribution || []);
+      setAccidentTrends(dashboardData.accident_trends || []);
+      setBudgetUtilization(dashboardData.budget_utilization || []);
+
+      // Set schools & publics for charts
       setAllSchools(schoolsData.data.data || []);
       setAllPublics(publicsData.data.data || []);
-      setAllEvents(combinedEvents);
-      setAllAccidents(combinedAccidents);
-      setAllBudgets(combinedBudgets);
-      setPoldaAccidents(combinedPolda);
 
-      // Fetch recent data
-      const [recentEventsRes, recentAccidentsRes] = await Promise.all([
-        eventService.getAll({ limit: 5, order_by: 'created_at', order_direction: 'desc' }),
-        accidentService.getAll({ limit: 5, order_by: 'created_at', order_direction: 'desc' })
-      ]);
-
-      setRecentEvents(recentEventsRes.data.data || []);
-      setRecentAccidents(recentAccidentsRes.data.data || []);
-
-      // Calculate additional statistics
-      calculateAdditionalStats(
-        schoolsData.data.data || [],
-        publicsData.data.data || [],
-        combinedEvents,
-        combinedAccidents,
-        combinedBudgets
-      );
+      // Set recent data from backend
+      setRecentEvents(dashboardData.recent_events || []);
+      setRecentAccidents(dashboardData.recent_accidents || []);
 
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
@@ -286,110 +196,14 @@ const Dashboard = () => {
     }
   };
 
-  const calculateAdditionalStats = (schools, publics, events, accidents, budgets) => {
-    // Total deaths and injured
-    const totalDeaths = accidents.reduce((sum, acc) => sum + (acc.death_count || 0), 0);
-    const totalInjured = accidents.reduce((sum, acc) => sum + (acc.injured_count || 0), 0);
-
-    // Average attendees per event
-    const totalAttendees = events.reduce((sum, evt) => sum + (evt.attendees_count || 0), 0);
-    const avgAttendeesPerEvent = events.length > 0 ? Math.round(totalAttendees / events.length) : 0;
-
-    // Budget utilization rate
-    const totalBudgetAllocated = budgets.reduce((sum, b) => sum + (b.budget_amount || 0), 0);
-    const totalBudgetSpent = budgets.reduce((sum, b) => sum + (b.actual_spent || 0), 0);
-    const budgetUtilizationRate = totalBudgetAllocated > 0
-      ? Math.round((totalBudgetSpent / totalBudgetAllocated) * 100)
-      : 0;
-
-    // Active entities (schools and publics with events in last 6 months)
-    const sixMonthsAgo = new Date();
-    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-
-    const recentEvents = events.filter(evt => new Date(evt.event_date) >= sixMonthsAgo);
-
-    const activeSchoolIds = new Set(
-      recentEvents
-        .filter(evt => evt.school_id)
-        .map(evt => evt.school_id)
-    );
-    const activeSchools = activeSchoolIds.size;
-
-    const activePublicIds = new Set(
-      recentEvents
-        .filter(evt => evt.public_id)
-        .map(evt => evt.public_id)
-    );
-    const activePublics = activePublicIds.size;
-
-    setAdditionalStats({
-      totalDeaths,
-      totalInjured,
-      avgAttendeesPerEvent,
-      budgetUtilizationRate,
-      activeSchools,
-      activePublics
-    });
-  };
-
-  const applyFilters = () => {
-    let events = [...allEvents];
-    let accidents = [...allAccidents];
-    let budgets = [...allBudgets];
-
-    // Date range filter
-    if (dateRange.startDate && dateRange.endDate) {
-      events = events.filter(evt => {
-        const eventDate = new Date(evt.event_date);
-        return eventDate >= dateRange.startDate && eventDate <= dateRange.endDate;
-      });
-
-      accidents = accidents.filter(acc => {
-        const accidentDate = new Date(acc.accident_date);
-        return accidentDate >= dateRange.startDate && accidentDate <= dateRange.endDate;
-      });
-
-      budgets = budgets.filter(budget => {
-        const budgetDate = new Date(budget.budget_date);
-        return budgetDate >= dateRange.startDate && budgetDate <= dateRange.endDate;
-      });
-    }
-
-    // Province filter
-    if (selectedProvince) {
-      events = events.filter(evt =>
-        evt.school?.province_id === selectedProvince ||
-        evt.public?.province_id === selectedProvince
-      );
-      accidents = accidents.filter(acc => acc.province_id === selectedProvince);
-    }
-
-    // City filter
-    if (selectedCity) {
-      events = events.filter(evt =>
-        evt.school?.city_id === selectedCity ||
-        evt.public?.city_id === selectedCity
-      );
-      accidents = accidents.filter(acc => acc.city_id === selectedCity);
-    }
-
-    setFilteredEvents(events);
-    setFilteredAccidents(accidents);
-    setFilteredBudgets(budgets);
-  };
+  // Note: Filters removed - dashboard shows fixed data from backend (last 2 months for stats, last 12 months for trends)
 
   const handleRefresh = () => {
     fetchDashboardData();
+    fetchMarketShareSuggestions();
+    fetchEducationPriority();
+    fetchEventsMapData();
     toast.success('Dashboard refreshed');
-  };
-
-  const handleResetFilters = () => {
-    setDateRange({
-      startDate: new Date(new Date().setMonth(new Date().getMonth() - 6)),
-      endDate: new Date()
-    });
-    setSelectedProvince('');
-    setSelectedCity('');
   };
 
   const formatDate = (dateStr) => {
@@ -438,9 +252,9 @@ const Dashboard = () => {
         </div>
         <DistrictRecommendation
           schools={allSchools}
-          events={allEvents}
-          accidents={allAccidents}
-          poldaAccidents={poldaAccidents}
+          events={[]}
+          accidents={[]}
+          poldaAccidents={[]}
           marketShare={marketShareSuggestions}
         />
       </div>
@@ -673,77 +487,10 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="card mb-4">
-        <div className="card-header">
-          <h5 className="mb-0">
-            <i className="bi bi-funnel me-2"></i>Filters
-          </h5>
-        </div>
-        <div className="card-body">
-          <div className="row g-3">
-            <div className="col-md-4">
-              <label className="form-label small">Date Range</label>
-              <div className="d-flex gap-2">
-                <DatePicker
-                  selected={dateRange.startDate}
-                  onChange={(date) => setDateRange(prev => ({ ...prev, startDate: date }))}
-                  selectsStart
-                  startDate={dateRange.startDate}
-                  endDate={dateRange.endDate}
-                  className="form-control form-control-sm"
-                  dateFormat="dd/MM/yyyy"
-                  placeholderText="Start Date"
-                  portalId="root-portal"
-                />
-                <DatePicker
-                  selected={dateRange.endDate}
-                  onChange={(date) => setDateRange(prev => ({ ...prev, endDate: date }))}
-                  selectsEnd
-                  startDate={dateRange.startDate}
-                  endDate={dateRange.endDate}
-                  minDate={dateRange.startDate}
-                  className="form-control form-control-sm"
-                  dateFormat="dd/MM/yyyy"
-                  placeholderText="End Date"
-                  portalId="root-portal"
-                />
-              </div>
-            </div>
-            <div className="col-md-3">
-              <label className="form-label small">Province</label>
-              <select
-                className="form-select form-select-sm"
-                value={selectedProvince}
-                onChange={(e) => setSelectedProvince(e.target.value)}
-              >
-                <option value="">All Provinces</option>
-                {provinces.map(prov => (
-                  <option key={prov.code} value={prov.code}>{prov.name}</option>
-                ))}
-              </select>
-            </div>
-            <div className="col-md-3">
-              <label className="form-label small">City</label>
-              <select
-                className="form-select form-select-sm"
-                value={selectedCity}
-                onChange={(e) => setSelectedCity(e.target.value)}
-                disabled={!selectedProvince}
-              >
-                <option value="">All Cities</option>
-                {cities.map(city => (
-                  <option key={city.code} value={city.code}>{city.name}</option>
-                ))}
-              </select>
-            </div>
-            <div className="col-md-2 d-flex align-items-end">
-              <button className="btn btn-sm btn-outline-secondary w-100" onClick={handleResetFilters}>
-                <i className="bi bi-x-circle me-1"></i>Reset
-              </button>
-            </div>
-          </div>
-        </div>
+      {/* Data shows: Last 2 months for stats, Last 12 months for trends */}
+      <div className="alert alert-info mb-4">
+        <i className="bi bi-info-circle me-2"></i>
+        Dashboard displays data from the <strong>last 2 months</strong> for statistics and <strong>last 12 months</strong> for trend charts.
       </div>
 
       {/* Charts Row 1 */}
@@ -758,7 +505,7 @@ const Dashboard = () => {
               </h5>
             </div>
             <div className="card-body">
-              <AccidentTrendsChart data={filteredAccidents} poldaData={poldaAccidents} />
+              <AccidentTrendsChart data={accidentTrends} />
             </div>
           </div>
         </div>
@@ -773,7 +520,7 @@ const Dashboard = () => {
               </h5>
             </div>
             <div className="card-body">
-              <EventTypeDistributionChart data={filteredEvents} />
+              <EventTypeDistributionChart data={eventDistribution} />
             </div>
           </div>
         </div>
@@ -821,7 +568,7 @@ const Dashboard = () => {
               </h5>
             </div>
             <div className="card-body">
-              <BudgetUtilizationChart data={filteredBudgets} />
+              <BudgetUtilizationChart data={budgetUtilization} />
             </div>
           </div>
         </div>

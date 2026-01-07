@@ -14,6 +14,7 @@ import (
 	accidentHandler "safety-riding/internal/handlers/http/accident"
 	budgetHandler "safety-riding/internal/handlers/http/budget"
 	cityHandler "safety-riding/internal/handlers/http/city"
+	dashboardHandler "safety-riding/internal/handlers/http/dashboard"
 	districtHandler "safety-riding/internal/handlers/http/district"
 	eventHandler "safety-riding/internal/handlers/http/event"
 	marketshareHandler "safety-riding/internal/handlers/http/marketshare"
@@ -29,6 +30,7 @@ import (
 	accidentRepo "safety-riding/internal/repositories/accident"
 	authRepo "safety-riding/internal/repositories/auth"
 	budgetRepo "safety-riding/internal/repositories/budget"
+	repodashboard "safety-riding/internal/repositories/dashboard"
 	eventRepo "safety-riding/internal/repositories/event"
 	marketshareRepo "safety-riding/internal/repositories/marketshare"
 	menuRepo "safety-riding/internal/repositories/menu"
@@ -42,6 +44,7 @@ import (
 	accidentSvc "safety-riding/internal/services/accident"
 	budgetSvc "safety-riding/internal/services/budget"
 	kabupatenSvc "safety-riding/internal/services/city"
+	dashboardSvc "safety-riding/internal/services/dashboard"
 	kecamatanSvc "safety-riding/internal/services/district"
 	eventSvc "safety-riding/internal/services/event"
 	marketshareSvc "safety-riding/internal/services/marketshare"
@@ -440,4 +443,16 @@ func (r *Routes) PoldaRoutes() {
 		polda.PUT("/:id", mdw.PermissionMiddleware("polda_accidents", "update"), h.Update)
 		polda.DELETE("/:id", mdw.PermissionMiddleware("polda_accidents", "delete"), h.Delete)
 	}
+}
+
+func (r *Routes) DashboardRoutes() {
+	dashboardRepo := repodashboard.NewDashboardRepo(r.DB)
+	dashboardService := dashboardSvc.NewDashboardService(dashboardRepo)
+	h := dashboardHandler.NewDashboardHandler(dashboardService)
+	blacklistRepo := authRepo.NewBlacklistRepo(r.DB)
+	pRepo := permissionRepo.NewPermissionRepo(r.DB)
+	mdw := middlewares.NewMiddleware(blacklistRepo, pRepo)
+
+	// Dashboard stats endpoint - aggregated statistics
+	r.App.GET("/api/dashboard/stats", mdw.AuthMiddleware(), h.GetStats)
 }
