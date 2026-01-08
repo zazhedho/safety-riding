@@ -829,3 +829,26 @@
 [data-theme='dark'] .card-body .text-muted {
   color: var(--text-muted) !important;
 }
+
+/* Recommendation cards - section headers */
+[data-theme='dark'] .recommendation-details h6 {
+  color: #cbd5e1 !important;
+}
+
+/* Recommendation cards - school list box (light mode) */
+.school-list-box {
+  background-color: #f8f9fa;
+  border-color: #dee2e6;
+}
+
+/* Recommendation cards - school list box (dark mode) */
+[data-theme='dark'] .school-list-box {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  color: var(--text-color) !important;
+}
+
+[data-theme='dark'] .school-list-box .text-muted,
+[data-theme='dark'] .school-list-box li {
+  color: #cbd5e1 !important;
+}

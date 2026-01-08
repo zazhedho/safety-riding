@@ -344,7 +344,7 @@ const DistrictRecommendation = ({ schools, events, accidents, poldaAccidents = [
                 <h6 className="text-muted mb-2">
                   <i className="bi bi-building me-2"></i>Uneducated Schools:
                 </h6>
-                <div className="alert alert-light mb-0 small" style={{ maxHeight: '150px', overflowY: 'auto' }}>
+                <div className="school-list-box border rounded p-2 mb-0 small" style={{ maxHeight: '150px', overflowY: 'auto' }}>
                   {uneducatedRec.schools && uneducatedRec.schools.length > 0 ? (
                     <ol className="mb-0 ps-3">
                       {uneducatedRec.schools.slice(0, 10).map((schoolName, idx) => (
@@ -455,7 +455,7 @@ const DistrictRecommendation = ({ schools, events, accidents, poldaAccidents = [
               <div className="d-flex justify-content-between align-items-center">
                 <small className="text-muted">
                   <i className="bi bi-calendar-check me-1"></i>
-                  Recommended for next month event
+                  Recommended for next month
                 </small>
                 <span className="badge bg-danger">Critical</span>
               </div>

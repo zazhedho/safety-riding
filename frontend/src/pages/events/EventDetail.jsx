@@ -108,8 +108,8 @@ const EventDetail = () => {
   const handleFileSelect = (e) => {
     const files = Array.from(e.target.files);
 
-    if (files.length > 5) {
-      toast.error('Maximum 5 photos allowed');
+    if (files.length > 10) {
+      toast.error('Maximum 10 photos allowed');
       return;
     }
 
@@ -786,7 +786,7 @@ const EventDetail = () => {
                     </div>
                     <div className="card-body">
                       <div className="mb-3">
-                        <label className="form-label">Select Photos (Max 5 photos, 5MB each)</label>
+                        <label className="form-label">Select Photos (Max 10 photos, 5MB each)</label>
                         <input
                           type="file"
                           className="form-control"
