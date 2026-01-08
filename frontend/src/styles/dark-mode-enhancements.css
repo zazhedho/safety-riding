@@ -27,6 +27,18 @@
 }
 
 /* Alert Components - Dark Mode */
+[data-theme='dark'] .alert-primary {
+  background-color: var(--alert-primary-bg) !important;
+  border-color: var(--alert-primary-border) !important;
+  color: var(--alert-primary-text) !important;
+}
+
+[data-theme='dark'] .alert-primary strong,
+[data-theme='dark'] .alert-primary p,
+[data-theme='dark'] .alert-primary .small {
+  color: var(--alert-primary-text) !important;
+}
+
 [data-theme='dark'] .alert-info {
   background-color: var(--alert-info-bg) !important;
   border-color: var(--alert-info-border) !important;
@@ -851,4 +863,58 @@
 [data-theme='dark'] .school-list-box .text-muted,
 [data-theme='dark'] .school-list-box li {
   color: #cbd5e1 !important;
+}
+
+/* Priority Matrix Chart - Dark Mode */
+[data-theme='dark'] .priority-matrix-container .text-muted {
+  color: #cbd5e1 !important;
+}
+
+[data-theme='dark'] .priority-quadrant {
+  background: rgba(30, 41, 59, 0.5) !important;
+}
+
+[data-theme='dark'] .priority-quadrant.critical {
+  background: linear-gradient(135deg, rgba(220, 53, 69, 0.1) 0%, rgba(30, 41, 59, 0.5) 100%) !important;
+}
+
+[data-theme='dark'] .priority-quadrant.high {
+  background: linear-gradient(135deg, rgba(255, 193, 7, 0.1) 0%, rgba(30, 41, 59, 0.5) 100%) !important;
+}
+
+[data-theme='dark'] .priority-quadrant.medium {
+  background: linear-gradient(135deg, rgba(13, 202, 240, 0.1) 0%, rgba(30, 41, 59, 0.5) 100%) !important;
+}
+
+[data-theme='dark'] .priority-quadrant.low {
+  background: linear-gradient(135deg, rgba(25, 135, 84, 0.1) 0%, rgba(30, 41, 59, 0.5) 100%) !important;
+}
+
+[data-theme='dark'] .district-item {
+  background: rgba(15, 23, 42, 0.6) !important;
+}
+
+[data-theme='dark'] .district-name {
+  color: var(--text-color) !important;
+}
+
+[data-theme='dark'] .axis-label,
+[data-theme='dark'] .axis-title {
+  color: #cbd5e1 !important;
+}
+
+[data-theme='dark'] .axis-values {
+  color: #94a3b8 !important;
+}
+
+[data-theme='dark'] .quadrant-description {
+  border-bottom-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-theme='dark'] .matrix-legend {
+  border-top-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+[data-theme='dark'] .legend-item {
+  color: var(--text-color) !important;
 }

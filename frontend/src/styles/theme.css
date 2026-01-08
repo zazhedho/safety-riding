@@ -16,6 +16,9 @@
   --border-color: rgba(0, 0, 0, 0.1);
 
   /* Alert colors */
+  --alert-primary-bg: #cfe2ff;
+  --alert-primary-border: #9ec5fe;
+  --alert-primary-text: #084298;
   --alert-info-bg: #e7f3ff;
   --alert-info-border: #b3d9ff;
   --alert-info-text: #004085;
@@ -47,6 +50,9 @@
   --border-color: rgba(255, 255, 255, 0.1);
 
   /* Alert colors for dark mode */
+  --alert-primary-bg: #1e3a5f;
+  --alert-primary-border: #2d5a8f;
+  --alert-primary-text: #93c5fd;
   --alert-info-bg: #1e3a5f;
   --alert-info-border: #2d5a8f;
   --alert-info-text: #93c5fd;
