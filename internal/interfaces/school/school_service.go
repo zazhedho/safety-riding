@@ -14,4 +14,6 @@ type ServiceSchoolInterface interface {
 	DeleteSchool(id, username string) error
 	GetEducationStats(params filter.BaseParams) (dto.SchoolEducationStatsResponse, error)
 	GetEducationPriority(params filter.BaseParams) (dto.EducationPriorityResponse, error)
+	GetSummary() (*dto.SchoolSummary, error)
+	GetForMap() ([]dto.SchoolMapItem, error)
 }

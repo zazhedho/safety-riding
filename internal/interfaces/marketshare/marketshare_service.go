@@ -13,6 +13,6 @@ type ServiceMarketShareInterface interface {
 	FetchMarketShare(params filter.BaseParams) ([]domainmarketshare.MarketShare, int64, error)
 	DeleteMarketShare(id, username string) error
 	GetTopDistricts(year, month, limit int) ([]domainmarketshare.TopDistrict, error)
-	GetTopCities(year, month, limit int) ([]domainmarketshare.TopCity, error)
+	GetTopCities(year, month, limit int, sortOrder string) ([]domainmarketshare.TopCity, error)
 	GetSummary(level string, year, month int, provinceID, cityID, districtID string) ([]domainmarketshare.MarketShareSummary, error)
 }

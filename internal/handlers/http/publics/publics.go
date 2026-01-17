@@ -202,7 +202,7 @@ func (h *PublicHandler) FetchPublic(ctx *gin.Context) {
 	}
 
 	res := response.PaginationResponse(http.StatusOK, int(totalData), params.Page, params.Limit, logId, publics)
-	logger.WriteLog(logger.LogLevelDebug, fmt.Sprintf("%s; Response: %+v;", logPrefix, utils.JsonEncode(publics)))
+	logger.WriteLog(logger.LogLevelDebug, fmt.Sprintf("%s; Response: %+v;", logPrefix, int(totalData)))
 	ctx.JSON(http.StatusOK, res)
 
 }
@@ -285,5 +285,56 @@ func (h *PublicHandler) GetEducationStats(ctx *gin.Context) {
 
 	res := response.Response(http.StatusOK, "Get public education statistics successfully", logId, stats)
 	logger.WriteLog(logger.LogLevelDebug, fmt.Sprintf("%s; Response: total publics=%d, total employees educated=%d", logId, stats.TotalPublics, stats.TotalAllEmployees))
+	ctx.JSON(http.StatusOK, res)
+}
+
+// GetSummary godoc
+// @Summary Get publics summary
+// @Description Retrieve total counts for public entities and employees
+// @Tags Publics
+// @Produce json
+// @Success 200 {object} response.Success
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /publics/summary [get]
+func (h *PublicHandler) GetSummary(ctx *gin.Context) {
+	logId := utils.GenerateLogId(ctx)
+	logPrefix := fmt.Sprintf("[%s][PublicHandler][GetSummary]", logId)
+
+	summary, err := h.Service.GetSummary()
+	if err != nil {
+		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; Error: %+v", logPrefix, err))
+		res := response.Response(http.StatusInternalServerError, messages.MsgFail, logId, nil)
+		res.Error = err.Error()
+		ctx.JSON(http.StatusInternalServerError, res)
+		return
+	}
+
+	res := response.Response(http.StatusOK, "Get publics summary successfully", logId, summary)
+	logger.WriteLog(logger.LogLevelDebug, fmt.Sprintf("%s; Success: %v", logPrefix, utils.JsonEncode(summary)))
+	ctx.JSON(http.StatusOK, res)
+}
+
+// GetForMap godoc
+// @Summary Get publics for map display
+// @Description Retrieve minimal public entity data for map markers
+// @Tags Publics
+// @Produce json
+// @Success 200 {object} response.Success
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /publics/map [get]
+func (h *PublicHandler) GetForMap(ctx *gin.Context) {
+	logId := utils.GenerateLogId(ctx)
+
+	publics, err := h.Service.GetForMap()
+	if err != nil {
+		res := response.Response(http.StatusInternalServerError, messages.MsgFail, logId, nil)
+		res.Error = err.Error()
+		ctx.JSON(http.StatusInternalServerError, res)
+		return
+	}
+
+	res := response.Response(http.StatusOK, "Get publics for map successfully", logId, publics)
 	ctx.JSON(http.StatusOK, res)
 }

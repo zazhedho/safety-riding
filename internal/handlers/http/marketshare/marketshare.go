@@ -384,6 +384,7 @@ func (h *MarketShareHandler) GetSummary(ctx *gin.Context) {
 // @Param month query int false "Month filter (1-12)"
 // @Param city_limit query int false "Number of cities to return (default 5)"
 // @Param district_limit query int false "Number of districts to return (default 5)"
+// @Param sort_order query string false "Sort order for cities by market share: 'asc' or 'desc' (default 'desc')"
 // @Success 200 {object} response.Success
 // @Failure 500 {object} response.Error
 // @Security ApiKeyAuth
@@ -422,7 +423,9 @@ func (h *MarketShareHandler) GetDashboardSuggestions(ctx *gin.Context) {
 		}
 	}
 
-	topCities, err := h.Service.GetTopCities(year, month, cityLimit)
+	sortOrder := ctx.Query("sort_order")
+
+	topCities, err := h.Service.GetTopCities(year, month, cityLimit, sortOrder)
 	if err != nil {
 		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; Service.GetTopCities; Error: %+v", logPrefix, err))
 		res := response.Response(http.StatusInternalServerError, messages.MsgFail, logId, nil)

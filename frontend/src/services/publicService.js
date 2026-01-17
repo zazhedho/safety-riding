@@ -6,6 +6,8 @@ const publicService = {
   create: (data) => api.post('/public', data),
   update: (id, data) => api.put(`/public/${id}`, data),
   delete: (id) => api.delete(`/public/${id}`),
+  getSummary: () => api.get('/publics/summary'),
+  getForMap: () => api.get('/publics/map'),
   getEducationStats: (params = {}) => api.get('/publics/education-stats', { params }),
 };
 

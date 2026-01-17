@@ -149,6 +149,8 @@ func (r *Routes) SchoolRoutes() {
 	mdw := middlewares.NewMiddleware(blacklistRepo, pRepo)
 
 	r.App.GET("/api/schools", mdw.AuthMiddleware(), h.FetchSchool)
+	r.App.GET("/api/schools/summary", mdw.AuthMiddleware(), h.GetSummary)
+	r.App.GET("/api/schools/map", mdw.AuthMiddleware(), h.GetForMap)
 
 	// Education endpoints (cross-domain analytics)
 	r.App.GET("/api/education/stats", mdw.AuthMiddleware(), h.GetEducationStats)
@@ -172,6 +174,8 @@ func (r *Routes) PublicRoutes() {
 	mdw := middlewares.NewMiddleware(blacklistRepo, pRepo)
 
 	r.App.GET("/api/publics", mdw.AuthMiddleware(), h.FetchPublic)
+	r.App.GET("/api/publics/summary", mdw.AuthMiddleware(), h.GetSummary)
+	r.App.GET("/api/publics/map", mdw.AuthMiddleware(), h.GetForMap)
 	r.App.GET("/api/publics/education-stats", mdw.AuthMiddleware(), h.GetEducationStats)
 
 	public := r.App.Group("/api/public").Use(mdw.AuthMiddleware())

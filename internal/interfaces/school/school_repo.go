@@ -2,6 +2,7 @@ package interfaceschool
 
 import (
 	domainschool "safety-riding/internal/domain/school"
+	"safety-riding/internal/dto"
 	"safety-riding/pkg/filter"
 )
 
@@ -13,4 +14,6 @@ type RepoSchoolInterface interface {
 	Delete(id string) error
 	GetEducationStats(params filter.BaseParams) ([]map[string]interface{}, error)
 	GetEducationPriorityData(params filter.BaseParams) ([]map[string]interface{}, error)
+	GetSummary() (*dto.SchoolSummary, error)
+	GetForMap() ([]dto.SchoolMapItem, error)
 }

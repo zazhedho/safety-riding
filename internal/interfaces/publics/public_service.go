@@ -13,4 +13,6 @@ type ServicePublicInterface interface {
 	FetchPublic(params filter.BaseParams) ([]domainpublic.Public, int64, error)
 	DeletePublic(id, username string) error
 	GetEducationStats(params filter.BaseParams) (dto.PublicEducationStatsResponse, error)
+	GetSummary() (*dto.PublicSummary, error)
+	GetForMap() ([]dto.PublicMapItem, error)
 }

@@ -448,3 +448,11 @@ func getFloat64Value(val interface{}) float64 {
 	}
 	return 0
 }
+
+func (s *SchoolService) GetSummary() (*dto.SchoolSummary, error) {
+	return s.SchoolRepo.GetSummary()
+}
+
+func (s *SchoolService) GetForMap() ([]dto.SchoolMapItem, error) {
+	return s.SchoolRepo.GetForMap()
+}

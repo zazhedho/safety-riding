@@ -247,3 +247,11 @@ func getStringValue(val interface{}) string {
 }
 
 var _ interfacespublic.ServicePublicInterface = (*PublicService)(nil)
+
+func (s *PublicService) GetSummary() (*dto.PublicSummary, error) {
+	return s.PublicRepo.GetSummary()
+}
+
+func (s *PublicService) GetForMap() ([]dto.PublicMapItem, error) {
+	return s.PublicRepo.GetForMap()
+}

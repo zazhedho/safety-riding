@@ -325,3 +325,54 @@ func (h *SchoolHandler) GetEducationPriority(ctx *gin.Context) {
 	logger.WriteLog(logger.LogLevelDebug, fmt.Sprintf("%s; Response: total items=%d, critical=%d, high=%d", logId, priority.TotalItems, priority.CriticalCount, priority.HighPriorityCount))
 	ctx.JSON(http.StatusOK, res)
 }
+
+// GetSummary godoc
+// @Summary Get schools summary
+// @Description Retrieve total counts for schools, students, and teachers
+// @Tags Schools
+// @Produce json
+// @Success 200 {object} response.Success
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /schools/summary [get]
+func (h *SchoolHandler) GetSummary(ctx *gin.Context) {
+	logId := utils.GenerateLogId(ctx)
+	logPrefix := fmt.Sprintf("[%s][SchoolHandler][GetSummary]", logId)
+
+	summary, err := h.Service.GetSummary()
+	if err != nil {
+		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; Error: %+v", logPrefix, err))
+		res := response.Response(http.StatusInternalServerError, messages.MsgFail, logId, nil)
+		res.Error = err.Error()
+		ctx.JSON(http.StatusInternalServerError, res)
+		return
+	}
+
+	res := response.Response(http.StatusOK, "Get schools summary successfully", logId, summary)
+	logger.WriteLog(logger.LogLevelDebug, fmt.Sprintf("%s; Success: %v", logPrefix, utils.JsonEncode(summary)))
+	ctx.JSON(http.StatusOK, res)
+}
+
+// GetForMap godoc
+// @Summary Get schools for map display
+// @Description Retrieve minimal school data for map markers
+// @Tags Schools
+// @Produce json
+// @Success 200 {object} response.Success
+// @Failure 500 {object} response.Error
+// @Security ApiKeyAuth
+// @Router /schools/map [get]
+func (h *SchoolHandler) GetForMap(ctx *gin.Context) {
+	logId := utils.GenerateLogId(ctx)
+
+	schools, err := h.Service.GetForMap()
+	if err != nil {
+		res := response.Response(http.StatusInternalServerError, messages.MsgFail, logId, nil)
+		res.Error = err.Error()
+		ctx.JSON(http.StatusInternalServerError, res)
+		return
+	}
+
+	res := response.Response(http.StatusOK, "Get schools for map successfully", logId, schools)
+	ctx.JSON(http.StatusOK, res)
+}

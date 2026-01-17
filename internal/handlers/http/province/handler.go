@@ -49,6 +49,6 @@ func (h *ProvinceHandler) GetProvince(ctx *gin.Context) {
 	}
 
 	res := response.Response(http.StatusOK, "Get province successfully", logId, data)
-	logger.WriteLog(logger.LogLevelDebug, fmt.Sprintf("%s; Success: %+v;", logPrefix, utils.JsonEncode(data)))
+	logger.WriteLog(logger.LogLevelDebug, fmt.Sprintf("%s; Success", logPrefix))
 	ctx.JSON(http.StatusOK, res)
 }

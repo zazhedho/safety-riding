@@ -165,8 +165,8 @@ func (s *MarketShareService) GetTopDistricts(year, month, limit int) ([]domainma
 	return s.MarketShareRepo.GetTopDistricts(year, month, limit)
 }
 
-func (s *MarketShareService) GetTopCities(year, month, limit int) ([]domainmarketshare.TopCity, error) {
-	return s.MarketShareRepo.GetTopCities(year, month, limit)
+func (s *MarketShareService) GetTopCities(year, month, limit int, sortOrder string) ([]domainmarketshare.TopCity, error) {
+	return s.MarketShareRepo.GetTopCities(year, month, limit, sortOrder)
 }
 
 func (s *MarketShareService) GetSummary(level string, year, month int, provinceID, cityID, districtID string) ([]domainmarketshare.MarketShareSummary, error) {

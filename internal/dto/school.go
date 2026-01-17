@@ -118,3 +118,21 @@ type EducationPriorityResponse struct {
 	LowCount          int                     `json:"low_count"`
 	MarketThreshold   float64                 `json:"market_threshold"` // 87%
 }
+
+// SchoolSummary represents summary statistics for schools
+type SchoolSummary struct {
+	TotalSchools  int64 `json:"total_schools"`
+	TotalStudents int64 `json:"total_students"`
+	TotalTeachers int64 `json:"total_teachers"`
+}
+
+// SchoolMapItem represents minimal school data for map display
+type SchoolMapItem struct {
+	ID        string  `json:"id"`
+	Name      string  `json:"name"`
+	NPSN      string  `json:"npsn"`
+	Address   string  `json:"address"`
+	Phone     string  `json:"phone"`
+	Latitude  float64 `json:"latitude"`
+	Longitude float64 `json:"longitude"`
+}

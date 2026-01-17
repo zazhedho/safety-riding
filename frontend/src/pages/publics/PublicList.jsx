@@ -11,6 +11,7 @@ const PublicList = () => {
   const { hasPermission } = useAuth();
   const [publics, setPublics] = useState([]);
   const [allPublics, setAllPublics] = useState([]); // For map view - all publics without pagination
+  const [summary, setSummary] = useState({ total_publics: 0, total_employees: 0 });
   const [provinces, setProvinces] = useState([]);
   const [cities, setCities] = useState([]);
   const [districts, setDistricts] = useState([]);
@@ -44,6 +45,7 @@ const PublicList = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [publicToDelete, setPublicToDelete] = useState(null);
   const [selectedPublicForMap, setSelectedPublicForMap] = useState(null);
+  const [mapLoading, setMapLoading] = useState(false);
 
   const categories = [
     'Private Company',
@@ -57,15 +59,12 @@ const PublicList = () => {
 
   useEffect(() => {
     fetchProvinces();
+    fetchSummary();
   }, []);
 
   useEffect(() => {
     fetchPublics();
   }, [pagination.page, appliedFilters, sorting]);
-
-  useEffect(() => {
-    fetchAllPublics();
-  }, [appliedFilters, sorting]);
 
   useEffect(() => {
     if (filters.province_id) {
@@ -90,6 +89,15 @@ const PublicList = () => {
       setProvinces(response.data.data || []);
     } catch (error) {
       toast.error('Failed to load provinces');
+    }
+  };
+
+  const fetchSummary = async () => {
+    try {
+      const response = await publicService.getSummary();
+      setSummary(response.data.data || { total_publics: 0, total_employees: 0 });
+    } catch (error) {
+      console.error('Failed to load summary');
     }
   };
 
@@ -142,22 +150,13 @@ const PublicList = () => {
 
   const fetchAllPublics = async () => {
     try {
-      const params = {
-        page: 1,
-        limit: 10000, // Large limit to get all public entities
-        order_by: sorting.order_by,
-        order_direction: sorting.order_direction,
-      };
-      if (appliedFilters.province_id) params['filters[province_id]'] = appliedFilters.province_id;
-      if (appliedFilters.city_id) params['filters[city_id]'] = appliedFilters.city_id;
-      if (appliedFilters.district_id) params['filters[district_id]'] = appliedFilters.district_id;
-      if (appliedFilters.category) params['filters[category]'] = appliedFilters.category;
-      if (appliedFilters.search) params.search = appliedFilters.search;
-
-      const response = await publicService.getAll(params);
+      setMapLoading(true);
+      const response = await publicService.getForMap();
       setAllPublics(response.data.data || []);
     } catch (error) {
       toast.error('Failed to load public entities for map');
+    } finally {
+      setMapLoading(false);
     }
   };
 
@@ -245,7 +244,14 @@ const PublicList = () => {
 
   const handleCoordinateClick = (publicEntity) => {
     setSelectedPublicForMap(publicEntity);
+    handleMapView();
+  };
+
+  const handleMapView = () => {
     setViewMode('map');
+    if (allPublics.length === 0) {
+      fetchAllPublics();
+    }
   };
 
   return (
@@ -255,7 +261,10 @@ const PublicList = () => {
           <h2 className="mb-1">Public Entities Management</h2>
           <p className="text-muted mb-0">
             <i className="bi bi-people me-2"></i>
-            Total: <strong>{pagination.total.toLocaleString()}</strong> {pagination.total !== 1 ? 'entities' : 'entity'}
+            Total: <strong>{summary.total_publics.toLocaleString()}</strong> {summary.total_publics !== 1 ? 'entities' : 'entity'}
+            <span className="mx-2">|</span>
+            <i className="bi bi-person me-1"></i>
+            <strong>{summary.total_employees.toLocaleString()}</strong> employees
           </p>
         </div>
         <div className="d-flex flex-wrap gap-2">
@@ -268,7 +277,7 @@ const PublicList = () => {
             </button>
             <button
               className={`btn ${viewMode === 'map' ? 'btn-primary' : 'btn-outline-primary'}`}
-              onClick={() => setViewMode('map')}
+              onClick={handleMapView}
             >
               <i className="bi bi-map me-2"></i>Map
             </button>
@@ -355,7 +364,7 @@ const PublicList = () => {
             <div className="card-body py-2">
               <div className="d-flex justify-content-between align-items-center">
                 <span className="text-muted small">
-                  Showing {showAllOnMap ? allPublics.length : publics.length} public entit{showAllOnMap ? (allPublics.length === 1 ? 'y' : 'ies') : (publics.length === 1 ? 'y' : 'ies')} on map
+                  {mapLoading ? 'Loading...' : `Showing ${showAllOnMap ? allPublics.length : publics.length} public entit${showAllOnMap ? (allPublics.length === 1 ? 'y' : 'ies') : (publics.length === 1 ? 'y' : 'ies')} on map`}
                 </span>
                 <div className="btn-group btn-group-sm">
                   <button
@@ -378,7 +387,15 @@ const PublicList = () => {
           </div>
           <div className="card">
             <div className="card-body p-0">
-              <PublicMap publics={showAllOnMap ? allPublics : publics} selectedPublic={selectedPublicForMap} />
+              {mapLoading ? (
+                <div className="d-flex justify-content-center align-items-center" style={{ height: '600px' }}>
+                  <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                </div>
+              ) : (
+                <PublicMap publics={showAllOnMap ? allPublics : publics} selectedPublic={selectedPublicForMap} />
+              )}
             </div>
           </div>
         </>

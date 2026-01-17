@@ -69,3 +69,20 @@ type PublicEducationStatsResponse struct {
 	TotalPublics         int                    `json:"total_publics"`
 	TotalEducatedPublics int                    `json:"total_educated_publics"`
 }
+
+// PublicSummary represents summary statistics for public entities
+type PublicSummary struct {
+	TotalPublics   int64 `json:"total_publics"`
+	TotalEmployees int64 `json:"total_employees"`
+}
+
+// PublicMapItem represents minimal public data for map display
+type PublicMapItem struct {
+	ID        string  `json:"id"`
+	Name      string  `json:"name"`
+	Category  string  `json:"category"`
+	Address   string  `json:"address"`
+	Phone     string  `json:"phone"`
+	Latitude  float64 `json:"latitude"`
+	Longitude float64 `json:"longitude"`
+}

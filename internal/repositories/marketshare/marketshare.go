@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	domainmarketshare "safety-riding/internal/domain/marketshare"
+	interfacemarketshare "safety-riding/internal/interfaces/marketshare"
 	"safety-riding/pkg/filter"
 
 	"gorm.io/gorm"
@@ -16,8 +17,8 @@ type marketShareRepository struct {
 	db *gorm.DB
 }
 
-func NewMarketShareRepository(db *gorm.DB) *marketShareRepository {
-	return &marketShareRepository{db}
+func NewMarketShareRepository(db *gorm.DB) interfacemarketshare.RepoMarketShareInterface {
+	return &marketShareRepository{db: db}
 }
 
 func (r *marketShareRepository) Create(marketShare domainmarketshare.MarketShare) error {
@@ -164,7 +165,7 @@ func (r *marketShareRepository) GetTopDistricts(year, month int, limit int) ([]d
 	return results, err
 }
 
-func (r *marketShareRepository) GetTopCities(year, month int, limit int) ([]domainmarketshare.TopCity, error) {
+func (r *marketShareRepository) GetTopCities(year, month int, limit int, sortOrder string) ([]domainmarketshare.TopCity, error) {
 	var results []domainmarketshare.TopCity
 
 	query := r.db.Model(&domainmarketshare.MarketShare{}).
@@ -189,9 +190,14 @@ func (r *marketShareRepository) GetTopCities(year, month int, limit int) ([]doma
 		query = query.Where("month = ?", month)
 	}
 
+	orderBy := "market_share DESC"
+	if sortOrder == "asc" {
+		orderBy = "market_share ASC"
+	}
+
 	err := query.
 		Group("province_id, province_name, city_id, city_name").
-		Order("total_sales DESC").
+		Order(orderBy).
 		Limit(limit).
 		Scan(&results).Error
 

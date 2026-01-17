@@ -11,6 +11,7 @@ const SchoolList = () => {
   const { hasPermission } = useAuth();
   const [schools, setSchools] = useState([]);
   const [allSchools, setAllSchools] = useState([]); // For map view - all schools without pagination
+  const [summary, setSummary] = useState({ total_schools: 0, total_students: 0, total_teachers: 0 });
   const [provinces, setProvinces] = useState([]);
   const [cities, setCities] = useState([]);
   const [districts, setDistricts] = useState([]);
@@ -42,18 +43,16 @@ const SchoolList = () => {
   const [selectedSchoolForMap, setSelectedSchoolForMap] = useState(null);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [schoolToDelete, setSchoolToDelete] = useState(null);
+  const [mapLoading, setMapLoading] = useState(false);
 
   useEffect(() => {
     fetchProvinces();
+    fetchSummary();
   }, []);
 
   useEffect(() => {
     fetchSchools();
   }, [pagination.page, appliedFilters, sorting]);
-
-  useEffect(() => {
-    fetchAllSchools();
-  }, [appliedFilters, sorting]);
 
   useEffect(() => {
     if (filters.province_id) {
@@ -76,6 +75,15 @@ const SchoolList = () => {
       setProvinces(response.data.data || []);
     } catch (error) {
       toast.error('Failed to load provinces');
+    }
+  };
+
+  const fetchSummary = async () => {
+    try {
+      const response = await schoolService.getSummary();
+      setSummary(response.data.data || { total_schools: 0, total_students: 0, total_teachers: 0 });
+    } catch (error) {
+      console.error('Failed to load summary');
     }
   };
 
@@ -127,21 +135,13 @@ const SchoolList = () => {
 
   const fetchAllSchools = async () => {
     try {
-      const params = {
-        page: 1,
-        limit: 10000, // Large limit to get all schools
-        order_by: sorting.order_by,
-        order_direction: sorting.order_direction,
-      };
-      if (appliedFilters.province_id) params['filters[province_id]'] = appliedFilters.province_id;
-      if (appliedFilters.city_id) params['filters[city_id]'] = appliedFilters.city_id;
-      if (appliedFilters.district_id) params['filters[district_id]'] = appliedFilters.district_id;
-      if (appliedFilters.search) params.search = appliedFilters.search;
-
-      const response = await schoolService.getAll(params);
+      setMapLoading(true);
+      const response = await schoolService.getForMap();
       setAllSchools(response.data.data || []);
     } catch (error) {
       toast.error('Failed to load schools for map');
+    } finally {
+      setMapLoading(false);
     }
   };
 
@@ -230,7 +230,14 @@ const SchoolList = () => {
 
   const handleCoordinateClick = (school) => {
     setSelectedSchoolForMap(school);
+    handleMapView();
+  };
+
+  const handleMapView = () => {
     setViewMode('map');
+    if (allSchools.length === 0) {
+      fetchAllSchools();
+    }
   };
 
   return (
@@ -240,7 +247,13 @@ const SchoolList = () => {
           <h2 className="mb-1">Schools Management</h2>
           <p className="text-muted mb-0">
             <i className="bi bi-building me-2"></i>
-            Total: <strong>{pagination.total.toLocaleString()}</strong> school{pagination.total !== 1 ? 's' : ''}
+            Total: <strong>{summary.total_schools.toLocaleString()}</strong> school{summary.total_schools !== 1 ? 's' : ''}
+            <span className="mx-2">|</span>
+            <i className="bi bi-people me-1"></i>
+            <strong>{summary.total_students.toLocaleString()}</strong> students
+            <span className="mx-2">|</span>
+            <i className="bi bi-person-badge me-1"></i>
+            <strong>{summary.total_teachers.toLocaleString()}</strong> teachers
           </p>
         </div>
         <div className="d-flex gap-2">
@@ -253,7 +266,7 @@ const SchoolList = () => {
             </button>
             <button
               className={`btn ${viewMode === 'map' ? 'btn-primary' : 'btn-outline-primary'}`}
-              onClick={() => setViewMode('map')}
+              onClick={handleMapView}
             >
               <i className="bi bi-map me-2"></i>Map
             </button>
@@ -345,7 +358,7 @@ const SchoolList = () => {
             <div className="card-body py-2">
               <div className="d-flex justify-content-between align-items-center">
                 <span className="text-muted small">
-                  Showing {showAllOnMap ? allSchools.length : schools.length} school(s) on map
+                  {mapLoading ? 'Loading...' : `Showing ${showAllOnMap ? allSchools.length : schools.length} school(s) on map`}
                 </span>
                 <div className="btn-group btn-group-sm">
                   <button
@@ -368,7 +381,15 @@ const SchoolList = () => {
           </div>
           <div className="card">
             <div className="card-body p-0">
-              <SchoolMap schools={showAllOnMap ? allSchools : schools} selectedSchool={selectedSchoolForMap} />
+              {mapLoading ? (
+                <div className="d-flex justify-content-center align-items-center" style={{ height: '600px' }}>
+                  <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                </div>
+              ) : (
+                <SchoolMap schools={showAllOnMap ? allSchools : schools} selectedSchool={selectedSchoolForMap} />
+              )}
             </div>
           </div>
         </>

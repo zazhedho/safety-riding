@@ -3,6 +3,7 @@ package repositoryschool
 import (
 	"fmt"
 	domainschool "safety-riding/internal/domain/school"
+	"safety-riding/internal/dto"
 	interfaceschool "safety-riding/internal/interfaces/school"
 	"safety-riding/pkg/filter"
 	"strconv"
@@ -362,4 +363,22 @@ func buildLocationFilters(params filter.BaseParams) string {
 	}
 
 	return filters
+}
+
+func (r *repo) GetSummary() (*dto.SchoolSummary, error) {
+	var result dto.SchoolSummary
+	err := r.DB.Model(&domainschool.School{}).
+		Select("COUNT(*) as total_schools, COALESCE(SUM(student_count), 0) as total_students, COALESCE(SUM(teacher_count), 0) as total_teachers").
+		Where("deleted_at IS NULL").
+		Scan(&result).Error
+	return &result, err
+}
+
+func (r *repo) GetForMap() ([]dto.SchoolMapItem, error) {
+	var results []dto.SchoolMapItem
+	err := r.DB.Model(&domainschool.School{}).
+		Select("id, name, npsn, address, phone, latitude, longitude").
+		Where("deleted_at IS NULL AND latitude IS NOT NULL AND longitude IS NOT NULL").
+		Scan(&results).Error
+	return results, err
 }

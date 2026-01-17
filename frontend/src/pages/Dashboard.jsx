@@ -15,6 +15,7 @@ import BudgetUtilizationChart from '../components/charts/BudgetUtilizationChart'
 import SchoolsByProvinceChart from '../components/charts/SchoolsByProvinceChart';
 import PublicsByCityChart from '../components/charts/PublicsByCityChart';
 import DistrictRecommendation from '../components/recommendations/DistrictRecommendation';
+import CityRecommendation from '../components/recommendations/CityRecommendation';
 import PriorityMatrixChart from '../components/charts/PriorityMatrixChart';
 import EventMap from '../components/maps/EventMap';
 
@@ -127,7 +128,8 @@ const Dashboard = () => {
         year: prevMonth.getFullYear(),
         month: prevMonth.getMonth() + 1,
         city_limit: 5,
-        district_limit: 5
+        district_limit: 5,
+        sort_order: 'asc'
       };
       const response = await marketShareService.getDashboardSuggestions(params);
       const payload = response.data?.data || {};
@@ -247,20 +249,16 @@ const Dashboard = () => {
         </button>
       </div>
 
-      {/* District Recommendations for Next Month */}
+      {/* City Recommendations for Next Month */}
       <div className="mb-4">
         <div className="d-flex justify-content-between align-items-center mb-3">
           <h4 className="mb-0">
             <i className="bi bi-lightbulb-fill me-2 text-warning"></i>
-            Recommended Districts for Next Month
+            Recommended for Next Event
           </h4>
-          {/*<span className="badge bg-info">AI-Powered Insights</span>*/}
         </div>
-        <DistrictRecommendation
+        <CityRecommendation
           schools={allSchools}
-          events={[]}
-          accidents={[]}
-          poldaAccidents={[]}
           marketShare={marketShareSuggestions}
           accidentRecommendations={accidentRecommendations}
         />

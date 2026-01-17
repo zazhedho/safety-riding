@@ -23,6 +23,6 @@ func (r *blacklistRepo) Store(blacklist domainauth.Blacklist) error {
 
 func (r *blacklistRepo) GetByToken(token string) (domainauth.Blacklist, error) {
 	var blacklist domainauth.Blacklist
-	err := r.DB.Where("token = ?", token).First(&blacklist).Error
+	err := r.DB.Session(&gorm.Session{Logger: r.DB.Logger.LogMode(0)}).Where("token = ?", token).First(&blacklist).Error
 	return blacklist, err
 }

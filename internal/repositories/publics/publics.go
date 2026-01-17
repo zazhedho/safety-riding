@@ -3,6 +3,7 @@ package repositorypublic
 import (
 	"fmt"
 	domainpublic "safety-riding/internal/domain/publics"
+	"safety-riding/internal/dto"
 	interfacespublic "safety-riding/internal/interfaces/publics"
 	"safety-riding/pkg/filter"
 	"strconv"
@@ -186,5 +187,23 @@ func (r *repo) GetEducationStats(params filter.BaseParams) ([]map[string]interfa
 	}
 
 	err := query.Scan(&results).Error
+	return results, err
+}
+
+func (r *repo) GetSummary() (*dto.PublicSummary, error) {
+	var result dto.PublicSummary
+	err := r.DB.Model(&domainpublic.Public{}).
+		Select("COUNT(*) as total_publics, COALESCE(SUM(employee_count), 0) as total_employees").
+		Where("deleted_at IS NULL").
+		Scan(&result).Error
+	return &result, err
+}
+
+func (r *repo) GetForMap() ([]dto.PublicMapItem, error) {
+	var results []dto.PublicMapItem
+	err := r.DB.Model(&domainpublic.Public{}).
+		Select("id, name, category, address, phone, latitude, longitude").
+		Where("deleted_at IS NULL AND latitude IS NOT NULL AND longitude IS NOT NULL").
+		Scan(&results).Error
 	return results, err
 }
