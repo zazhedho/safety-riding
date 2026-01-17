@@ -3,6 +3,7 @@ package repodashboard
 import (
 	"fmt"
 	"math"
+	"sort"
 	"time"
 
 	"safety-riding/internal/dto"
@@ -456,6 +457,14 @@ func (r *DashboardRepo) GetAccidentRecommendations() ([]dto.AccidentRecommendati
 			})
 		}
 	}
+
+	// Sort by score descending, then by city name for consistent order
+	sort.Slice(recommendations, func(i, j int) bool {
+		if recommendations[i].Score != recommendations[j].Score {
+			return recommendations[i].Score > recommendations[j].Score
+		}
+		return recommendations[i].CityName < recommendations[j].CityName
+	})
 
 	return recommendations, nil
 }
