@@ -256,7 +256,8 @@ func (r *Routes) EventRoutes() {
 
 	repo := eventRepo.NewEventRepo(r.DB)
 	repoSchool := schoolRepo.NewSchoolRepo(r.DB)
-	svc := eventSvc.NewEventService(repo, repoSchool, storageProvider)
+	repoPublic := publicsRepo.NewPublicRepo(r.DB)
+	svc := eventSvc.NewEventService(repo, repoSchool, repoPublic, storageProvider)
 	h := eventHandler.NewEventHandler(svc)
 	blacklistRepo := authRepo.NewBlacklistRepo(r.DB)
 	pRepo := permissionRepo.NewPermissionRepo(r.DB)

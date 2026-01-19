@@ -205,13 +205,13 @@ func (s *PublicService) GetEducationStats(params filter.BaseParams) (dto.PublicE
 		public := dto.PublicEducationStats{
 			ID:                    result["id"].(string),
 			Name:                  result["name"].(string),
-			Category:              getStringValue(result["category"]),
-			DistrictId:            getStringValue(result["district_id"]),
-			DistrictName:          getStringValue(result["district_name"]),
-			CityId:                getStringValue(result["city_id"]),
-			CityName:              getStringValue(result["city_name"]),
-			ProvinceId:            getStringValue(result["province_id"]),
-			ProvinceName:          getStringValue(result["province_name"]),
+			Category:              utils.InterfaceStringStrict(result["category"]),
+			DistrictId:            utils.InterfaceStringStrict(result["district_id"]),
+			DistrictName:          utils.InterfaceStringStrict(result["district_name"]),
+			CityId:                utils.InterfaceStringStrict(result["city_id"]),
+			CityName:              utils.InterfaceStringStrict(result["city_name"]),
+			ProvinceId:            utils.InterfaceStringStrict(result["province_id"]),
+			ProvinceName:          utils.InterfaceStringStrict(result["province_name"]),
 			EmployeeCount:         employeeCount,
 			IsEducated:            isEducated,
 			TotalEmployeeEducated: totalEmployeeEducated,
@@ -233,17 +233,6 @@ func (s *PublicService) GetEducationStats(params filter.BaseParams) (dto.PublicE
 	}
 
 	return response, nil
-}
-
-// Helper function to safely get string values
-func getStringValue(val interface{}) string {
-	if val == nil {
-		return ""
-	}
-	if str, ok := val.(string); ok {
-		return str
-	}
-	return ""
 }
 
 var _ interfacespublic.ServicePublicInterface = (*PublicService)(nil)

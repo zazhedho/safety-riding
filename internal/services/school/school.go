@@ -209,13 +209,13 @@ func (s *SchoolService) GetEducationStats(params filter.BaseParams) (dto.SchoolE
 		school := dto.SchoolEducationStats{
 			ID:                   result["id"].(string),
 			Name:                 result["name"].(string),
-			NPSN:                 getStringValue(result["npsn"]),
-			DistrictId:           getStringValue(result["district_id"]),
-			DistrictName:         getStringValue(result["district_name"]),
-			CityId:               getStringValue(result["city_id"]),
-			CityName:             getStringValue(result["city_name"]),
-			ProvinceId:           getStringValue(result["province_id"]),
-			ProvinceName:         getStringValue(result["province_name"]),
+			NPSN:                 utils.InterfaceStringStrict(result["npsn"]),
+			DistrictId:           utils.InterfaceStringStrict(result["district_id"]),
+			DistrictName:         utils.InterfaceStringStrict(result["district_name"]),
+			CityId:               utils.InterfaceStringStrict(result["city_id"]),
+			CityName:             utils.InterfaceStringStrict(result["city_name"]),
+			ProvinceId:           utils.InterfaceStringStrict(result["province_id"]),
+			ProvinceName:         utils.InterfaceStringStrict(result["province_name"]),
 			StudentCount:         studentCount,
 			IsEducated:           isEducated,
 			TotalStudentEducated: totalStudentEducated,
@@ -256,21 +256,21 @@ func (s *SchoolService) GetEducationPriority(params filter.BaseParams) (dto.Educ
 
 	for _, result := range results {
 		// Parse market share data
-		marketShare := getFloat64Value(result["market_share"])
-		totalSales := getFloat64Value(result["total_sales"])
-		competitorShare := getFloat64Value(result["competitor_share"])
+		marketShare := utils.InterfaceFloat64(result["market_share"])
+		totalSales := utils.InterfaceFloat64(result["total_sales"])
+		competitorShare := utils.InterfaceFloat64(result["competitor_share"])
 
 		// Parse school data
-		totalSchools := getIntValue(result["total_schools"])
-		totalStudents := getIntValue(result["total_students"])
-		educatedSchools := getIntValue(result["educated_schools"])
-		totalStudentEducated := getIntValue(result["total_student_educated"])
+		totalSchools := utils.InterfaceInt(result["total_schools"])
+		totalStudents := utils.InterfaceInt(result["total_students"])
+		educatedSchools := utils.InterfaceInt(result["educated_schools"])
+		totalStudentEducated := utils.InterfaceInt(result["total_student_educated"])
 
 		// Parse accident data
-		totalAccidents := getIntValue(result["total_accidents"])
-		totalDeaths := getIntValue(result["total_deaths"])
-		totalInjured := getIntValue(result["total_injured"])
-		totalMinorInjured := getIntValue(result["total_minor_injured"])
+		totalAccidents := utils.InterfaceInt(result["total_accidents"])
+		totalDeaths := utils.InterfaceInt(result["total_deaths"])
+		totalInjured := utils.InterfaceInt(result["total_injured"])
+		totalMinorInjured := utils.InterfaceInt(result["total_minor_injured"])
 
 		// Calculate accident severity score (weighted: deaths=10, injured=5, minor=1)
 		accidentSeverity := (totalDeaths * 10) + (totalInjured * 5) + (totalMinorInjured * 1)
@@ -301,12 +301,12 @@ func (s *SchoolService) GetEducationPriority(params filter.BaseParams) (dto.Educ
 		}
 
 		item := dto.EducationPriorityItem{
-			ProvinceId:           getStringValue(result["province_id"]),
-			ProvinceName:         getStringValue(result["province_name"]),
-			CityId:               getStringValue(result["city_id"]),
-			CityName:             getStringValue(result["city_name"]),
-			DistrictId:           getStringValue(result["district_id"]),
-			DistrictName:         getStringValue(result["district_name"]),
+			ProvinceId:           utils.InterfaceStringStrict(result["province_id"]),
+			ProvinceName:         utils.InterfaceStringStrict(result["province_name"]),
+			CityId:               utils.InterfaceStringStrict(result["city_id"]),
+			CityName:             utils.InterfaceStringStrict(result["city_name"]),
+			DistrictId:           utils.InterfaceStringStrict(result["district_id"]),
+			DistrictName:         utils.InterfaceStringStrict(result["district_name"]),
 			MarketShare:          marketShare,
 			TotalSales:           totalSales,
 			CompetitorShare:      competitorShare,
@@ -340,114 +340,7 @@ func (s *SchoolService) GetEducationPriority(params filter.BaseParams) (dto.Educ
 	return response, nil
 }
 
-// calculatePriorityScore calculates the priority score based on multiple factors
-func calculatePriorityScore(marketShare, threshold float64, totalStudents, accidentSeverity, totalAccidents int) int {
-	var score float64 = 0
-
-	// Factor 1: Market Share (40 points max)
-	// Below 87% = high priority, the lower the share, the higher the score
-	if marketShare < threshold {
-		// Scale: 0% market share = 40 points, 87% = 0 points
-		marketFactor := ((threshold - marketShare) / threshold) * 40
-		score += marketFactor
-	}
-
-	// Factor 2: Student Population (30 points max)
-	// More students = higher priority for education impact
-	// Assuming max ~10000 students per district for scaling
-	studentFactor := float64(totalStudents) / 10000.0 * 30
-	if studentFactor > 30 {
-		studentFactor = 30
-	}
-	score += studentFactor
-
-	// Factor 3: Accident Severity (30 points max)
-	// Higher severity = higher priority
-	// Assuming max severity score of 100 for scaling
-	accidentFactor := float64(accidentSeverity) / 100.0 * 30
-	if accidentFactor > 30 {
-		accidentFactor = 30
-	}
-	score += accidentFactor
-
-	// Round to nearest integer
-	finalScore := int(score + 0.5)
-	if finalScore > 100 {
-		finalScore = 100
-	}
-	if finalScore < 0 {
-		finalScore = 0
-	}
-
-	return finalScore
-}
-
-// getPriorityLevel returns the priority level based on score
-func getPriorityLevel(score int) string {
-	switch {
-	case score >= 75:
-		return "Critical"
-	case score >= 50:
-		return "High"
-	case score >= 25:
-		return "Medium"
-	default:
-		return "Low"
-	}
-}
-
 var _ interfaceschool.ServiceSchoolInterface = (*SchoolService)(nil)
-
-// Helper function to safely get string values
-func getStringValue(val interface{}) string {
-	if val == nil {
-		return ""
-	}
-	if str, ok := val.(string); ok {
-		return str
-	}
-	return ""
-}
-
-// Helper function to safely get int values
-func getIntValue(val interface{}) int {
-	if val == nil {
-		return 0
-	}
-	switch v := val.(type) {
-	case int:
-		return v
-	case int32:
-		return int(v)
-	case int64:
-		return int(v)
-	case float64:
-		return int(v)
-	case float32:
-		return int(v)
-	}
-	return 0
-}
-
-// Helper function to safely get float64 values
-func getFloat64Value(val interface{}) float64 {
-	if val == nil {
-		return 0
-	}
-	switch v := val.(type) {
-	case float64:
-		return v
-	case float32:
-		return float64(v)
-	case int:
-		return float64(v)
-	case int64:
-		return float64(v)
-	case int32:
-		return float64(v)
-	}
-	return 0
-}
 
 func (s *SchoolService) GetSummary() (*dto.SchoolSummary, error) {
 	return s.SchoolRepo.GetSummary()

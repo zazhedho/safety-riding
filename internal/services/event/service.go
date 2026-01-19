@@ -7,6 +7,7 @@ import (
 	"safety-riding/internal/domain/event"
 	"safety-riding/internal/dto"
 	interfaceevent "safety-riding/internal/interfaces/event"
+	interfacepublic "safety-riding/internal/interfaces/publics"
 	interfaceschool "safety-riding/internal/interfaces/school"
 	"safety-riding/pkg/filter"
 	"safety-riding/pkg/storage"
@@ -19,13 +20,15 @@ import (
 type EventService struct {
 	EventRepo       interfaceevent.RepoEventInterface
 	SchoolRepo      interfaceschool.RepoSchoolInterface
+	PublicRepo      interfacepublic.RepoPublicInterface
 	StorageProvider storage.StorageProvider
 }
 
-func NewEventService(eventRepo interfaceevent.RepoEventInterface, schoolRepo interfaceschool.RepoSchoolInterface, storageProvider storage.StorageProvider) *EventService {
+func NewEventService(eventRepo interfaceevent.RepoEventInterface, schoolRepo interfaceschool.RepoSchoolInterface, publicRepo interfacepublic.RepoPublicInterface, storageProvider storage.StorageProvider) *EventService {
 	return &EventService{
 		EventRepo:       eventRepo,
 		SchoolRepo:      schoolRepo,
+		PublicRepo:      publicRepo,
 		StorageProvider: storageProvider,
 	}
 }
@@ -289,26 +292,15 @@ func (s *EventService) UpdateEvent(id, username, role string, req dto.UpdateEven
 
 	// Update school data if schoolId is provided
 	if req.SchoolId != "" && strings.EqualFold(req.Status, utils.StsCompleted) {
-		school, err := s.SchoolRepo.GetByID(req.SchoolId)
-		if err == nil {
-			school.IsEducated = true
-			school.VisitCount++
+		if err := s.markSchoolAsEducated(req.SchoolId, username, event.EventDate, event.EndTime); err != nil {
+			return domainevent.Event{}, err
+		}
+	}
 
-			eventDate := event.EventDate
-			endTime := event.EndTime
-			eventDateTime, err := utils.ParseEventDateTime(eventDate, endTime)
-			if err != nil {
-				// Fallback to current time if parsing fails
-				now := time.Now()
-				school.LastVisitAt = &now
-			} else {
-				school.LastVisitAt = &eventDateTime
-			}
-
-			school.UpdatedBy = username
-			if err = s.SchoolRepo.Update(school); err != nil {
-				return domainevent.Event{}, err
-			}
+	// Update public data if publicId is provided
+	if req.PublicId != "" && strings.EqualFold(req.Status, utils.StsCompleted) {
+		if err := s.markPublicAsEducated(req.PublicId, username, event.EventDate, event.EndTime); err != nil {
+			return domainevent.Event{}, err
 		}
 	}
 
