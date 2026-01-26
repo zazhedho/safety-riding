@@ -95,6 +95,6 @@ jobs:
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            cd /opt/apps/safetyriding
+            cd /opt/apps/safety-riding
             docker compose pull
             docker compose up -d

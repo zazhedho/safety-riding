@@ -254,7 +254,7 @@ const Dashboard = () => {
         <div className="d-flex justify-content-between align-items-center mb-3">
           <h4 className="mb-0">
             <i className="bi bi-lightbulb-fill me-2 text-warning"></i>
-            Recommended for Next Events
+            Recommended for Next Event
           </h4>
         </div>
         <CityRecommendation
