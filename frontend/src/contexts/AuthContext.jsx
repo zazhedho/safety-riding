@@ -19,6 +19,23 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState(localStorage.getItem('token'));
 
+  const extractErrorMessage = (data, fallback) => {
+    if (!data) return fallback;
+    if (data.error && typeof data.error === 'object' && data.error.message) {
+      return data.error.message;
+    }
+    if (typeof data.error === 'string') {
+      return data.error;
+    }
+    if (data.message) {
+      return data.message;
+    }
+    if (Array.isArray(data.error) && data.error.length > 0) {
+      return data.error.map(err => err.message).join(', ');
+    }
+    return fallback;
+  };
+
   useEffect(() => {
     if (token) {
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -90,18 +107,21 @@ export const AuthProvider = ({ children }) => {
       const response = await api.post('/user/register', userData);
       return { success: true, data: response.data };
     } catch (error) {
-      let errorMessage = 'Registration failed';
-      if (error.response && error.response.data) {
-        if (error.response.data.message) {
-          errorMessage = error.response.data.message;
-        } else if (Array.isArray(error.response.data.error) && error.response.data.error.length > 0) {
-          errorMessage = error.response.data.error.map(err => err.message).join(', ');
-        }
-      }
+      const errorMessage = extractErrorMessage(error.response?.data, 'Registration failed');
       return {
         success: false,
         error: errorMessage
       };
+    }
+  };
+
+  const sendRegisterOTP = async (email) => {
+    try {
+      const response = await api.post('/user/register/otp/send', { email });
+      return { success: true, data: response.data };
+    } catch (error) {
+      const errorMessage = extractErrorMessage(error.response?.data, 'Failed to send OTP');
+      return { success: false, error: errorMessage };
     }
   };
 
@@ -245,6 +265,7 @@ export const AuthProvider = ({ children }) => {
     permissions,
     login,
     register,
+    sendRegisterOTP,
     logout,
     updateProfile,
     updatePassword,

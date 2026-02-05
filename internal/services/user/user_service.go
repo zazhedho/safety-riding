@@ -167,6 +167,11 @@ func (s *ServiceUser) GetUserByEmail(email string) (domainuser.Users, error) {
 	return s.UserRepo.GetByEmail(email)
 }
 
+func (s *ServiceUser) GetUserByPhone(phone string) (domainuser.Users, error) {
+	normalized := utils.NormalizePhoneTo62(phone)
+	return s.UserRepo.GetByPhone(normalized)
+}
+
 func (s *ServiceUser) GetUserByAuth(id string) (map[string]interface{}, error) {
 	user, err := s.UserRepo.GetByID(id)
 	if err != nil {

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { toast } from 'react-toastify';
@@ -10,9 +10,14 @@ const Register = () => {
     email: '',
     phone: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    otp_code: ''
   });
   const [loading, setLoading] = useState(false);
+  const [otpSending, setOtpSending] = useState(false);
+  const [otpCooldown, setOtpCooldown] = useState(0);
+  const [otpSent, setOtpSent] = useState(false);
+  const [otpMessage, setOtpMessage] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [focusedInput, setFocusedInput] = useState(null);
@@ -24,12 +29,70 @@ const Register = () => {
     hasNumber: false,
     hasSymbol: false
   });
-  const { register } = useAuth();
+  const { register, sendRegisterOTP } = useAuth();
   const navigate = useNavigate();
 
+  const isValidEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+
+  const handleSendOTP = async () => {
+    if (!formData.email) {
+      toast.error('Please enter your email first');
+      return;
+    }
+    if (!isValidEmail(formData.email)) {
+      toast.error('Please enter a valid email address');
+      return;
+    }
+    setOtpSending(true);
+    setOtpMessage(null);
+    const result = await sendRegisterOTP(formData.email);
+    if (result.success) {
+      toast.success('OTP sent to your email');
+      setOtpSent(true);
+      setOtpCooldown(60);
+      setOtpMessage({ type: 'success', text: 'OTP sent. Please check your inbox and spam folder.' });
+    } else {
+      toast.error(result.error || 'Failed to send OTP');
+      setOtpMessage({ type: 'error', text: result.error || 'Failed to send OTP. Please try again.' });
+    }
+    setOtpSending(false);
+  };
+
+  const formatCooldown = (seconds) => {
+    const mm = String(Math.floor(seconds / 60)).padStart(2, '0');
+    const ss = String(seconds % 60).padStart(2, '0');
+    return `${mm}:${ss}`;
+  };
+
+  useEffect(() => {
+    if (otpCooldown <= 0) return;
+    const timer = setInterval(() => {
+      setOtpCooldown((prev) => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [otpCooldown]);
+
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    const { name } = e.target;
+    let value = e.target.value;
+
+    if (name === 'otp_code') {
+      value = value.replace(/\D/g, '').slice(0, 6);
+    }
+
+    setFormData((prev) => {
+      const next = { ...prev, [name]: value };
+      if (name === 'email') {
+        next.otp_code = '';
+      }
+      return next;
+    });
+
+    if (name === 'email') {
+      if (otpSent) setOtpSent(false);
+      if (otpCooldown > 0) setOtpCooldown(0);
+      if (otpMessage) setOtpMessage(null);
+    }
 
     // Calculate password strength and validation
     if (name === 'password') {
@@ -64,6 +127,10 @@ const Register = () => {
       toast.error('Password does not meet all requirements');
       return;
     }
+    if (!formData.otp_code) {
+      toast.error('Please enter the OTP code sent to your email');
+      return;
+    }
 
     setLoading(true);
 
@@ -71,7 +138,8 @@ const Register = () => {
       name: formData.name,
       email: formData.email,
       phone: formData.phone,
-      password: formData.password
+      password: formData.password,
+      otp_code: formData.otp_code
     });
 
     if (result.success) {
@@ -246,6 +314,33 @@ const Register = () => {
             left: 100%;
           }
 
+          .otp-panel {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 16px;
+            margin: 6px 0 18px 0;
+            box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
+          }
+
+          .otp-panel h6 {
+            margin: 0 0 6px 0;
+            font-weight: 700;
+            color: #0f172a;
+            font-size: 0.95rem;
+          }
+
+          .otp-panel p {
+            margin: 0 0 12px 0;
+            color: #64748b;
+            font-size: 0.85rem;
+          }
+
+          .otp-status {
+            font-size: 0.8rem;
+            margin-top: 10px;
+          }
+
           .brand-circle {
             width: 120px;
             height: 120px;
@@ -366,6 +461,54 @@ const Register = () => {
                 required
                 aria-label="Email Address"
               />
+            </div>
+
+            <div className="otp-panel">
+              <h6>Verify Email</h6>
+              <p>Send an OTP to your email and enter the code below to complete registration.</p>
+              <div className="row g-2">
+                <div className="col-md-7">
+                  <div className={`input-wrapper ${focusedInput === 'otp_code' ? 'focused' : ''}`}>
+                    <i className="bi bi-shield-check" aria-hidden="true"></i>
+                    <input
+                      type="text"
+                      name="otp_code"
+                      value={formData.otp_code}
+                      onChange={handleChange}
+                      onFocus={() => setFocusedInput('otp_code')}
+                      onBlur={() => setFocusedInput(null)}
+                      placeholder="OTP Code"
+                      required
+                      aria-label="OTP Code"
+                      maxLength={6}
+                      inputMode="numeric"
+                      autoComplete="one-time-code"
+                    />
+                  </div>
+                </div>
+                <div className="col-md-5 d-flex">
+                  <button
+                    type="button"
+                    className="btn btn-outline-primary w-100"
+                    onClick={handleSendOTP}
+                    disabled={otpSending || otpCooldown > 0}
+                    style={{ height: '48px', borderRadius: '12px' }}
+                  >
+                    {otpSending ? 'Sending...' : otpCooldown > 0 ? `Resend (${formatCooldown(otpCooldown)})` : 'Send OTP'}
+                  </button>
+                </div>
+              </div>
+              {otpMessage && (
+                <div className={`otp-status ${otpMessage.type === 'success' ? 'text-success' : 'text-danger'}`}>
+                  <i className={`bi ${otpMessage.type === 'success' ? 'bi-check-circle-fill' : 'bi-exclamation-circle-fill'} me-1`}></i>
+                  {otpMessage.text}
+                </div>
+              )}
+              {otpSent && !otpMessage && (
+                <div className="otp-status text-success">
+                  <i className="bi bi-check-circle-fill me-1"></i> OTP sent to your email
+                </div>
+              )}
             </div>
 
             <div className={`input-wrapper ${focusedInput === 'password' ? 'focused' : ''}`}>

@@ -9,6 +9,7 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"gorm.io/gorm"
 
+	"safety-riding/clients/otpclient"
 	"safety-riding/infrastructure/database"
 	"safety-riding/infrastructure/media"
 	accidentHandler "safety-riding/internal/handlers/http/accident"
@@ -102,8 +103,6 @@ func (r *Routes) UserRoutes() {
 		time.Duration(utils.GetEnv("LOGIN_ATTEMPT_WINDOW_SECONDS", 60).(int))*time.Second,
 		time.Duration(utils.GetEnv("LOGIN_BLOCK_DURATION_SECONDS", 300).(int))*time.Second,
 	)
-	h := userHandler.NewUserHandler(uc, loginLimiter)
-	mdw := middlewares.NewMiddleware(blacklistRepo, pRepo)
 
 	registerLimit := utils.GetEnv("REGISTER_RATE_LIMIT", 5).(int)
 	registerWindowSeconds := utils.GetEnv("REGISTER_RATE_WINDOW_SECONDS", 60).(int)
@@ -117,8 +116,18 @@ func (r *Routes) UserRoutes() {
 		time.Duration(registerWindowSeconds)*time.Second,
 	)
 
+	otpClient, otpErr := otpclient.NewFromEnv()
+	if otpErr != nil {
+		logger.WriteLog(logger.LogLevelWarn, "OTP client disabled: "+otpErr.Error())
+		otpClient = nil
+	}
+
+	h := userHandler.NewUserHandler(uc, loginLimiter, otpClient)
+	mdw := middlewares.NewMiddleware(blacklistRepo, pRepo)
+
 	user := r.App.Group("/api/user")
 	{
+		user.POST("/register/otp/send", registerLimiter, h.SendRegisterOTP)
 		user.POST("/register", registerLimiter, h.Register)
 		user.POST("/login", h.Login)
 		user.POST("/forgot-password", h.ForgotPassword)

@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"safety-riding/clients/otpclient"
 	"safety-riding/infrastructure/database"
 	"safety-riding/internal/dto"
 	interfaceuser "safety-riding/internal/interfaces/user"
@@ -30,12 +31,14 @@ import (
 type HandlerUser struct {
 	Service      interfaceuser.ServiceUserInterface
 	LoginLimiter security.LoginLimiter
+	OTPClient    *otpclient.Client
 }
 
-func NewUserHandler(s interfaceuser.ServiceUserInterface, limiter security.LoginLimiter) *HandlerUser {
+func NewUserHandler(s interfaceuser.ServiceUserInterface, limiter security.LoginLimiter, otpClient *otpclient.Client) *HandlerUser {
 	return &HandlerUser{
 		Service:      s,
 		LoginLimiter: limiter,
+		OTPClient:    otpClient,
 	}
 }
 
@@ -75,6 +78,28 @@ func (h *HandlerUser) Register(ctx *gin.Context) {
 	}
 	if !isPrivilegedRegistrar {
 		req.Role = ""
+		if err := h.ensureRegisterUnique(ctx, logId, logPrefix, req); err != nil {
+			return
+		}
+		if strings.TrimSpace(req.OTPCode) == "" {
+			res := response.Response(http.StatusBadRequest, messages.InvalidRequest, logId, nil)
+			res.Error = response.Errors{Code: http.StatusBadRequest, Message: "OTP code is required"}
+			ctx.JSON(http.StatusBadRequest, res)
+			return
+		}
+		if h.OTPClient == nil {
+			res := response.Response(http.StatusServiceUnavailable, messages.MsgFail, logId, nil)
+			res.Error = response.Errors{Code: http.StatusServiceUnavailable, Message: "OTP service not configured"}
+			ctx.JSON(http.StatusServiceUnavailable, res)
+			return
+		}
+		if err := h.OTPClient.VerifyRegisterOTP(ctx.Request.Context(), req.Email, req.OTPCode); err != nil {
+			logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; OTP verify failed: %v", logPrefix, err))
+			res := response.Response(http.StatusBadRequest, messages.MsgFail, logId, nil)
+			res.Error = response.Errors{Code: http.StatusBadRequest, Message: "OTP verification failed"}
+			ctx.JSON(http.StatusBadRequest, res)
+			return
+		}
 	}
 	logger.WriteLog(logger.LogLevelDebug, fmt.Sprintf("%s; Request: %+v;", logPrefix, utils.JsonEncode(req)))
 
@@ -98,6 +123,85 @@ func (h *HandlerUser) Register(ctx *gin.Context) {
 	res := response.Response(http.StatusCreated, "User registered successfully", logId, data)
 	logger.WriteLog(logger.LogLevelDebug, fmt.Sprintf("%s; Response: %+v;", logPrefix, utils.JsonEncode(data)))
 	ctx.JSON(http.StatusCreated, res)
+}
+
+func (h *HandlerUser) ensureRegisterUnique(ctx *gin.Context, logId uuid.UUID, logPrefix string, req dto.UserRegister) error {
+	userByEmail, err := h.Service.GetUserByEmail(req.Email)
+	if err == nil && userByEmail.Id != "" {
+		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; Error: email already exists", logPrefix))
+		res := response.Response(http.StatusBadRequest, messages.MsgExists, logId, nil)
+		res.Error = response.Errors{Code: http.StatusBadRequest, Message: "email or phone already exists"}
+		ctx.JSON(http.StatusBadRequest, res)
+		return fmt.Errorf("email already exists")
+	}
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; GetUserByEmail error: %v", logPrefix, err))
+		res := response.Response(http.StatusInternalServerError, messages.MsgFail, logId, nil)
+		res.Error = err.Error()
+		ctx.JSON(http.StatusInternalServerError, res)
+		return err
+	}
+
+	userByPhone, err := h.Service.GetUserByPhone(req.Phone)
+	if err == nil && userByPhone.Id != "" {
+		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; Error: phone number already exists", logPrefix))
+		res := response.Response(http.StatusBadRequest, messages.MsgExists, logId, nil)
+		res.Error = response.Errors{Code: http.StatusBadRequest, Message: "email or phone already exists"}
+		ctx.JSON(http.StatusBadRequest, res)
+		return fmt.Errorf("phone number already exists")
+	}
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; GetUserByPhone error: %v", logPrefix, err))
+		res := response.Response(http.StatusInternalServerError, messages.MsgFail, logId, nil)
+		res.Error = err.Error()
+		ctx.JSON(http.StatusInternalServerError, res)
+		return err
+	}
+
+	return nil
+}
+
+// SendRegisterOTP godoc
+// @Summary Send registration OTP
+// @Description Send OTP for registration to user's email
+// @Tags Users
+// @Accept  JSON
+// @Produce  JSON
+// @Param request body dto.OTPSendRequest true "OTP send request"
+// @Success 200 {object} response.Success
+// @Failure 400 {object} response.Error
+// @Failure 502 {object} response.Error
+// @Router /user/register/otp/send [post]
+func (h *HandlerUser) SendRegisterOTP(ctx *gin.Context) {
+	var req dto.OTPSendRequest
+	logId := utils.GenerateLogId(ctx)
+	logPrefix := fmt.Sprintf("[%s][UserHandler][SendRegisterOTP]", logId)
+
+	if err := ctx.BindJSON(&req); err != nil {
+		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; BindJSON ERROR: %s;", logPrefix, err.Error()))
+		res := response.Response(http.StatusBadRequest, messages.InvalidRequest, logId, nil)
+		res.Error = utils.ValidateError(err, reflect.TypeOf(req), "json")
+		ctx.JSON(http.StatusBadRequest, res)
+		return
+	}
+
+	if h.OTPClient == nil {
+		res := response.Response(http.StatusServiceUnavailable, messages.MsgFail, logId, nil)
+		res.Error = response.Errors{Code: http.StatusServiceUnavailable, Message: "OTP service not configured"}
+		ctx.JSON(http.StatusServiceUnavailable, res)
+		return
+	}
+
+	if err := h.OTPClient.SendRegisterOTP(ctx.Request.Context(), req.Email); err != nil {
+		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; OTP send failed: %v", logPrefix, err))
+		res := response.Response(http.StatusBadGateway, messages.MsgFail, logId, nil)
+		res.Error = response.Errors{Code: http.StatusBadGateway, Message: "Failed to send OTP"}
+		ctx.JSON(http.StatusBadGateway, res)
+		return
+	}
+
+	res := response.Response(http.StatusOK, messages.MsgSuccess, logId, map[string]string{"email": req.Email})
+	ctx.JSON(http.StatusOK, res)
 }
 
 // Login godoc
