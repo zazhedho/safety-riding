@@ -683,10 +683,34 @@ func (h *HandlerUser) ForgotPassword(ctx *gin.Context) {
 		return
 	}
 
-	// MOCK: Log the token for testing purposes since we don't have an email service
-	logger.WriteLog(logger.LogLevelInfo, fmt.Sprintf("MOCK EMAIL SENT: Reset Token for %s: %s", req.Email, token))
+	if token == "" {
+		res := response.Response(http.StatusOK, "Password reset instructions sent to your email", logId, nil)
+		ctx.JSON(http.StatusOK, res)
+		return
+	}
 
-	res := response.Response(http.StatusOK, "Password reset instructions sent to your email", logId, token)
+	if h.OTPClient == nil {
+		res := response.Response(http.StatusServiceUnavailable, messages.MsgFail, logId, nil)
+		res.Error = response.Errors{Code: http.StatusServiceUnavailable, Message: "Password reset service is not available"}
+		ctx.JSON(http.StatusServiceUnavailable, res)
+		return
+	}
+
+	resetURL := buildResetURL(utils.GetEnv("RESET_PASSWORD_URL_TEMPLATE", "").(string), token)
+	expiresMinutes := utils.GetEnv("RESET_PASSWORD_EXPIRES_MINUTES", 15).(int)
+	if expiresMinutes <= 0 {
+		expiresMinutes = 15
+	}
+
+	if err := h.OTPClient.SendPasswordResetEmail(ctx.Request.Context(), req.Email, token, resetURL, expiresMinutes); err != nil {
+		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; OTP reset email failed: %v", logPrefix, err))
+		res := response.Response(http.StatusBadGateway, messages.MsgFail, logId, nil)
+		res.Error = response.Errors{Code: http.StatusBadGateway, Message: "Failed to send reset instructions"}
+		ctx.JSON(http.StatusBadGateway, res)
+		return
+	}
+
+	res := response.Response(http.StatusOK, "Password reset instructions sent to your email", logId, nil)
 	ctx.JSON(http.StatusOK, res)
 }
 
@@ -724,6 +748,20 @@ func (h *HandlerUser) ResetPassword(ctx *gin.Context) {
 
 	res := response.Response(http.StatusOK, "Password reset successfully", logId, nil)
 	ctx.JSON(http.StatusOK, res)
+}
+
+func buildResetURL(template, token string) string {
+	template = strings.TrimSpace(template)
+	if template == "" {
+		return ""
+	}
+	if strings.Contains(template, "{token}") {
+		return strings.ReplaceAll(template, "{token}", token)
+	}
+	if strings.Contains(template, "?") {
+		return template + "&token=" + token
+	}
+	return template + "?token=" + token
 }
 
 // Delete godoc
