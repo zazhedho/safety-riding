@@ -28,38 +28,38 @@ type Client struct {
 }
 
 func NewFromEnv() (*Client, error) {
-	baseURL := strings.TrimSpace(utils.GetEnv("OTP_SERVICE_URL", "").(string))
+	baseURL := strings.TrimSpace(utils.GetEnv("SENDER_SERVICE_URL", "").(string))
 	if baseURL == "" {
 		return nil, ErrNotConfigured
 	}
 
-	appName := strings.TrimSpace(utils.GetEnv("OTP_APP_NAME", "Safety Riding").(string))
+	appName := strings.TrimSpace(utils.GetEnv("SENDER_APP_NAME", "Safety Riding").(string))
 	if appName == "" {
 		appName = "Safety Riding"
 	}
 
-	sendPath := strings.TrimSpace(utils.GetEnv("OTP_SERVICE_SEND_PATH", "/api/auth/otp/send").(string))
+	sendPath := strings.TrimSpace(utils.GetEnv("SENDER_SERVICE_SEND_PATH", "/api/auth/otp/send").(string))
 	if sendPath == "" {
 		sendPath = "/api/auth/otp/send"
 	}
-	verifyPath := strings.TrimSpace(utils.GetEnv("OTP_SERVICE_VERIFY_PATH", "/api/auth/otp/verify").(string))
+	verifyPath := strings.TrimSpace(utils.GetEnv("SENDER_SERVICE_VERIFY_PATH", "/api/auth/otp/verify").(string))
 	if verifyPath == "" {
 		verifyPath = "/api/auth/otp/verify"
 	}
-	resetRequestPath := strings.TrimSpace(utils.GetEnv("OTP_SERVICE_RESET_REQUEST_PATH", "/api/auth/reset-password/request").(string))
+	resetRequestPath := strings.TrimSpace(utils.GetEnv("SENDER_SERVICE_RESET_REQUEST_PATH", "/api/auth/reset-password/request").(string))
 	if resetRequestPath == "" {
 		resetRequestPath = "/api/auth/reset-password/request"
 	}
-	resetVerifyPath := strings.TrimSpace(utils.GetEnv("OTP_SERVICE_RESET_VERIFY_PATH", "/api/auth/reset-password/verify").(string))
+	resetVerifyPath := strings.TrimSpace(utils.GetEnv("SENDER_SERVICE_RESET_VERIFY_PATH", "/api/auth/reset-password/verify").(string))
 	if resetVerifyPath == "" {
 		resetVerifyPath = "/api/auth/reset-password/verify"
 	}
-	resetEmailPath := strings.TrimSpace(utils.GetEnv("OTP_SERVICE_RESET_EMAIL_PATH", "/api/auth/reset-password/email").(string))
+	resetEmailPath := strings.TrimSpace(utils.GetEnv("SENDER_SERVICE_RESET_EMAIL_PATH", "/api/auth/reset-password/email").(string))
 	if resetEmailPath == "" {
 		resetEmailPath = "/api/auth/reset-password/email"
 	}
 
-	timeoutSeconds := utils.GetEnv("OTP_SERVICE_TIMEOUT_SECONDS", 5).(int)
+	timeoutSeconds := utils.GetEnv("SENDER_SERVICE_TIMEOUT_SECONDS", 5).(int)
 	if timeoutSeconds <= 0 {
 		timeoutSeconds = 5
 	}
