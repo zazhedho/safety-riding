@@ -48,6 +48,12 @@ const EventForm = () => {
   const [loading, setLoading] = useState(true);
   const [isFinalized, setIsFinalized] = useState(false);
   const [showOtherEventType, setShowOtherEventType] = useState(false);
+  const [schoolSearch, setSchoolSearch] = useState('');
+  const [publicSearch, setPublicSearch] = useState('');
+  const [showSchoolOptions, setShowSchoolOptions] = useState(false);
+  const [showPublicOptions, setShowPublicOptions] = useState(false);
+  const [activeSchoolIndex, setActiveSchoolIndex] = useState(-1);
+  const [activePublicIndex, setActivePublicIndex] = useState(-1);
 
   useEffect(() => {
     fetchSchools();
@@ -71,6 +77,23 @@ const EventForm = () => {
       fetchDistricts(formData.province_id, formData.city_id);
     }
   }, [formData.city_id]);
+
+  useEffect(() => {
+    if (!formData.school_id) return;
+    const selectedSchool = schools.find((school) => school.id === formData.school_id);
+    if (selectedSchool) {
+      setSchoolSearch(selectedSchool.name || '');
+    }
+  }, [formData.school_id, schools]);
+
+  useEffect(() => {
+    if (!formData.public_id) return;
+    const selectedPublic = publics.find((pub) => pub.id === formData.public_id);
+    if (selectedPublic) {
+      const label = selectedPublic.category ? `${selectedPublic.name} - ${selectedPublic.category}` : selectedPublic.name;
+      setPublicSearch(label);
+    }
+  }, [formData.public_id, publics]);
 
   const fetchEvent = async (eventId) => {
     try {
@@ -169,6 +192,12 @@ const EventForm = () => {
   const handleEntityTypeChange = (e) => {
     const newEntityType = e.target.value;
     setEntityType(newEntityType);
+    setSchoolSearch('');
+    setPublicSearch('');
+    setShowSchoolOptions(false);
+    setShowPublicOptions(false);
+    setActiveSchoolIndex(-1);
+    setActivePublicIndex(-1);
     // Clear both IDs when switching entity type
     setFormData(prev => ({
       ...prev,
@@ -177,24 +206,51 @@ const EventForm = () => {
     }));
   };
 
-  const handleEntitySelect = (e) => {
-    const { name, value } = e.target;
+  const handleSchoolSearchChange = (e) => {
+    const value = e.target.value;
+    setSchoolSearch(value);
+    setShowSchoolOptions(true);
+    setActiveSchoolIndex(0);
+    setFormData(prev => ({
+      ...prev,
+      school_id: '',
+      public_id: ''
+    }));
+  };
 
-    if (name === 'school_id') {
-      // Clear public_id when selecting a school
-      setFormData(prev => ({
-        ...prev,
-        school_id: value,
-        public_id: ''
-      }));
-    } else if (name === 'public_id') {
-      // Clear school_id when selecting a public entity
-      setFormData(prev => ({
-        ...prev,
-        public_id: value,
-        school_id: ''
-      }));
-    }
+  const handlePublicSearchChange = (e) => {
+    const value = e.target.value;
+    setPublicSearch(value);
+    setShowPublicOptions(true);
+    setActivePublicIndex(0);
+    setFormData(prev => ({
+      ...prev,
+      public_id: '',
+      school_id: ''
+    }));
+  };
+
+  const handleSelectSchool = (school) => {
+    setSchoolSearch(school.name || '');
+    setShowSchoolOptions(false);
+    setActiveSchoolIndex(-1);
+    setFormData(prev => ({
+      ...prev,
+      school_id: school.id,
+      public_id: ''
+    }));
+  };
+
+  const handleSelectPublic = (pub) => {
+    const label = pub.category ? `${pub.name} - ${pub.category}` : pub.name;
+    setPublicSearch(label);
+    setShowPublicOptions(false);
+    setActivePublicIndex(-1);
+    setFormData(prev => ({
+      ...prev,
+      public_id: pub.id,
+      school_id: ''
+    }));
   };
 
   const handleChange = (e) => {
@@ -288,6 +344,16 @@ const EventForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    if (entityType === 'school' && !formData.school_id) {
+      toast.error('Please select a school from the dropdown list');
+      return;
+    }
+
+    if (entityType === 'public' && !formData.public_id) {
+      toast.error('Please select a public entity from the dropdown list');
+      return;
+    }
+
     // Convert empty string to 0 for number fields before submitting
     const sanitizedSales = formData.on_the_spot_sales
       .map(item => ({
@@ -361,6 +427,95 @@ const EventForm = () => {
   };
 
   const achievementBadge = getAchievementBadge();
+  const schoolSearchTerm = schoolSearch.trim().toLowerCase();
+  const publicSearchTerm = publicSearch.trim().toLowerCase();
+  const filteredSchools = schoolSearchTerm
+    ? schools.filter(school => school.name?.toLowerCase().includes(schoolSearchTerm))
+    : schools;
+  const filteredPublics = publicSearchTerm
+    ? publics.filter(pub => {
+        const category = pub.category || '';
+        return `${pub.name} ${category}`.toLowerCase().includes(publicSearchTerm);
+      })
+    : publics;
+  const hasSchoolOptions = filteredSchools.length > 0;
+  const hasPublicOptions = filteredPublics.length > 0;
+
+  const handleSchoolSearchKeyDown = (e) => {
+    if (!showSchoolOptions) {
+      if (e.key === 'ArrowDown' && hasSchoolOptions) {
+        setShowSchoolOptions(true);
+        setActiveSchoolIndex(0);
+        e.preventDefault();
+      }
+      return;
+    }
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (!hasSchoolOptions) return;
+      setActiveSchoolIndex((prev) => (prev < filteredSchools.length - 1 ? prev + 1 : 0));
+      return;
+    }
+
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (!hasSchoolOptions) return;
+      setActiveSchoolIndex((prev) => (prev > 0 ? prev - 1 : filteredSchools.length - 1));
+      return;
+    }
+
+    if (e.key === 'Enter') {
+      if (hasSchoolOptions && activeSchoolIndex >= 0) {
+        e.preventDefault();
+        handleSelectSchool(filteredSchools[activeSchoolIndex]);
+      }
+      return;
+    }
+
+    if (e.key === 'Escape') {
+      setShowSchoolOptions(false);
+      setActiveSchoolIndex(-1);
+    }
+  };
+
+  const handlePublicSearchKeyDown = (e) => {
+    if (!showPublicOptions) {
+      if (e.key === 'ArrowDown' && hasPublicOptions) {
+        setShowPublicOptions(true);
+        setActivePublicIndex(0);
+        e.preventDefault();
+      }
+      return;
+    }
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (!hasPublicOptions) return;
+      setActivePublicIndex((prev) => (prev < filteredPublics.length - 1 ? prev + 1 : 0));
+      return;
+    }
+
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (!hasPublicOptions) return;
+      setActivePublicIndex((prev) => (prev > 0 ? prev - 1 : filteredPublics.length - 1));
+      return;
+    }
+
+    if (e.key === 'Enter') {
+      if (hasPublicOptions && activePublicIndex >= 0) {
+        e.preventDefault();
+        handleSelectPublic(filteredPublics[activePublicIndex]);
+      }
+      return;
+    }
+
+    if (e.key === 'Escape') {
+      setShowPublicOptions(false);
+      setActivePublicIndex(-1);
+    }
+  };
 
   return (
     <>
@@ -413,18 +568,86 @@ const EventForm = () => {
               {entityType === 'school' ? (
                 <>
                   <label className="form-label">School <span className="text-danger">*</span></label>
-                  <select className="form-select" name="school_id" value={formData.school_id} onChange={handleEntitySelect} required disabled={shouldDisable}>
-                    <option value="">Select School</option>
-                    {schools.map(school => <option key={school.id} value={school.id}>{school.name}</option>)}
-                  </select>
+                  <div className="position-relative">
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Search and select school..."
+                      value={schoolSearch}
+                      onChange={handleSchoolSearchChange}
+                      onKeyDown={handleSchoolSearchKeyDown}
+                      onFocus={() => {
+                        setShowSchoolOptions(true);
+                        setActiveSchoolIndex(0);
+                      }}
+                      onBlur={() => setTimeout(() => {
+                        setShowSchoolOptions(false);
+                        setActiveSchoolIndex(-1);
+                      }, 150)}
+                      disabled={shouldDisable}
+                    />
+                    {showSchoolOptions && !shouldDisable && (
+                      <div className="list-group position-absolute w-100 mt-1 shadow-sm" style={{ zIndex: 1050, maxHeight: '240px', overflowY: 'auto' }}>
+                        {filteredSchools.length > 0 ? (
+                          filteredSchools.map((school, index) => (
+                            <button
+                              key={school.id}
+                              type="button"
+                              className={`list-group-item list-group-item-action text-start${activeSchoolIndex === index ? ' active' : ''}`}
+                              onMouseDown={(event) => event.preventDefault()}
+                              onClick={() => handleSelectSchool(school)}
+                            >
+                              {school.name}
+                            </button>
+                          ))
+                        ) : (
+                          <div className="list-group-item text-muted">No schools found</div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </>
               ) : (
                 <>
                   <label className="form-label">Public Entity <span className="text-danger">*</span></label>
-                  <select className="form-select" name="public_id" value={formData.public_id} onChange={handleEntitySelect} required disabled={shouldDisable}>
-                    <option value="">Select Public Entity</option>
-                    {publics.map(pub => <option key={pub.id} value={pub.id}>{pub.name} - {pub.category}</option>)}
-                  </select>
+                  <div className="position-relative">
+                    <input
+                      type="text"
+                      className="form-control"
+                      placeholder="Search and select public entity..."
+                      value={publicSearch}
+                      onChange={handlePublicSearchChange}
+                      onKeyDown={handlePublicSearchKeyDown}
+                      onFocus={() => {
+                        setShowPublicOptions(true);
+                        setActivePublicIndex(0);
+                      }}
+                      onBlur={() => setTimeout(() => {
+                        setShowPublicOptions(false);
+                        setActivePublicIndex(-1);
+                      }, 150)}
+                      disabled={shouldDisable}
+                    />
+                    {showPublicOptions && !shouldDisable && (
+                      <div className="list-group position-absolute w-100 mt-1 shadow-sm" style={{ zIndex: 1050, maxHeight: '240px', overflowY: 'auto' }}>
+                        {filteredPublics.length > 0 ? (
+                          filteredPublics.map((pub, index) => (
+                            <button
+                              key={pub.id}
+                              type="button"
+                              className={`list-group-item list-group-item-action text-start${activePublicIndex === index ? ' active' : ''}`}
+                              onMouseDown={(event) => event.preventDefault()}
+                              onClick={() => handleSelectPublic(pub)}
+                            >
+                              {pub.name} {pub.category ? `- ${pub.category}` : ''}
+                            </button>
+                          ))
+                        ) : (
+                          <div className="list-group-item text-muted">No public entities found</div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </>
               )}
             </div>
