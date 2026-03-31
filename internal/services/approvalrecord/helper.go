@@ -185,13 +185,34 @@ func buildSubmittedFormResponseKey(parts ...string) string {
 }
 
 func normalizeOverallStatus(raw string) string {
-	switch strings.TrimSpace(strings.ToLower(raw)) {
-	case "complete":
-		return "Approved"
-	case "in progress":
+	normalized := strings.TrimSpace(strings.ToLower(raw))
+	if normalized == "" {
 		return "In progress"
-	default:
+	}
+
+	switch normalized {
+	case "complete", "completed", "approved", "approve", "done", "success":
+		return "Approved"
+	case "in progress", "pending", "pending approval", "processing", "submitted", "waiting approval":
+		return "In progress"
+	case "decline", "declined", "reject", "rejected", "cancelled", "canceled", "failed", "denied":
 		return "Decline"
+	}
+
+	switch {
+	case strings.Contains(normalized, "declin"),
+		strings.Contains(normalized, "reject"),
+		strings.Contains(normalized, "cancel"),
+		strings.Contains(normalized, "fail"),
+		strings.Contains(normalized, "denied"):
+		return "Decline"
+	case strings.Contains(normalized, "approv"),
+		strings.Contains(normalized, "complete"),
+		strings.Contains(normalized, "success"):
+		return "Approved"
+	default:
+		// Unknown or newly introduced statuses should stay non-final by default.
+		return "In progress"
 	}
 }
 

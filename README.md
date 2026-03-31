@@ -40,6 +40,7 @@ Safety Riding Management System is a comprehensive full-stack web application de
 - 🔐 **Secure Authentication** - JWT-based auth with advanced password validation
 - 🗺️ **Interactive Maps** - Location picking with Leaflet integration
 - 📊 **Analytics Dashboard** - Real-time charts and market share visualization
+- 📄 **Submitted Forms Sync** - Google Sheets intake data synced into PostgreSQL
 - 📱 **Responsive Design** - Mobile-first approach with Bootstrap 5
 - 🚀 **High Performance** - Built with Go and React for optimal speed
 
@@ -92,6 +93,19 @@ Safety Riding Management System is a comprehensive full-stack web application de
 - **Location-based Analytics** (Province/City/District)
 - **Historical Trend Analysis**
 - **Visual Data Representation**
+
+### 📄 Submitted Forms
+- **Google Sheets Sync** for submitted form rows and approval rows
+- **PostgreSQL Persistence** so filtering and detail views do not depend on live sheet reads
+- **Latest Status Mapping** from approval workflow data
+- **Dedicated Detail Page** for submitter information, training request data, approval history, and recipients
+- **Manual Sync** with stale-check protection to reduce unnecessary fetches
+
+### ⚙️ Configurations
+- **Database-Driven Runtime Configs** editable without backend restart
+- **Google Sheets URL Management** from the UI
+- **Modal-Based Editing** for safer value updates
+- **Confirmation Modal** before enabling or disabling a config
 
 ### 👥 User Management
 - **User CRUD Operations**
@@ -365,6 +379,17 @@ VITE_API_BASE_URL=http://localhost:8080/api
 VITE_APP_NAME=Safety Riding System
 ```
 
+### Runtime Configurations
+
+Some settings are stored in the `app_configs` table and can be updated from the `Configurations` module without restarting the backend.
+
+Relevant keys for the submitted forms flow:
+
+| Config Key | Purpose |
+|-----------|---------|
+| `approval_records.sheet_url` | Google Sheets URL for approval rows |
+| `approval_records.submitted_forms_sheet_url` | Google Sheets URL for submitted form rows |
+
 ---
 
 ## 📚 API Documentation
@@ -421,6 +446,20 @@ PUT    /api/marketshare/:id        Update market share
 DELETE /api/marketshare/:id        Delete market share
 ```
 
+#### Submitted Forms
+```
+GET    /api/approval-records        List submitted forms
+GET    /api/approval-records/config Get sync source configuration
+GET    /api/approval-records/:id    Get submitted form detail
+POST   /api/approval-records/sync   Sync submitted forms and approval rows from Google Sheets
+```
+
+#### Configurations
+```
+GET    /api/configs                 List application configurations
+PUT    /api/config/:id              Update configuration value or active status
+```
+
 #### Locations
 ```
 GET    /api/locations/provinces    Get all provinces
@@ -443,7 +482,10 @@ safety-riding/
 │   │   ├── event/
 │   │   ├── school/
 │   │   ├── budget/
-│   │   └── marketshare/
+│   │   ├── marketshare/
+│   │   ├── approvalrecord/
+│   │   ├── appconfig/
+│   │   └── submittedform/
 │   ├── dto/                      # Data Transfer Objects
 │   ├── handlers/                 # HTTP handlers (controllers)
 │   ├── repositories/             # Data access layer
@@ -471,6 +513,8 @@ safety-riding/
 │   │   │   ├── schools/
 │   │   │   ├── budgets/
 │   │   │   ├── marketshare/
+│   │   │   ├── approvalrecords/
+│   │   │   ├── configs/
 │   │   │   └── users/
 │   │   ├── services/             # API services
 │   │   ├── styles/               # CSS files
