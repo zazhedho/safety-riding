@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
+import ConfirmationModal from '../../components/common/ConfirmationModal';
 import appConfigService from '../../services/appConfigService';
 import { useAuth } from '../../contexts/AuthContext';
 
@@ -8,6 +9,10 @@ const ConfigList = () => {
   const [configs, setConfigs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [savingId, setSavingId] = useState(null);
+  const [editingConfig, setEditingConfig] = useState(null);
+  const [editValue, setEditValue] = useState('');
+  const [showToggleModal, setShowToggleModal] = useState(false);
+  const [configToToggle, setConfigToToggle] = useState(null);
   const [filters, setFilters] = useState({
     search: '',
     category: '',
@@ -32,17 +37,21 @@ const ConfigList = () => {
       if (nextFilters.category) params['filters[category]'] = nextFilters.category;
 
       const response = await appConfigService.getAll(params);
-      const items = (response.data.data || []).map((item) => ({
-        ...item,
-        draft_value: item.value || '',
-      }));
+      const totalData = response.data.total_data || 0;
+      const totalPages = response.data.total_pages || 0;
+      const items = response.data.data || [];
+
+      if (totalPages > 0 && page > totalPages) {
+        await fetchConfigs(totalPages, nextFilters);
+        return;
+      }
 
       setConfigs(items);
       setPagination((prev) => ({
         ...prev,
         page,
-        total: response.data.total_data || 0,
-        totalPages: response.data.total_pages || 0,
+        total: totalData,
+        totalPages,
       }));
     } catch (error) {
       toast.error('Failed to load configurations');
@@ -55,25 +64,32 @@ const ConfigList = () => {
     fetchConfigs(1);
   }, []);
 
-  const handleDraftChange = (id, value) => {
-    setConfigs((prev) =>
-      prev.map((config) => (config.id === id ? { ...config, draft_value: value } : config))
-    );
+  const handleOpenEditModal = (config) => {
+    setEditingConfig(config);
+    setEditValue(config.value || '');
   };
 
-  const handleSave = async (config) => {
+  const handleCloseEditModal = () => {
+    if (savingId) return;
+    setEditingConfig(null);
+    setEditValue('');
+  };
+
+  const handleSave = async () => {
+    if (!editingConfig) return;
+
     try {
-      setSavingId(config.id);
-      const response = await appConfigService.update(config.id, {
-        value: config.draft_value,
-        is_active: config.is_active,
+      setSavingId(editingConfig.id);
+      const response = await appConfigService.update(editingConfig.id, {
+        value: editValue,
+        is_active: editingConfig.is_active,
       });
       const updated = response.data.data;
       setConfigs((prev) =>
-        prev.map((item) =>
-          item.id === updated.id ? { ...updated, draft_value: updated.value || '' } : item
-        )
+        prev.map((item) => (item.id === updated.id ? updated : item))
       );
+      setEditingConfig(null);
+      setEditValue('');
       toast.success('Configuration updated successfully');
     } catch (error) {
       toast.error(error.response?.data?.error || 'Failed to update configuration');
@@ -86,21 +102,33 @@ const ConfigList = () => {
     try {
       setSavingId(config.id);
       const response = await appConfigService.update(config.id, {
-        value: config.draft_value,
+        value: config.value,
         is_active: !config.is_active,
       });
       const updated = response.data.data;
-      setConfigs((prev) =>
-        prev.map((item) =>
-          item.id === updated.id ? { ...updated, draft_value: updated.value || '' } : item
-        )
-      );
+      setConfigs((prev) => prev.map((item) => (item.id === updated.id ? updated : item)));
+      if (editingConfig?.id === updated.id) {
+        setEditingConfig(updated);
+      }
+      setShowToggleModal(false);
+      setConfigToToggle(null);
       toast.success(`Configuration ${updated.is_active ? 'activated' : 'deactivated'} successfully`);
     } catch (error) {
       toast.error(error.response?.data?.error || 'Failed to update configuration');
     } finally {
       setSavingId(null);
     }
+  };
+
+  const handleToggleClick = (config) => {
+    setConfigToToggle(config);
+    setShowToggleModal(true);
+  };
+
+  const handleToggleCancel = () => {
+    if (savingId) return;
+    setShowToggleModal(false);
+    setConfigToToggle(null);
   };
 
   const categories = [...new Set(configs.map((config) => config.category).filter(Boolean))];
@@ -117,8 +145,7 @@ const ConfigList = () => {
       <div className="card border-0 shadow-sm mb-4">
         <div className="card-body">
           <div className="row g-3">
-            <div className="col-12 col-md-8">
-              <label className="form-label">Search</label>
+            <div className="col-12 col-md-5">
               <input
                 type="text"
                 className="form-control"
@@ -128,14 +155,15 @@ const ConfigList = () => {
                   if (e.key === 'Enter') fetchConfigs(1, filters);
                 }}
                 placeholder="Search config key, display name, category"
+                aria-label="Search configurations"
               />
             </div>
             <div className="col-12 col-md-4">
-              <label className="form-label">Category</label>
               <select
                 className="form-select"
                 value={filters.category}
                 onChange={(e) => setFilters((prev) => ({ ...prev, category: e.target.value }))}
+                aria-label="Filter by category"
               >
                 <option value="">All Categories</option>
                 {categories.map((category) => (
@@ -145,36 +173,59 @@ const ConfigList = () => {
                 ))}
               </select>
             </div>
-          </div>
-          <div className="d-flex gap-2 mt-3">
-            <button type="button" className="btn btn-primary" onClick={() => fetchConfigs(1, filters)}>
-              Apply Filters
-            </button>
-            <button
-              type="button"
-              className="btn btn-outline-secondary"
-              onClick={() => {
-                const nextFilters = { search: '', category: '' };
-                setFilters(nextFilters);
-                fetchConfigs(1, nextFilters);
-              }}
-            >
-              Reset
-            </button>
+            <div className="col-12 col-md-3">
+              <div className="d-flex gap-2">
+                <button
+                  type="button"
+                  className="btn btn-primary flex-fill text-nowrap"
+                  onClick={() => fetchConfigs(1, filters)}
+                  aria-label="Apply filters"
+                >
+                  <i className="bi bi-search me-2" aria-hidden="true"></i>
+                  Search
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary"
+                  onClick={() => {
+                    const nextFilters = { search: '', category: '' };
+                    setFilters(nextFilters);
+                    fetchConfigs(1, nextFilters);
+                  }}
+                  title="Clear all filters"
+                  aria-label="Clear all filters"
+                >
+                  <i className="bi bi-x-circle" aria-hidden="true"></i>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       <div className="card border-0 shadow-sm">
         <div className="card-body">
-          {loading ? (
+          <div className="d-flex justify-content-between align-items-center mb-3">
+            <h5 className="card-title mb-0">Configuration Items</h5>
+            <small className="text-muted">Total: {pagination.total}</small>
+          </div>
+
+          {loading && configs.length === 0 ? (
             <div className="text-center py-5">
               <div className="spinner-border text-primary" role="status"></div>
             </div>
           ) : configs.length === 0 ? (
             <div className="text-center py-5 text-muted">No configurations found.</div>
           ) : (
-            <div className="table-responsive">
+            <div className="table-responsive position-relative">
+              {loading && (
+                <div
+                  className="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center bg-white bg-opacity-50"
+                  style={{ zIndex: 1 }}
+                >
+                  <div className="spinner-border spinner-border-sm text-primary" role="status"></div>
+                </div>
+              )}
               <table className="table align-middle">
                 <thead>
                   <tr>
@@ -190,22 +241,39 @@ const ConfigList = () => {
                 <tbody>
                   {configs.map((config) => (
                     <tr key={config.id}>
-                      <td>{config.display_name}</td>
-                      <td><code>{config.config_key}</code></td>
-                      <td>{config.category}</td>
-                      <td style={{ minWidth: '320px' }}>
-                        {canUpdate ? (
-                          <textarea
-                            className="form-control"
-                            rows="3"
-                            value={config.draft_value}
-                            onChange={(e) => handleDraftChange(config.id, e.target.value)}
-                          />
-                        ) : (
-                          <div className="text-break">{config.value}</div>
-                        )}
+                      <td style={{ maxWidth: '220px' }}>
+                        <div className="text-truncate" title={config.display_name || ''}>
+                          {config.display_name || '-'}
+                        </div>
                       </td>
-                      <td className="text-break">{config.description || '-'}</td>
+                      <td style={{ maxWidth: '260px' }}>
+                        <code
+                          className="d-inline-block text-truncate"
+                          title={config.config_key || ''}
+                          style={{ maxWidth: '100%' }}
+                        >
+                          {config.config_key}
+                        </code>
+                      </td>
+                      <td style={{ maxWidth: '160px' }}>
+                        <div className="text-truncate" title={config.category || ''}>
+                          {config.category || '-'}
+                        </div>
+                      </td>
+                      <td style={{ minWidth: '320px' }}>
+                        <div
+                          className="text-truncate"
+                          title={config.value || ''}
+                          style={{ maxWidth: '320px' }}
+                        >
+                          {config.value || '-'}
+                        </div>
+                      </td>
+                      <td style={{ maxWidth: '280px' }}>
+                        <div className="text-truncate" title={config.description || ''}>
+                          {config.description || '-'}
+                        </div>
+                      </td>
                       <td>
                         <span className={`badge ${config.is_active ? 'bg-success' : 'bg-secondary'}`}>
                           {config.is_active ? 'Active' : 'Inactive'}
@@ -218,17 +286,17 @@ const ConfigList = () => {
                               type="button"
                               className="btn btn-sm btn-outline-primary"
                               disabled={savingId === config.id}
-                              onClick={() => handleSave(config)}
-                              title="Save configuration"
-                              aria-label="Save configuration"
+                              onClick={() => handleOpenEditModal(config)}
+                              title="Edit configuration"
+                              aria-label="Edit configuration"
                             >
-                              <i className="bi bi-check-lg"></i>
+                              <i className="bi bi-pencil"></i>
                             </button>
                             <button
                               type="button"
                               className="btn btn-sm btn-outline-secondary"
                               disabled={savingId === config.id}
-                              onClick={() => handleToggleActive(config)}
+                              onClick={() => handleToggleClick(config)}
                               title={config.is_active ? 'Disable configuration' : 'Enable configuration'}
                               aria-label={config.is_active ? 'Disable configuration' : 'Enable configuration'}
                             >
@@ -269,6 +337,92 @@ const ConfigList = () => {
           )}
         </div>
       </div>
+
+      {editingConfig && (
+        <>
+          <div className="modal fade show d-block" tabIndex="-1" role="dialog" aria-modal="true">
+            <div className="modal-dialog modal-lg modal-dialog-centered" role="document">
+              <div className="modal-content">
+                <div className="modal-header">
+                  <div>
+                    <h5 className="modal-title mb-1">Edit Configuration</h5>
+                    <div className="text-muted small">{editingConfig.display_name || editingConfig.config_key}</div>
+                  </div>
+                  <button
+                    type="button"
+                    className="btn-close"
+                    aria-label="Close"
+                    onClick={handleCloseEditModal}
+                    disabled={!!savingId}
+                  ></button>
+                </div>
+                <div className="modal-body">
+                  <div className="mb-3">
+                    <label className="form-label">Key</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={editingConfig.config_key || ''}
+                      disabled
+                    />
+                  </div>
+                  <div className="mb-3">
+                    <label className="form-label">Category</label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      value={editingConfig.category || '-'}
+                      disabled
+                    />
+                  </div>
+                  <div className="mb-0">
+                    <label className="form-label">Value</label>
+                    <textarea
+                      className="form-control"
+                      rows="6"
+                      value={editValue}
+                      onChange={(e) => setEditValue(e.target.value)}
+                      placeholder="Enter configuration value"
+                    />
+                  </div>
+                </div>
+                <div className="modal-footer">
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary"
+                    onClick={handleCloseEditModal}
+                    disabled={!!savingId}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={handleSave}
+                    disabled={savingId === editingConfig.id}
+                  >
+                    {savingId === editingConfig.id ? 'Saving...' : 'Save Changes'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="modal-backdrop fade show"></div>
+        </>
+      )}
+
+      <ConfirmationModal
+        show={showToggleModal}
+        title={configToToggle?.is_active ? 'Disable Configuration' : 'Enable Configuration'}
+        message={
+          configToToggle
+            ? `Are you sure you want to ${configToToggle.is_active ? 'disable' : 'enable'} configuration "${configToToggle.display_name}"?`
+            : ''
+        }
+        confirmText={configToToggle?.is_active ? 'Disable' : 'Enable'}
+        onConfirm={() => configToToggle && handleToggleActive(configToToggle)}
+        onCancel={handleToggleCancel}
+      />
     </div>
   );
 };
