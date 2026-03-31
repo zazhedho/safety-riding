@@ -1359,8 +1359,9 @@ body {
 
   /* Main content takes full width */
   .main-content {
-    margin-left: 0;
-    width: 100%;
+    margin-left: 0 !important;
+    width: 100% !important;
+    max-width: 100vw;
   }
 
   /* Sidebar collapsed state does not apply on mobile */
@@ -1369,8 +1370,9 @@ body {
   }
 
   .sidebar-collapsed .main-content {
-    margin-left: 0;
-    width: 100%;
+    margin-left: 0 !important;
+    width: 100% !important;
+    max-width: 100vw;
   }
 
   /* Top navigation responsive */
