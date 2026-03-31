@@ -4,6 +4,8 @@ import ConfirmationModal from '../../components/common/ConfirmationModal';
 import appConfigService from '../../services/appConfigService';
 import { useAuth } from '../../contexts/AuthContext';
 
+const statusBadgeClass = (isActive) => (isActive ? 'bg-success' : 'bg-danger');
+
 const ConfigList = () => {
   const { hasPermission } = useAuth();
   const [configs, setConfigs] = useState([]);
@@ -275,7 +277,7 @@ const ConfigList = () => {
                         </div>
                       </td>
                       <td>
-                        <span className={`badge ${config.is_active ? 'bg-success' : 'bg-secondary'}`}>
+                        <span className={`badge ${statusBadgeClass(config.is_active)}`}>
                           {config.is_active ? 'Active' : 'Inactive'}
                         </span>
                       </td>

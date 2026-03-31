@@ -6,14 +6,14 @@ import { useAuth } from '../../contexts/AuthContext';
 
 const statusBadgeClass = (status) => {
   const normalized = (status || '').toLowerCase();
-  if (normalized === 'approve' || normalized === 'approved' || normalized === 'complete') {
-    return 'bg-success-subtle text-success';
+  if (normalized === 'approve' || normalized === 'approved' || normalized === 'complete' || normalized === 'success') {
+    return 'bg-success text-white';
   }
-  if (normalized === 'in progress' || normalized === 'current') return 'bg-warning-subtle text-warning';
+  if (normalized === 'in progress' || normalized === 'current') return 'bg-warning text-dark';
   if (normalized === 'decline' || normalized === 'declined' || normalized === 'rejected') {
-    return 'bg-danger-subtle text-danger';
+    return 'bg-danger text-white';
   }
-  return 'bg-secondary-subtle text-secondary';
+  return 'bg-secondary text-white';
 };
 
 const formatDateTime = (value) => {
