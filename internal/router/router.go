@@ -44,6 +44,7 @@ import (
 	roleRepo "safety-riding/internal/repositories/role"
 	schoolRepo "safety-riding/internal/repositories/school"
 	sessionRepo "safety-riding/internal/repositories/session"
+	submittedFormRepo "safety-riding/internal/repositories/submittedform"
 	userRepo "safety-riding/internal/repositories/user"
 	accidentSvc "safety-riding/internal/services/accident"
 	appConfigSvc "safety-riding/internal/services/appconfig"
@@ -470,8 +471,9 @@ func (r *Routes) DashboardRoutes() {
 
 func (r *Routes) ApprovalRecordRoutes() {
 	repo := approvalRecordRepo.NewApprovalRecordRepo(r.DB)
+	submittedRepo := submittedFormRepo.NewSubmittedFormRepo(r.DB)
 	configRepo := appConfigRepo.NewAppConfigRepo(r.DB)
-	svc := approvalRecordSvc.NewApprovalRecordService(repo, configRepo)
+	svc := approvalRecordSvc.NewApprovalRecordService(repo, submittedRepo, configRepo)
 	h := approvalRecordHandler.NewApprovalRecordHandler(svc)
 	blacklistRepo := authRepo.NewBlacklistRepo(r.DB)
 	pRepo := permissionRepo.NewPermissionRepo(r.DB)

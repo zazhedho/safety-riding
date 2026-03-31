@@ -88,6 +88,20 @@ func (r *repo) GetByID(id string) (ret domainapprovalrecord.ApprovalRecord, err 
 	return
 }
 
+func (r *repo) FetchByRequestNumber(requestNumber int) (ret []domainapprovalrecord.ApprovalRecord, err error) {
+	if requestNumber == 0 {
+		return []domainapprovalrecord.ApprovalRecord{}, nil
+	}
+
+	err = r.DB.
+		Where("request_number = ? AND deleted_at IS NULL", requestNumber).
+		Order("revision_number DESC").
+		Order("submitted_at DESC NULLS LAST").
+		Order("synced_at DESC").
+		Find(&ret).Error
+	return
+}
+
 func (r *repo) GetLatestSyncedAt() (*time.Time, error) {
 	var latest sql.NullTime
 	err := r.DB.Model(&domainapprovalrecord.ApprovalRecord{}).

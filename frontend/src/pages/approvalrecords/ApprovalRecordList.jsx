@@ -6,9 +6,13 @@ import { useAuth } from '../../contexts/AuthContext';
 
 const statusBadgeClass = (status) => {
   const normalized = (status || '').toLowerCase();
-  if (normalized === 'complete' || normalized === 'approved') return 'bg-success-subtle text-success';
+  if (normalized === 'approve' || normalized === 'approved' || normalized === 'complete') {
+    return 'bg-success-subtle text-success';
+  }
   if (normalized === 'in progress' || normalized === 'current') return 'bg-warning-subtle text-warning';
-  if (normalized === 'rejected') return 'bg-danger-subtle text-danger';
+  if (normalized === 'decline' || normalized === 'declined' || normalized === 'rejected') {
+    return 'bg-danger-subtle text-danger';
+  }
   return 'bg-secondary-subtle text-secondary';
 };
 
@@ -33,7 +37,7 @@ const ApprovalRecordList = () => {
   const [config, setConfig] = useState(null);
   const [filters, setFilters] = useState({
     search: '',
-    overall_status: '',
+    latest_status: '',
   });
   const [pagination, setPagination] = useState({
     page: 1,
@@ -70,15 +74,23 @@ const ApprovalRecordList = () => {
       };
 
       if (nextFilters.search) params.search = nextFilters.search;
-      if (nextFilters.overall_status) params['filters[overall_status]'] = nextFilters.overall_status;
+      if (nextFilters.latest_status) params['filters[latest_status]'] = nextFilters.latest_status;
 
       const response = await approvalRecordService.getAll(params);
+      const totalData = response.data.total_data || 0;
+      const totalPages = response.data.total_pages || 0;
+
+      if (totalPages > 0 && page > totalPages) {
+        await fetchRecords(totalPages, nextFilters, nextSorting);
+        return;
+      }
+
       setRecords(response.data.data || []);
       setPagination((prev) => ({
         ...prev,
         page,
-        total: response.data.total_data || 0,
-        totalPages: response.data.total_pages || 0,
+        total: totalData,
+        totalPages,
       }));
     } catch (error) {
       toast.error('Failed to load approval records');
@@ -198,7 +210,7 @@ const ApprovalRecordList = () => {
         <div>
           <h2 className="mb-1">Approval Records</h2>
           <p className="text-muted mb-0">
-            Automatically synced from Google Sheets.
+            Submitted forms with the latest approval status from Google Sheets.
           </p>
         </div>
         {canSync && (
@@ -307,13 +319,13 @@ const ApprovalRecordList = () => {
       <div className="card border-0 shadow-sm mb-4">
         <div className="card-body">
           <div className="row g-3">
-            <div className="col-12 col-md-8">
-              <label className="form-label">Search</label>
+            <div className="col-12 col-md-5">
               <input
                 type="text"
                 name="search"
                 className="form-control"
-                placeholder="Request number, response ID, requestor"
+                placeholder="Request number, full name, email, phone, activity"
+                aria-label="Search submitted forms"
                 value={filters.search}
                 onChange={handleFilterChange}
                 onKeyDown={(e) => {
@@ -322,35 +334,45 @@ const ApprovalRecordList = () => {
               />
             </div>
             <div className="col-12 col-md-4">
-              <label className="form-label">Overall Status</label>
               <select
-                name="overall_status"
+                name="latest_status"
                 className="form-select"
-                value={filters.overall_status}
+                aria-label="Filter by latest status"
+                value={filters.latest_status}
                 onChange={handleFilterChange}
               >
                 <option value="">All Statuses</option>
-                <option value="Complete">Complete</option>
+                <option value="Approved">Approved</option>
                 <option value="In progress">In progress</option>
-                <option value="Rejected">Rejected</option>
+                <option value="Decline">Decline</option>
               </select>
             </div>
-          </div>
-          <div className="d-flex gap-2 mt-3">
-            <button type="button" className="btn btn-primary" onClick={handleApplyFilters}>
-              Apply Filters
-            </button>
-            <button
-              type="button"
-              className="btn btn-outline-secondary"
-              onClick={() => {
-                const nextFilters = { search: '', overall_status: '' };
-                setFilters(nextFilters);
-                fetchRecords(1, nextFilters);
-              }}
-            >
-              Reset
-            </button>
+            <div className="col-12 col-md-3">
+              <div className="d-flex gap-2">
+                <button
+                  type="button"
+                  className="btn btn-primary flex-fill"
+                  onClick={handleApplyFilters}
+                  aria-label="Apply filters"
+                >
+                  <i className="bi bi-search me-2" aria-hidden="true"></i>
+                  Search
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-outline-secondary"
+                  onClick={() => {
+                    const nextFilters = { search: '', latest_status: '' };
+                    setFilters(nextFilters);
+                    fetchRecords(1, nextFilters);
+                  }}
+                  title="Clear all filters"
+                  aria-label="Clear all filters"
+                >
+                  <i className="bi bi-x-circle" aria-hidden="true"></i>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -358,7 +380,7 @@ const ApprovalRecordList = () => {
       <div className="card border-0 shadow-sm">
         <div className="card-body">
           <div className="d-flex justify-content-between align-items-center mb-3">
-            <h5 className="card-title mb-0">Synced Records</h5>
+            <h5 className="card-title mb-0">Submitted Forms</h5>
             <small className="text-muted">Total: {pagination.total}</small>
           </div>
 
@@ -367,7 +389,7 @@ const ApprovalRecordList = () => {
               <div className="spinner-border text-primary" role="status"></div>
             </div>
           ) : records.length === 0 ? (
-            <div className="text-center py-5 text-muted">No approval records found.</div>
+            <div className="text-center py-5 text-muted">No submitted forms found.</div>
           ) : (
             <div className="table-responsive position-relative">
               {loading && (
@@ -381,23 +403,20 @@ const ApprovalRecordList = () => {
               <table className="table align-middle">
                 <thead>
                   <tr>
-                    <th style={{ cursor: 'pointer' }} onClick={() => handleSort('request_number')}>
-                      Request # {getSortIcon('request_number')}
-                    </th>
-                    <th style={{ cursor: 'pointer' }} onClick={() => handleSort('revision_number')}>
-                      Revision {getSortIcon('revision_number')}
-                    </th>
                     <th style={{ cursor: 'pointer' }} onClick={() => handleSort('submitted_at')}>
                       Submitted At {getSortIcon('submitted_at')}
                     </th>
-                    <th style={{ cursor: 'pointer' }} onClick={() => handleSort('overall_status')}>
-                      Status {getSortIcon('overall_status')}
+                    <th style={{ cursor: 'pointer' }} onClick={() => handleSort('full_name')}>
+                      Full Name {getSortIcon('full_name')}
                     </th>
-                    <th style={{ cursor: 'pointer' }} onClick={() => handleSort('requestor')}>
-                      Requestor {getSortIcon('requestor')}
+                    <th style={{ cursor: 'pointer' }} onClick={() => handleSort('activity_name')}>
+                      Activity {getSortIcon('activity_name')}
                     </th>
-                    <th style={{ cursor: 'pointer' }} onClick={() => handleSort('total_recipients')}>
-                      Total Recipients {getSortIcon('total_recipients')}
+                    <th style={{ cursor: 'pointer' }} onClick={() => handleSort('participant_count')}>
+                      Participants {getSortIcon('participant_count')}
+                    </th>
+                    <th style={{ cursor: 'pointer' }} onClick={() => handleSort('latest_status')}>
+                      Latest Status {getSortIcon('latest_status')}
                     </th>
                     <th className="text-end">Action</th>
                   </tr>
@@ -405,16 +424,29 @@ const ApprovalRecordList = () => {
                 <tbody>
                   {records.map((record) => (
                     <tr key={record.id}>
-                      <td>{record.request_number || '-'}</td>
-                      <td>{record.revision_number || 0}</td>
                       <td>{formatDateTime(record.submitted_at)}</td>
+                      <td style={{ maxWidth: '220px' }}>
+                        <div
+                          className="text-truncate"
+                          title={record.full_name || ''}
+                        >
+                          {record.full_name || '-'}
+                        </div>
+                      </td>
+                      <td style={{ maxWidth: '260px' }}>
+                        <div
+                          className="text-truncate"
+                          title={record.activity_name || ''}
+                        >
+                          {record.activity_name || '-'}
+                        </div>
+                      </td>
+                      <td>{record.participant_count || 0}</td>
                       <td>
-                        <span className={`badge ${statusBadgeClass(record.overall_status)}`}>
-                          {record.overall_status || '-'}
+                        <span className={`badge ${statusBadgeClass(record.latest_status)}`}>
+                          {record.latest_status || '-'}
                         </span>
                       </td>
-                      <td className="text-break">{record.requestor || '-'}</td>
-                      <td>{record.total_recipients || 0}</td>
                       <td className="text-end">
                         <Link
                           to={`/approval-records/${record.id}`}

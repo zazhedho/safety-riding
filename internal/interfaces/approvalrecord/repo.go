@@ -8,6 +8,7 @@ import (
 
 type RepoApprovalRecordInterface interface {
 	Fetch(params filter.BaseParams) ([]domainapprovalrecord.ApprovalRecord, int64, error)
+	FetchByRequestNumber(requestNumber int) ([]domainapprovalrecord.ApprovalRecord, error)
 	GetByID(id string) (domainapprovalrecord.ApprovalRecord, error)
 	GetLatestSyncedAt() (*time.Time, error)
 	GetExistingResponseIDs(responseIDs []string) (map[string]struct{}, error)

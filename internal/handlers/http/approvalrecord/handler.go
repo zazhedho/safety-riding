@@ -27,7 +27,7 @@ func (h *ApprovalRecordHandler) Fetch(ctx *gin.Context) {
 	logPrefix := fmt.Sprintf("[%s][ApprovalRecordHandler][Fetch]", logID)
 
 	params, _ := filter.GetBaseParams(ctx, "submitted_at", "desc", 10)
-	params.Filters = filter.WhitelistStringFilter(params.Filters, []string{"overall_status"})
+	params.Filters = filter.WhitelistStringFilter(params.Filters, []string{"latest_status"})
 
 	data, totalData, err := h.Service.Fetch(params)
 	if err != nil {
@@ -75,7 +75,7 @@ func (h *ApprovalRecordHandler) Sync(ctx *gin.Context) {
 		return
 	}
 
-	res := response.Response(http.StatusOK, "Sync approval records successfully", logID, data)
+	res := response.Response(http.StatusOK, "Sync approval data successfully", logID, data)
 	ctx.JSON(http.StatusOK, res)
 }
 
