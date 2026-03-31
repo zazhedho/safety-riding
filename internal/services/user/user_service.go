@@ -126,6 +126,63 @@ func (s *ServiceUser) RegisterUser(req dto.UserRegister) (domainuser.Users, erro
 	return data, nil
 }
 
+func (s *ServiceUser) AdminCreateUser(req dto.AdminCreateUser, creatorRole string) (domainuser.Users, error) {
+	phone := utils.NormalizePhoneTo62(req.Phone)
+	email := strings.TrimSpace(strings.ToLower(req.Email))
+
+	data, _ := s.UserRepo.GetByEmail(email)
+	if data.Id != "" {
+		return domainuser.Users{}, errors.New("email already exists")
+	}
+
+	if phone != "" {
+		phoneData, _ := s.UserRepo.GetByPhone(phone)
+		if phoneData.Id != "" {
+			return domainuser.Users{}, errors.New("phone number already exists")
+		}
+	}
+
+	if err := ValidatePasswordStrength(req.Password); err != nil {
+		return domainuser.Users{}, err
+	}
+
+	hashedPwd, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
+	if err != nil {
+		return domainuser.Users{}, err
+	}
+
+	roleName := strings.ToLower(strings.TrimSpace(req.Role))
+	if roleName == "" {
+		return domainuser.Users{}, errors.New("role is required")
+	}
+
+	if roleName == utils.RoleSuperAdmin && creatorRole != utils.RoleSuperAdmin {
+		return domainuser.Users{}, errors.New("only superadmin can create superadmin users")
+	}
+
+	roleEntity, err := s.RoleRepo.GetByName(roleName)
+	if err != nil || roleEntity.Id == "" {
+		return domainuser.Users{}, errors.New("invalid role: " + roleName)
+	}
+
+	data = domainuser.Users{
+		Id:        utils.CreateUUID(),
+		Name:      req.Name,
+		Phone:     phone,
+		Email:     email,
+		Password:  string(hashedPwd),
+		Role:      roleName,
+		RoleId:    &roleEntity.Id,
+		CreatedAt: time.Now(),
+	}
+
+	if err = s.UserRepo.Store(data); err != nil {
+		return domainuser.Users{}, err
+	}
+
+	return data, nil
+}
+
 func (s *ServiceUser) LoginUser(req dto.Login, logId string) (string, error) {
 	data, err := s.UserRepo.GetByEmail(req.Email)
 	if err != nil {

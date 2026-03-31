@@ -3,7 +3,7 @@ import api from './api';
 const userService = {
   getAll: (params = {}) => api.get('/users', { params }),
   getById: (id) => api.get(`/user/${id}`),
-  create: (data) => api.post('/users', data),
+  create: (data) => api.post('/user', data),
   update: (id, data) => api.put(`/user/${id}`, data),
   delete: (id) => api.delete(`/user/${id}`),
   updatePassword: (data) => api.put('/user/change/password', data),

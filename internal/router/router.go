@@ -141,6 +141,9 @@ func (r *Routes) UserRoutes() {
 			userPriv.PUT("/change/password", h.ChangePassword)
 			userPriv.DELETE("", h.Delete)
 			userPriv.DELETE("/:id", mdw.PermissionMiddleware("users", "delete"), h.DeleteUserById)
+
+			// Admin create user endpoint (with role selection)
+			userPriv.POST("", mdw.PermissionMiddleware("users", "create"), h.AdminCreateUser)
 		}
 	}
 

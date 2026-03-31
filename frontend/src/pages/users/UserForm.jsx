@@ -10,7 +10,8 @@ import 'bootstrap-icons/font/bootstrap-icons.css';
 const UserForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user, register, hasPermission } = useAuth();
+  const { hasPermission } = useAuth();
+  const canCreateUsers = hasPermission('users', 'create');
 
   const [formData, setFormData] = useState({
     name: '',
@@ -34,7 +35,7 @@ const UserForm = () => {
   });
 
   useEffect(() => {
-    if (!id && user?.role !== 'admin') {
+    if (!id && !canCreateUsers) {
       toast.error('You are not authorized to create users.');
       navigate('/dashboard');
       return;
@@ -47,7 +48,7 @@ const UserForm = () => {
     } else {
       setLoading(false);
     }
-  }, [id, user, navigate]);
+  }, [id, canCreateUsers, navigate]);
 
   const fetchUser = async (userId) => {
     try {
@@ -114,12 +115,8 @@ const UserForm = () => {
         await userService.update(id, userData);
         toast.success('User updated successfully');
       } else {
-        const result = await register(userData);
-        if (result.success) {
-          toast.success('User created successfully!');
-        } else {
-          toast.error(result.error || 'Failed to create user');
-        }
+        await userService.create(userData);
+        toast.success('User created successfully!');
       }
       navigate('/users');
     } catch (error) {

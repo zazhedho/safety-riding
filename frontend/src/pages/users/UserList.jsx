@@ -5,7 +5,9 @@ import { toast } from 'react-toastify';
 import { useAuth } from '../../contexts/AuthContext';
 
 const UserList = () => {
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, hasPermission } = useAuth();
+  const canViewUsers = hasPermission('users', 'view');
+  const canCreateUsers = hasPermission('users', 'create');
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
@@ -124,14 +126,14 @@ const UserList = () => {
     return <span className={`badge ${variants[role] || 'bg-secondary'}`}>{role?.toUpperCase()}</span>;
   };
 
-  if (currentUser?.role !== 'admin' && currentUser?.role !== 'superadmin') {
+  if (!canViewUsers) {
     return (
       <>
         <div className="card">
           <div className="card-body text-center py-5">
             <i className="bi bi-lock fs-1 text-primary mb-3"></i>
             <h4>Access Denied</h4>
-            <p className="text-muted">Only administrators can view this page.</p>
+            <p className="text-muted">You do not have permission to view this page.</p>
           </div>
         </div>
       </>
@@ -142,9 +144,11 @@ const UserList = () => {
     <>
       <div className="d-flex justify-content-between align-items-center mb-4">
         <h2>Users Management</h2>
-        <Link to="/users/new" className="btn btn-primary">
-          <i className="bi bi-plus-circle me-2"></i>Add User
-        </Link>
+        {canCreateUsers && (
+          <Link to="/users/new" className="btn btn-primary">
+            <i className="bi bi-plus-circle me-2"></i>Add User
+          </Link>
+        )}
       </div>
 
       <div className="card mb-4">
