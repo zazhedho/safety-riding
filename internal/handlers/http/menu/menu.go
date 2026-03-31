@@ -181,6 +181,12 @@ func (h *MenuHandler) GetUserMenus(ctx *gin.Context) {
 
 	logger.WriteLog(logger.LogLevelDebug, fmt.Sprintf("%s; Request received", logPrefix))
 
+	authData := utils.GetAuthData(ctx)
+	userRole := ""
+	if authData != nil {
+		userRole = utils.InterfaceString(authData["role"])
+	}
+
 	// Get user ID from context (set by auth middleware)
 	userId, exists := ctx.Get("userId")
 	logger.WriteLog(logger.LogLevelDebug, fmt.Sprintf("%s; userId from context: %v, exists: %v", logPrefix, userId, exists))
@@ -208,9 +214,9 @@ func (h *MenuHandler) GetUserMenus(ctx *gin.Context) {
 		}
 	}
 
-	logger.WriteLog(logger.LogLevelDebug, fmt.Sprintf("%s; Calling Service.GetUserMenus with userId: %s", logPrefix, userId))
+	logger.WriteLog(logger.LogLevelDebug, fmt.Sprintf("%s; Calling Service.GetUserMenus with userId: %s and role: %s", logPrefix, userId, userRole))
 
-	data, err := h.Service.GetUserMenus(userId.(string))
+	data, err := h.Service.GetUserMenus(userId.(string), userRole)
 	if err != nil {
 		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; Service.GetUserMenus; Error: %+v", logPrefix, err))
 		res := response.Response(http.StatusInternalServerError, messages.MsgFail, logId, nil)

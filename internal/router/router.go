@@ -12,6 +12,8 @@ import (
 	"safety-riding/infrastructure/database"
 	"safety-riding/infrastructure/media"
 	accidentHandler "safety-riding/internal/handlers/http/accident"
+	appConfigHandler "safety-riding/internal/handlers/http/appconfig"
+	approvalRecordHandler "safety-riding/internal/handlers/http/approvalrecord"
 	budgetHandler "safety-riding/internal/handlers/http/budget"
 	cityHandler "safety-riding/internal/handlers/http/city"
 	dashboardHandler "safety-riding/internal/handlers/http/dashboard"
@@ -28,6 +30,8 @@ import (
 	sessionHandler "safety-riding/internal/handlers/http/session"
 	userHandler "safety-riding/internal/handlers/http/user"
 	accidentRepo "safety-riding/internal/repositories/accident"
+	appConfigRepo "safety-riding/internal/repositories/appconfig"
+	approvalRecordRepo "safety-riding/internal/repositories/approvalrecord"
 	authRepo "safety-riding/internal/repositories/auth"
 	budgetRepo "safety-riding/internal/repositories/budget"
 	repodashboard "safety-riding/internal/repositories/dashboard"
@@ -42,6 +46,8 @@ import (
 	sessionRepo "safety-riding/internal/repositories/session"
 	userRepo "safety-riding/internal/repositories/user"
 	accidentSvc "safety-riding/internal/services/accident"
+	appConfigSvc "safety-riding/internal/services/appconfig"
+	approvalRecordSvc "safety-riding/internal/services/approvalrecord"
 	budgetSvc "safety-riding/internal/services/budget"
 	kabupatenSvc "safety-riding/internal/services/city"
 	dashboardSvc "safety-riding/internal/services/dashboard"
@@ -383,26 +389,26 @@ func (r *Routes) PermissionRoutes() {
 
 func (r *Routes) MenuRoutes() {
 	repo := menuRepo.NewMenuRepo(r.DB)
-	svc := menuSvc.NewMenuService(repo)
+	pRepo := permissionRepo.NewPermissionRepo(r.DB)
+	svc := menuSvc.NewMenuService(repo, pRepo)
 	h := menuHandler.NewMenuHandler(svc)
 	blacklistRepo := authRepo.NewBlacklistRepo(r.DB)
-	pRepo := permissionRepo.NewPermissionRepo(r.DB)
 	mdw := middlewares.NewMiddleware(blacklistRepo, pRepo)
 
 	// Public endpoints for authenticated users
 	r.App.GET("/api/menus/active", mdw.AuthMiddleware(), h.GetActiveMenus)
 	r.App.GET("/api/menus/me", mdw.AuthMiddleware(), h.GetUserMenus)
 
-	// List endpoints (admin only)
-	r.App.GET("/api/menus", mdw.AuthMiddleware(), mdw.RoleMiddleware(utils.RoleAdmin), h.GetAll)
+	// List endpoints
+	r.App.GET("/api/menus", mdw.AuthMiddleware(), mdw.PermissionMiddleware("menus", "view"), h.GetAll)
 
-	// CRUD endpoints (admin only)
-	menu := r.App.Group("/api/menu").Use(mdw.AuthMiddleware(), mdw.RoleMiddleware(utils.RoleAdmin))
+	// CRUD endpoints
+	menu := r.App.Group("/api/menu").Use(mdw.AuthMiddleware())
 	{
-		menu.POST("", h.Create)
-		menu.GET("/:id", h.GetByID)
-		menu.PUT("/:id", h.Update)
-		menu.DELETE("/:id", h.Delete)
+		menu.POST("", mdw.PermissionMiddleware("menus", "create"), h.Create)
+		menu.GET("/:id", mdw.PermissionMiddleware("menus", "view"), h.GetByID)
+		menu.PUT("/:id", mdw.PermissionMiddleware("menus", "update"), h.Update)
+		menu.DELETE("/:id", mdw.PermissionMiddleware("menus", "delete"), h.Delete)
 	}
 }
 
@@ -460,4 +466,37 @@ func (r *Routes) DashboardRoutes() {
 
 	// Dashboard stats endpoint - aggregated statistics
 	r.App.GET("/api/dashboard/stats", mdw.AuthMiddleware(), h.GetStats)
+}
+
+func (r *Routes) ApprovalRecordRoutes() {
+	repo := approvalRecordRepo.NewApprovalRecordRepo(r.DB)
+	configRepo := appConfigRepo.NewAppConfigRepo(r.DB)
+	svc := approvalRecordSvc.NewApprovalRecordService(repo, configRepo)
+	h := approvalRecordHandler.NewApprovalRecordHandler(svc)
+	blacklistRepo := authRepo.NewBlacklistRepo(r.DB)
+	pRepo := permissionRepo.NewPermissionRepo(r.DB)
+	mdw := middlewares.NewMiddleware(blacklistRepo, pRepo)
+
+	records := r.App.Group("/api/approval-records").Use(mdw.AuthMiddleware())
+	{
+		records.GET("", mdw.PermissionMiddleware("approval_records", "view"), h.Fetch)
+		records.GET("/config", mdw.PermissionMiddleware("approval_records", "view"), h.GetSourceConfig)
+		records.GET("/:id", mdw.PermissionMiddleware("approval_records", "view"), h.GetByID)
+		records.POST("/sync", mdw.PermissionMiddleware("approval_records", "sync"), h.Sync)
+	}
+}
+
+func (r *Routes) AppConfigRoutes() {
+	repo := appConfigRepo.NewAppConfigRepo(r.DB)
+	svc := appConfigSvc.NewAppConfigService(repo)
+	h := appConfigHandler.NewAppConfigHandler(svc)
+	blacklistRepo := authRepo.NewBlacklistRepo(r.DB)
+	pRepo := permissionRepo.NewPermissionRepo(r.DB)
+	mdw := middlewares.NewMiddleware(blacklistRepo, pRepo)
+
+	configs := r.App.Group("/api").Use(mdw.AuthMiddleware())
+	{
+		configs.GET("/configs", mdw.PermissionMiddleware("configs", "view"), h.GetAll)
+		configs.PUT("/config/:id", mdw.PermissionMiddleware("configs", "update"), h.Update)
+	}
 }

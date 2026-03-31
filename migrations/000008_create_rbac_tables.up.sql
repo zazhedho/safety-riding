@@ -155,6 +155,12 @@ INSERT INTO permissions (id, name, display_name, resource, action) VALUES
     (gen_random_uuid(), 'assign_permissions', 'Assign Permissions', 'roles', 'assign_permissions'),
     (gen_random_uuid(), 'assign_menus', 'Assign Menus', 'roles', 'assign_menus'),
 
+    -- Menu permissions
+    (gen_random_uuid(), 'view_menus', 'View Menus', 'menus', 'view'),
+    (gen_random_uuid(), 'create_menus', 'Create Menus', 'menus', 'create'),
+    (gen_random_uuid(), 'update_menus', 'Update Menus', 'menus', 'update'),
+    (gen_random_uuid(), 'delete_menus', 'Delete Menus', 'menus', 'delete'),
+
     -- Profile permissions
     (gen_random_uuid(), 'view_profile', 'View Profile', 'profile', 'view'),
     (gen_random_uuid(), 'update_profile', 'Update Profile', 'profile', 'update')

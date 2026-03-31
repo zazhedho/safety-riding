@@ -116,6 +116,8 @@ func main() {
 	routes.EventRoutes()
 	routes.BudgetRoutes()
 	routes.MarketShareRoutes()
+	routes.ApprovalRecordRoutes()
+	routes.AppConfigRoutes()
 	routes.RoleRoutes()
 	routes.PermissionRoutes()
 	routes.MenuRoutes()
