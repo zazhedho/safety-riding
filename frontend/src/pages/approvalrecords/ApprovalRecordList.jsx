@@ -59,7 +59,7 @@ const ApprovalRecordList = () => {
       const source = response.data.data;
       setConfig(source);
     } catch (error) {
-      toast.error('Failed to load approval records configuration');
+      toast.error('Failed to load submitted forms configuration');
     }
   };
 
@@ -93,7 +93,7 @@ const ApprovalRecordList = () => {
         totalPages,
       }));
     } catch (error) {
-      toast.error('Failed to load approval records');
+      toast.error('Failed to load submitted forms');
     } finally {
       setLoading(false);
     }
@@ -123,7 +123,7 @@ const ApprovalRecordList = () => {
       }
     } catch (error) {
       if (!silent) {
-        toast.error(error.response?.data?.error || 'Failed to sync approval records');
+        toast.error(error.response?.data?.error || 'Failed to sync submitted forms');
       }
       throw error;
     } finally {
@@ -208,7 +208,7 @@ const ApprovalRecordList = () => {
     <div className="container-fluid">
       <div className="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
         <div>
-          <h2 className="mb-1">Approval Records</h2>
+          <h2 className="mb-1">Submitted Forms</h2>
           <p className="text-muted mb-0">
             Submitted forms with the latest approval status from Google Sheets.
           </p>
@@ -449,7 +449,7 @@ const ApprovalRecordList = () => {
                       </td>
                       <td className="text-end">
                         <Link
-                          to={`/approval-records/${record.id}`}
+                          to={`/submitted-forms/${record.id}`}
                           className="btn btn-sm btn-outline-primary"
                         >
                           Detail

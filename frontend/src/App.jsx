@@ -55,7 +55,7 @@ const MarketShareList = lazy(() => import('./pages/marketshare/MarketShareList')
 const MarketShareForm = lazy(() => import('./pages/marketshare/MarketShareForm'));
 const MarketShareDetail = lazy(() => import('./pages/marketshare/MarketShareDetail'));
 
-// Approval Records
+// Submitted Forms
 const ApprovalRecordList = lazy(() => import('./pages/approvalrecords/ApprovalRecordList'));
 const ApprovalRecordDetail = lazy(() => import('./pages/approvalrecords/ApprovalRecordDetail'));
 
@@ -141,9 +141,9 @@ function App() {
               <Route path="/marketshare/:id" element={<MarketShareDetail />} />
               <Route path="/marketshare/:id/edit" element={<MarketShareForm />} />
 
-              {/* Approval Records */}
-              <Route path="/approval-records" element={<ApprovalRecordList />} />
-              <Route path="/approval-records/:id" element={<ApprovalRecordDetail />} />
+              {/* Submitted Forms */}
+              <Route path="/submitted-forms" element={<ApprovalRecordList />} />
+              <Route path="/submitted-forms/:id" element={<ApprovalRecordDetail />} />
 
               {/* Configurations */}
               <Route path="/configs" element={<ConfigList />} />

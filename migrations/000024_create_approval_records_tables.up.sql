@@ -86,10 +86,10 @@ INSERT INTO app_configs (id, config_key, display_name, category, value, descript
 VALUES (
     gen_random_uuid(),
     'approval_records.sheet_url',
-    'Approval Records Google Sheets URL',
+    'Submitted Forms Approval Google Sheets URL',
     'approval_records',
     'https://docs.google.com/spreadsheets/d/19Z0mBKZjahskKjR9L8tSL9t0O0XKitpKTziNW4z7EMc/edit?resourcekey=&gid=1705335255#gid=1705335255',
-    'Google Sheets source URL used by the Approval Records sync process.',
+    'Google Sheets source URL used by the Submitted Forms approval sync process.',
     TRUE
 )
 ON CONFLICT (config_key) DO NOTHING;
@@ -99,8 +99,8 @@ VALUES
 (
   gen_random_uuid(),
   'approval_records',
-  'Approval Records',
-  '/approval-records',
+  'Submitted Forms',
+  '/submitted-forms',
   'bi-clipboard-data',
   NULL,
   10,
@@ -120,8 +120,8 @@ ON CONFLICT (name) DO NOTHING;
 
 INSERT INTO permissions (id, name, display_name, resource, action)
 VALUES
-  (gen_random_uuid(), 'view_approval_records', 'View Approval Records', 'approval_records', 'view'),
-  (gen_random_uuid(), 'sync_approval_records', 'Sync Approval Records', 'approval_records', 'sync'),
+  (gen_random_uuid(), 'view_approval_records', 'View Submitted Forms', 'approval_records', 'view'),
+  (gen_random_uuid(), 'sync_approval_records', 'Sync Submitted Forms', 'approval_records', 'sync'),
   (gen_random_uuid(), 'view_configs', 'View Configurations', 'configs', 'view'),
   (gen_random_uuid(), 'update_configs', 'Update Configurations', 'configs', 'update')
 ON CONFLICT (name) DO NOTHING;

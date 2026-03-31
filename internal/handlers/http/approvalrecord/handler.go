@@ -49,7 +49,7 @@ func (h *ApprovalRecordHandler) GetByID(ctx *gin.Context) {
 	data, err := h.Service.GetByID(ctx.Param("id"))
 	if err != nil {
 		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; Service.GetByID; Error: %+v", logPrefix, err))
-		res := response.Response(http.StatusNotFound, "Approval record not found", logID, nil)
+		res := response.Response(http.StatusNotFound, "Submitted form not found", logID, nil)
 		res.Error = err.Error()
 		ctx.JSON(http.StatusNotFound, res)
 		return

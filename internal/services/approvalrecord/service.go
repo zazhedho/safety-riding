@@ -191,7 +191,7 @@ func (s *ApprovalRecordService) Sync(username string, force bool) (dto.ApprovalR
 		SheetURL:        submittedConfig.Value,
 		LastSyncedAt:    &now,
 		LastSyncStatus:  "success",
-		LastSyncMessage: fmt.Sprintf("Synced %d submitted forms and %d approval records", len(submittedForms), len(approvalRecords)),
+		LastSyncMessage: fmt.Sprintf("Synced %d submitted forms and %d approval rows", len(submittedForms), len(approvalRecords)),
 	}
 
 	return dto.ApprovalRecordSyncResult{
@@ -199,7 +199,7 @@ func (s *ApprovalRecordService) Sync(username string, force bool) (dto.ApprovalR
 		InsertedRows: submittedInsertedRows + approvalInsertedRows,
 		UpdatedRows:  submittedUpdatedRows + approvalUpdatedRows,
 		Skipped:      false,
-		Message:      "submitted forms and approval records synced successfully",
+		Message:      "submitted forms synced successfully",
 		Source:       sourceInfo,
 	}, nil
 }

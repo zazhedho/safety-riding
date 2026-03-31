@@ -166,7 +166,7 @@ const DashboardLayout = ({ children }) => {
       { path: '/accidents', label: 'Accidents', icon: 'bi-exclamation-triangle', name: 'accidents', children: [] },
       { path: '/budgets', label: 'Budgets', icon: 'bi-cash-stack', name: 'budgets', children: [] },
       { path: '/marketshare', label: 'Market Share', icon: 'bi-graph-up-arrow', name: 'market_shares', children: [] },
-      { path: '/approval-records', label: 'Approval Records', icon: 'bi-clipboard-data', name: 'approval_records', children: [] },
+      { path: '/submitted-forms', label: 'Submitted Forms', icon: 'bi-clipboard-data', name: 'approval_records', children: [] },
     ];
 
     if (role === 'admin' || role === 'superadmin') {

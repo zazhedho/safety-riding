@@ -63,8 +63,8 @@ const ApprovalRecordDetail = () => {
         const response = await approvalRecordService.getById(id);
         setRecord(response.data.data);
       } catch (error) {
-        toast.error(error.response?.data?.error || 'Failed to load approval record detail');
-        navigate('/approval-records');
+        toast.error(error.response?.data?.error || 'Failed to load submitted form detail');
+        navigate('/submitted-forms');
       } finally {
         setLoading(false);
       }
@@ -104,24 +104,24 @@ const ApprovalRecordDetail = () => {
   }
 
   if (!record) {
-    return <div className="alert alert-danger">Approval record not found.</div>;
+    return <div className="alert alert-danger">Submitted form not found.</div>;
   }
 
   return (
     <>
       <div className="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
         <div>
-          <h2>Approval Record Detail</h2>
+          <h2>Submitted Form Detail</h2>
           <nav aria-label="breadcrumb">
             <ol className="breadcrumb mb-0">
               <li className="breadcrumb-item">
-                <Link to="/approval-records">Approval Records</Link>
+                <Link to="/submitted-forms">Submitted Forms</Link>
               </li>
               <li className="breadcrumb-item active">Detail</li>
             </ol>
           </nav>
         </div>
-        <Link to="/approval-records" className="btn btn-secondary">
+        <Link to="/submitted-forms" className="btn btn-secondary">
           <i className="bi bi-arrow-left me-2"></i>Back
         </Link>
       </div>
