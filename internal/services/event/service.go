@@ -155,7 +155,7 @@ func (s *EventService) GetEventById(id string) (domainevent.Event, error) {
 	return s.EventRepo.GetByID(id)
 }
 
-func (s *EventService) UpdateEvent(id, username, role string, req dto.UpdateEvent) (domainevent.Event, error) {
+func (s *EventService) UpdateEvent(id, username string, canOverrideFinalized bool, req dto.UpdateEvent) (domainevent.Event, error) {
 	// Validate non-negative values
 	if err := utils.ValidateNonNegativeBatch(map[string]interface{}{
 		"target_attendees":            req.TargetAttendees,
@@ -179,11 +179,9 @@ func (s *EventService) UpdateEvent(id, username, role string, req dto.UpdateEven
 	}
 
 	// Prevent update if event status is final (Completed or Cancelled)
-	// Exception: admin role can bypass this validation
 	isFinalized := strings.EqualFold(event.Status, utils.StsCompleted) || strings.EqualFold(event.Status, utils.StsCancelled)
-	isAdmin := strings.EqualFold(role, utils.RoleAdmin)
 
-	if isFinalized && !isAdmin {
+	if isFinalized && !canOverrideFinalized {
 		return domainevent.Event{}, fmt.Errorf("cannot update event with status '%s'. Event is already finalized", event.Status)
 	}
 
@@ -311,14 +309,14 @@ func (s *EventService) FetchEvent(params filter.BaseParams) ([]domainevent.Event
 	return s.EventRepo.Fetch(params)
 }
 
-func (s *EventService) DeleteEvent(id, username string) error {
+func (s *EventService) DeleteEvent(id, username string, canOverrideFinalized bool) error {
 	// Check if event exists
 	event, err := s.EventRepo.GetByID(id)
 	if err != nil {
 		return err
 	}
 
-	if strings.EqualFold(event.Status, utils.StsCompleted) || strings.EqualFold(event.Status, utils.StsCancelled) {
+	if (strings.EqualFold(event.Status, utils.StsCompleted) || strings.EqualFold(event.Status, utils.StsCancelled)) && !canOverrideFinalized {
 		return fmt.Errorf("cannot delete event with status '%s'. Event is already finalized", event.Status)
 	}
 

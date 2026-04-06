@@ -24,7 +24,11 @@ const Login = () => {
 
     if (result.success) {
       toast.success('Login successful!');
-      if (result.user?.role === 'admin' || result.user?.role === 'viewer') {
+      const canViewDashboard = (result.permissions || []).some(
+        (permission) => permission.resource === 'dashboard' && permission.action === 'view'
+      ) || result.user?.role === 'superadmin';
+
+      if (canViewDashboard) {
         navigate('/dashboard');
       } else {
         navigate('/profile');

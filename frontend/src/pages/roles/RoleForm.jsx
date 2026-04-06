@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import roleService from '../../services/roleService';
 import permissionService from '../../services/permissionService';
-import menuService from '../../services/menuService';
 import { toast } from 'react-toastify';
 
 const RoleForm = () => {
@@ -14,15 +13,13 @@ const RoleForm = () => {
     description: '',
   });
   const [permissions, setPermissions] = useState([]);
-  const [menus, setMenus] = useState([]);
   const [selectedPermissions, setSelectedPermissions] = useState([]);
-  const [selectedMenus, setSelectedMenus] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isSystem, setIsSystem] = useState(false);
+  const [derivedMenus, setDerivedMenus] = useState([]);
 
   useEffect(() => {
     fetchPermissions();
-    fetchMenus();
     if (id) {
       fetchRole(id);
     } else {
@@ -40,7 +37,7 @@ const RoleForm = () => {
         description: roleData.description || '',
       });
       setSelectedPermissions(roleData.permission_ids || []);
-      setSelectedMenus(roleData.menu_ids || []);
+      setDerivedMenus(roleData.menu_ids || []);
       setIsSystem(roleData.is_system || false);
     } catch (error) {
       toast.error('Failed to fetch role');
@@ -55,15 +52,6 @@ const RoleForm = () => {
       setPermissions(response.data.data || []);
     } catch (error) {
       toast.error('Failed to load permissions');
-    }
-  };
-
-  const fetchMenus = async () => {
-    try {
-      const response = await menuService.getAll({ limit: 1000 });
-      setMenus(response.data.data || []);
-    } catch (error) {
-      toast.error('Failed to load menus');
     }
   };
 
@@ -94,14 +82,6 @@ const RoleForm = () => {
     );
   };
 
-  const handleMenuToggle = (menuId) => {
-    setSelectedMenus(prev =>
-      prev.includes(menuId)
-        ? prev.filter(id => id !== menuId)
-        : [...prev, menuId]
-    );
-  };
-
   const handleSelectAllPermissions = () => {
     if (selectedPermissions.length === permissions.length) {
       setSelectedPermissions([]);
@@ -110,13 +90,44 @@ const RoleForm = () => {
     }
   };
 
-  const handleSelectAllMenus = () => {
-    if (selectedMenus.length === menus.length) {
-      setSelectedMenus([]);
-    } else {
-      setSelectedMenus(menus.map(m => m.id));
+  useEffect(() => {
+    if (!permissions.length) {
+      setDerivedMenus([]);
+      return;
     }
-  };
+
+    const menuConfig = [
+      { id: 'dashboard', label: 'Dashboard', resources: ['dashboard'] },
+      { id: 'schools', label: 'Schools', resources: ['schools'] },
+      { id: 'education', label: 'Education', resources: ['education_stats', 'education_priority'] },
+      { id: 'education_stats', label: 'Education Stats', resources: ['education_stats'] },
+      { id: 'education_priority', label: 'Education Priority', resources: ['education_priority'] },
+      { id: 'publics', label: 'Public Entities', resources: ['publics'] },
+      { id: 'events', label: 'Events', resources: ['events'] },
+      { id: 'accidents', label: 'Accidents', resources: ['accidents', 'polda_accidents'] },
+      { id: 'budgets', label: 'Budgets', resources: ['budgets'] },
+      { id: 'marketshare', label: 'Market Share', resources: ['market_shares'] },
+      { id: 'approval_records', label: 'Submitted Forms', resources: ['approval_records'] },
+      { id: 'users', label: 'Users', resources: ['users'] },
+      { id: 'roles', label: 'Roles', resources: ['roles'] },
+      { id: 'menus', label: 'Menus', resources: ['menus'] },
+      { id: 'configs', label: 'Configurations', resources: ['configs'] },
+      { id: 'polda_accidents', label: 'POLDA Accidents', resources: ['polda_accidents'] },
+    ];
+
+    const selectedPermissionSet = new Set(selectedPermissions);
+    const allowedResources = new Set(
+      permissions
+        .filter(permission => selectedPermissionSet.has(permission.id))
+        .map(permission => permission.resource)
+    );
+
+    const nextMenus = menuConfig.filter(menu =>
+      menu.resources.some(resource => allowedResources.has(resource))
+    );
+
+    setDerivedMenus(nextMenus);
+  }, [permissions, selectedPermissions]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -133,8 +144,6 @@ const RoleForm = () => {
         }
         // Update permissions
         await roleService.assignPermissions(id, { permission_ids: selectedPermissions });
-        // Update menus
-        await roleService.assignMenus(id, { menu_ids: selectedMenus });
         toast.success('Role updated successfully');
       } else {
         // Create role
@@ -142,8 +151,6 @@ const RoleForm = () => {
         const newRoleId = response.data.data.id;
         // Assign permissions
         await roleService.assignPermissions(newRoleId, { permission_ids: selectedPermissions });
-        // Assign menus
-        await roleService.assignMenus(newRoleId, { menu_ids: selectedMenus });
         toast.success('Role created successfully');
       }
       navigate('/roles');
@@ -252,35 +259,27 @@ const RoleForm = () => {
             </div>
 
             {/* Menus */}
-            <h5 className="mb-3">
-              Menu Access
-              <button
-                type="button"
-                className="btn btn-sm btn-outline-primary ms-3"
-                onClick={handleSelectAllMenus}
-              >
-                {selectedMenus.length === menus.length ? 'Deselect All' : 'Select All'}
-              </button>
-            </h5>
+            <h5 className="mb-3">Visible Menus</h5>
             <div className="mb-4">
+              <p className="text-muted mb-3">
+                Menus are derived automatically from the selected permissions. There is no separate menu assignment.
+              </p>
               <div className="row">
-                {menus.map(menu => (
-                  <div key={menu.id} className="col-md-4 col-lg-3 mb-2">
-                    <div className="form-check">
-                      <input
-                        className="form-check-input"
-                        type="checkbox"
-                        id={`menu-${menu.id}`}
-                        checked={selectedMenus.includes(menu.id)}
-                        onChange={() => handleMenuToggle(menu.id)}
-                      />
-                      <label className="form-check-label" htmlFor={`menu-${menu.id}`}>
-                        <i className={`bi ${menu.icon} me-2`}></i>
-                        {menu.display_name}
-                      </label>
+                {derivedMenus.length > 0 ? (
+                  derivedMenus.map(menu => (
+                    <div key={menu.id} className="col-md-4 col-lg-3 mb-2">
+                      <div className="border rounded px-3 py-2 bg-body-tertiary">
+                        <small className="fw-semibold">{menu.label}</small>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="col-12">
+                    <div className="alert alert-light border mb-0">
+                      No menus will be shown until at least one module permission is selected.
                     </div>
                   </div>
-                ))}
+                )}
               </div>
             </div>
 

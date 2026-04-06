@@ -158,18 +158,18 @@ func (r *Routes) SchoolRoutes() {
 	pRepo := permissionRepo.NewPermissionRepo(r.DB)
 	mdw := middlewares.NewMiddleware(blacklistRepo, pRepo)
 
-	r.App.GET("/api/schools", mdw.AuthMiddleware(), h.FetchSchool)
-	r.App.GET("/api/schools/summary", mdw.AuthMiddleware(), h.GetSummary)
-	r.App.GET("/api/schools/map", mdw.AuthMiddleware(), h.GetForMap)
+	r.App.GET("/api/schools", mdw.AuthMiddleware(), mdw.PermissionMiddleware("schools", "view"), h.FetchSchool)
+	r.App.GET("/api/schools/summary", mdw.AuthMiddleware(), mdw.PermissionMiddleware("schools", "view"), h.GetSummary)
+	r.App.GET("/api/schools/map", mdw.AuthMiddleware(), mdw.PermissionMiddleware("schools", "view"), h.GetForMap)
 
 	// Education endpoints (cross-domain analytics)
-	r.App.GET("/api/education/stats", mdw.AuthMiddleware(), h.GetEducationStats)
-	r.App.GET("/api/education/priority", mdw.AuthMiddleware(), h.GetEducationPriority)
+	r.App.GET("/api/education/stats", mdw.AuthMiddleware(), mdw.PermissionMiddleware("education_stats", "view"), h.GetEducationStats)
+	r.App.GET("/api/education/priority", mdw.AuthMiddleware(), mdw.PermissionMiddleware("education_priority", "view"), h.GetEducationPriority)
 
 	school := r.App.Group("/api/school").Use(mdw.AuthMiddleware())
 	{
 		school.POST("", mdw.PermissionMiddleware("schools", "create"), h.AddSchool)
-		school.GET("/:id", h.GetSchoolById)
+		school.GET("/:id", mdw.PermissionMiddleware("schools", "view"), h.GetSchoolById)
 		school.PUT("/:id", mdw.PermissionMiddleware("schools", "update"), h.UpdateSchool)
 		school.DELETE("/:id", mdw.PermissionMiddleware("schools", "delete"), h.DeleteSchool)
 	}
@@ -183,15 +183,15 @@ func (r *Routes) PublicRoutes() {
 	pRepo := permissionRepo.NewPermissionRepo(r.DB)
 	mdw := middlewares.NewMiddleware(blacklistRepo, pRepo)
 
-	r.App.GET("/api/publics", mdw.AuthMiddleware(), h.FetchPublic)
-	r.App.GET("/api/publics/summary", mdw.AuthMiddleware(), h.GetSummary)
-	r.App.GET("/api/publics/map", mdw.AuthMiddleware(), h.GetForMap)
-	r.App.GET("/api/publics/education-stats", mdw.AuthMiddleware(), h.GetEducationStats)
+	r.App.GET("/api/publics", mdw.AuthMiddleware(), mdw.PermissionMiddleware("publics", "view"), h.FetchPublic)
+	r.App.GET("/api/publics/summary", mdw.AuthMiddleware(), mdw.PermissionMiddleware("publics", "view"), h.GetSummary)
+	r.App.GET("/api/publics/map", mdw.AuthMiddleware(), mdw.PermissionMiddleware("publics", "view"), h.GetForMap)
+	r.App.GET("/api/publics/education-stats", mdw.AuthMiddleware(), mdw.PermissionMiddleware("publics", "view"), h.GetEducationStats)
 
 	public := r.App.Group("/api/public").Use(mdw.AuthMiddleware())
 	{
 		public.POST("", mdw.PermissionMiddleware("publics", "create"), h.AddPublic)
-		public.GET("/:id", h.GetPublicById)
+		public.GET("/:id", mdw.PermissionMiddleware("publics", "view"), h.GetPublicById)
 		public.PUT("/:id", mdw.PermissionMiddleware("publics", "update"), h.UpdatePublic)
 		public.DELETE("/:id", mdw.PermissionMiddleware("publics", "delete"), h.DeletePublic)
 	}
@@ -242,11 +242,11 @@ func (r *Routes) AccidentRoutes() {
 	pRepo := permissionRepo.NewPermissionRepo(r.DB)
 	mdw := middlewares.NewMiddleware(blacklistRepo, pRepo)
 
-	r.App.GET("/api/accidents", mdw.AuthMiddleware(), h.FetchAccident)
+	r.App.GET("/api/accidents", mdw.AuthMiddleware(), mdw.PermissionMiddleware("accidents", "view"), h.FetchAccident)
 	accident := r.App.Group("/api/accident").Use(mdw.AuthMiddleware())
 	{
 		accident.POST("", mdw.PermissionMiddleware("accidents", "create"), h.AddAccident)
-		accident.GET("/:id", h.GetAccidentById)
+		accident.GET("/:id", mdw.PermissionMiddleware("accidents", "view"), h.GetAccidentById)
 		accident.PUT("/:id", mdw.PermissionMiddleware("accidents", "update"), h.UpdateAccident)
 		accident.DELETE("/:id", mdw.PermissionMiddleware("accidents", "delete"), h.DeleteAccident)
 
@@ -267,18 +267,18 @@ func (r *Routes) EventRoutes() {
 	repo := eventRepo.NewEventRepo(r.DB)
 	repoSchool := schoolRepo.NewSchoolRepo(r.DB)
 	repoPublic := publicsRepo.NewPublicRepo(r.DB)
-	svc := eventSvc.NewEventService(repo, repoSchool, repoPublic, storageProvider)
-	h := eventHandler.NewEventHandler(svc)
 	blacklistRepo := authRepo.NewBlacklistRepo(r.DB)
 	pRepo := permissionRepo.NewPermissionRepo(r.DB)
+	svc := eventSvc.NewEventService(repo, repoSchool, repoPublic, storageProvider)
+	h := eventHandler.NewEventHandler(svc, pRepo)
 	mdw := middlewares.NewMiddleware(blacklistRepo, pRepo)
 
-	r.App.GET("/api/events", mdw.AuthMiddleware(), h.FetchEvent)
-	r.App.GET("/api/events/map", mdw.AuthMiddleware(), h.GetEventsForMap)
+	r.App.GET("/api/events", mdw.AuthMiddleware(), mdw.PermissionMiddleware("events", "view"), h.FetchEvent)
+	r.App.GET("/api/events/map", mdw.AuthMiddleware(), mdw.PermissionMiddleware("events", "view"), h.GetEventsForMap)
 	event := r.App.Group("/api/event").Use(mdw.AuthMiddleware())
 	{
 		event.POST("", mdw.PermissionMiddleware("events", "create"), h.AddEvent)
-		event.GET("/:id", h.GetEventById)
+		event.GET("/:id", mdw.PermissionMiddleware("events", "view"), h.GetEventById)
 		event.PUT("/:id", mdw.PermissionMiddleware("events", "update"), h.UpdateEvent)
 		event.DELETE("/:id", mdw.PermissionMiddleware("events", "delete"), h.DeleteEvent)
 
@@ -291,26 +291,26 @@ func (r *Routes) EventRoutes() {
 func (r *Routes) BudgetRoutes() {
 	repo := budgetRepo.NewBudgetRepo(r.DB)
 	svc := budgetSvc.NewBudgetService(repo)
-	h := budgetHandler.NewBudgetHandler(svc)
 	blacklistRepo := authRepo.NewBlacklistRepo(r.DB)
 	pRepo := permissionRepo.NewPermissionRepo(r.DB)
+	h := budgetHandler.NewBudgetHandler(svc, pRepo)
 	mdw := middlewares.NewMiddleware(blacklistRepo, pRepo)
 
-	// Summary endpoints (read-only for all authenticated users)
-	r.App.GET("/api/budget/summary/event/:eventId", mdw.AuthMiddleware(), h.GetEventSummary)
-	r.App.GET("/api/budget/summary/monthly", mdw.AuthMiddleware(), h.GetMonthlySummary)
-	r.App.GET("/api/budget/summary/yearly", mdw.AuthMiddleware(), h.GetYearlySummary)
+	// Summary endpoints (read-only for users with budget view permission)
+	r.App.GET("/api/budget/summary/event/:eventId", mdw.AuthMiddleware(), mdw.PermissionMiddleware("budgets", "view"), h.GetEventSummary)
+	r.App.GET("/api/budget/summary/monthly", mdw.AuthMiddleware(), mdw.PermissionMiddleware("budgets", "view"), h.GetMonthlySummary)
+	r.App.GET("/api/budget/summary/yearly", mdw.AuthMiddleware(), mdw.PermissionMiddleware("budgets", "view"), h.GetYearlySummary)
 
 	// List endpoints
-	r.App.GET("/api/budgets", mdw.AuthMiddleware(), h.FetchBudget)
-	r.App.GET("/api/budgets/event/:eventId", mdw.AuthMiddleware(), h.GetBudgetsByEvent)
-	r.App.GET("/api/budgets/month-year", mdw.AuthMiddleware(), h.GetBudgetsByMonthYear)
+	r.App.GET("/api/budgets", mdw.AuthMiddleware(), mdw.PermissionMiddleware("budgets", "view"), h.FetchBudget)
+	r.App.GET("/api/budgets/event/:eventId", mdw.AuthMiddleware(), mdw.PermissionMiddleware("budgets", "view"), h.GetBudgetsByEvent)
+	r.App.GET("/api/budgets/month-year", mdw.AuthMiddleware(), mdw.PermissionMiddleware("budgets", "view"), h.GetBudgetsByMonthYear)
 
 	// CRUD endpoints (admin/staff only)
 	budget := r.App.Group("/api/budget").Use(mdw.AuthMiddleware())
 	{
 		budget.POST("", mdw.PermissionMiddleware("budgets", "create"), h.AddBudget)
-		budget.GET("/:id", h.GetBudgetById)
+		budget.GET("/:id", mdw.PermissionMiddleware("budgets", "view"), h.GetBudgetById)
 		budget.PUT("/:id", mdw.PermissionMiddleware("budgets", "update"), h.UpdateBudget)
 		budget.DELETE("/:id", mdw.PermissionMiddleware("budgets", "delete"), h.DeleteBudget)
 	}
@@ -324,19 +324,19 @@ func (r *Routes) MarketShareRoutes() {
 	pRepo := permissionRepo.NewPermissionRepo(r.DB)
 	mdw := middlewares.NewMiddleware(blacklistRepo, pRepo)
 
-	// Dashboard endpoint (read-only for all authenticated users)
-	r.App.GET("/api/marketshare/top-districts", mdw.AuthMiddleware(), h.GetTopDistricts)
-	r.App.GET("/api/marketshare/summary", mdw.AuthMiddleware(), h.GetSummary)
-	r.App.GET("/api/marketshare/dashboard-suggestions", mdw.AuthMiddleware(), h.GetDashboardSuggestions)
+	// Dashboard endpoint (read-only for users with market share view permission)
+	r.App.GET("/api/marketshare/top-districts", mdw.AuthMiddleware(), mdw.PermissionMiddleware("market_shares", "view"), h.GetTopDistricts)
+	r.App.GET("/api/marketshare/summary", mdw.AuthMiddleware(), mdw.PermissionMiddleware("market_shares", "view"), h.GetSummary)
+	r.App.GET("/api/marketshare/dashboard-suggestions", mdw.AuthMiddleware(), mdw.PermissionMiddleware("market_shares", "view"), h.GetDashboardSuggestions)
 
 	// List endpoints
-	r.App.GET("/api/marketshares", mdw.AuthMiddleware(), h.FetchMarketShare)
+	r.App.GET("/api/marketshares", mdw.AuthMiddleware(), mdw.PermissionMiddleware("market_shares", "view"), h.FetchMarketShare)
 
 	// CRUD endpoints (admin/staff only)
 	marketshare := r.App.Group("/api/marketshare").Use(mdw.AuthMiddleware())
 	{
 		marketshare.POST("", mdw.PermissionMiddleware("market_shares", "create"), h.AddMarketShare)
-		marketshare.GET("/:id", h.GetMarketShareById)
+		marketshare.GET("/:id", mdw.PermissionMiddleware("market_shares", "view"), h.GetMarketShareById)
 		marketshare.PUT("/:id", mdw.PermissionMiddleware("market_shares", "update"), h.UpdateMarketShare)
 		marketshare.DELETE("/:id", mdw.PermissionMiddleware("market_shares", "delete"), h.DeleteMarketShare)
 	}
@@ -362,9 +362,8 @@ func (r *Routes) RoleRoutes() {
 		role.PUT("/:id", mdw.PermissionMiddleware("roles", "update"), h.Update)
 		role.DELETE("/:id", mdw.PermissionMiddleware("roles", "delete"), h.Delete)
 
-		// Permission and menu assignment
+		// Permission assignment
 		role.POST("/:id/permissions", mdw.PermissionMiddleware("roles", "assign_permissions"), h.AssignPermissions)
-		role.POST("/:id/menus", mdw.PermissionMiddleware("roles", "assign_menus"), h.AssignMenus)
 	}
 }
 
@@ -376,18 +375,18 @@ func (r *Routes) PermissionRoutes() {
 	mdw := middlewares.NewMiddleware(blacklistRepo, repo)
 
 	// List endpoints
-	r.App.GET("/api/permissions", mdw.AuthMiddleware(), mdw.RoleMiddleware(utils.RoleAdmin), h.GetAll)
+	r.App.GET("/api/permissions", mdw.AuthMiddleware(), mdw.PermissionMiddleware("permissions", "view"), h.GetAll)
 
 	// Get current user's permissions
 	r.App.GET("/api/permissions/me", mdw.AuthMiddleware(), h.GetUserPermissions)
 
-	// CRUD endpoints (admin only)
-	permission := r.App.Group("/api/permission").Use(mdw.AuthMiddleware(), mdw.RoleMiddleware(utils.RoleAdmin))
+	// CRUD endpoints (permission-based)
+	permission := r.App.Group("/api/permission").Use(mdw.AuthMiddleware())
 	{
-		permission.POST("", h.Create)
-		permission.GET("/:id", h.GetByID)
-		permission.PUT("/:id", h.Update)
-		permission.DELETE("/:id", h.Delete)
+		permission.POST("", mdw.PermissionMiddleware("permissions", "create"), h.Create)
+		permission.GET("/:id", mdw.PermissionMiddleware("permissions", "view"), h.GetByID)
+		permission.PUT("/:id", mdw.PermissionMiddleware("permissions", "update"), h.Update)
+		permission.DELETE("/:id", mdw.PermissionMiddleware("permissions", "delete"), h.Delete)
 	}
 }
 
@@ -469,7 +468,7 @@ func (r *Routes) DashboardRoutes() {
 	mdw := middlewares.NewMiddleware(blacklistRepo, pRepo)
 
 	// Dashboard stats endpoint - aggregated statistics
-	r.App.GET("/api/dashboard/stats", mdw.AuthMiddleware(), h.GetStats)
+	r.App.GET("/api/dashboard/stats", mdw.AuthMiddleware(), mdw.PermissionMiddleware("dashboard", "view"), h.GetStats)
 }
 
 func (r *Routes) ApprovalRecordRoutes() {

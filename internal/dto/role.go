@@ -15,10 +15,6 @@ type AssignPermissions struct {
 	PermissionIds []string `json:"permission_ids" binding:"required,min=1"`
 }
 
-type AssignMenus struct {
-	MenuIds []string `json:"menu_ids" binding:"required,min=1"`
-}
-
 type RoleWithDetails struct {
 	Id            string   `json:"id"`
 	Name          string   `json:"name"`

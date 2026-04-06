@@ -9,7 +9,7 @@ import { useAuth } from '../../contexts/AuthContext';
 const EventDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { hasPermission, hasRole } = useAuth();
+  const { hasPermission } = useAuth();
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('details');
@@ -279,9 +279,7 @@ const EventDetail = () => {
   // Check if event is finalized
   const finalStatuses = ['completed', 'cancelled'];
   const isFinalized = finalStatuses.includes(event.status?.toLowerCase());
-  const isAdmin = hasRole(['admin']);
-  const isSuperadmin = hasRole(['superadmin']);
-  const isAdminOrSuperadmin = isAdmin || isSuperadmin;
+  const canOverrideFinalized = hasPermission('events', 'override_finalized');
 
   // Calculate achievement percentage
   const calculateAchievement = () => {
@@ -308,22 +306,16 @@ const EventDetail = () => {
   return (
     <>
       {/* Warning for finalized events */}
-      {isFinalized && !isAdminOrSuperadmin && (
+      {isFinalized && !canOverrideFinalized && (
         <div className="alert alert-warning mb-4" role="alert">
           <i className="bi bi-exclamation-triangle-fill me-2"></i>
           <strong>Event is Finalized!</strong> This event has status "{event.status}" and cannot be modified or deleted.
         </div>
       )}
-      {isFinalized && isSuperadmin && (
+      {isFinalized && canOverrideFinalized && (
         <div className="alert alert-info mb-4" role="alert">
           <i className="bi bi-info-circle-fill me-2"></i>
-          <strong>Superadmin Access:</strong> This event has status "{event.status}" (finalized), but you can still modify it as a superadmin.
-        </div>
-      )}
-      {isFinalized && isAdmin && !isSuperadmin && (
-        <div className="alert alert-info mb-4" role="alert">
-          <i className="bi bi-info-circle-fill me-2"></i>
-          <strong>Admin Access:</strong> This event has status "{event.status}" (finalized), but you can still modify it as an admin.
+          <strong>Override Access:</strong> This event has status "{event.status}" (finalized), but you can still modify it because you have finalized override permission.
         </div>
       )}
 
@@ -341,12 +333,12 @@ const EventDetail = () => {
           </nav>
         </div>
         <div className="d-flex gap-2">
-          {hasPermission('update_events') && !(isFinalized && !isAdminOrSuperadmin) && (
+          {hasPermission('update_events') && !(isFinalized && !canOverrideFinalized) && (
             <Link to={`/events/${id}/edit`} className="btn btn-warning">
               <i className="bi bi-pencil me-2"></i>Edit
             </Link>
           )}
-          {hasPermission('delete_events') && !(isFinalized && !isAdminOrSuperadmin) && (
+          {hasPermission('delete_events') && !(isFinalized && !canOverrideFinalized) && (
             <button onClick={handleDeleteClick} className="btn btn-danger">
               <i className="bi bi-trash me-2"></i>Delete
             </button>
@@ -779,7 +771,7 @@ const EventDetail = () => {
             {activeTab === 'photos' && (
               <div>
                 {/* Upload Form */}
-                {hasPermission('update_events') && !(isFinalized && !isAdminOrSuperadmin) && (
+                {hasPermission('update_events') && !(isFinalized && !canOverrideFinalized) && (
                   <div className="card mb-4 border-primary">
                     <div className="card-header bg-primary text-white">
                       <h5 className="mb-0"><i className="bi bi-cloud-upload me-2"></i>Upload Photos</h5>
@@ -865,7 +857,7 @@ const EventDetail = () => {
                           <img src={photo.photo_url} className="card-img-top" alt={photo.caption} style={{ height: '250px', objectFit: 'cover' }} />
                           <div className="card-body">
                             {photo.caption && <p className="card-text">{photo.caption}</p>}
-                            {hasPermission('delete_events') && !(isFinalized && !isAdminOrSuperadmin) && (
+                            {hasPermission('delete_events') && !(isFinalized && !canOverrideFinalized) && (
                               <button
                                 className="btn btn-danger btn-sm w-100"
                                 onClick={() => handlePhotoDeleteClick(photo)}

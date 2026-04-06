@@ -7,7 +7,7 @@ import { toast } from 'react-toastify';
 import { useAuth } from '../../contexts/AuthContext';
 
 const BudgetList = () => {
-  const { hasPermission, hasRole } = useAuth();
+  const { hasPermission } = useAuth();
   const [budgets, setBudgets] = useState([]);
   const [events, setEvents] = useState([]);
   const [summary, setSummary] = useState(null);
@@ -125,6 +125,8 @@ const BudgetList = () => {
       console.error('Failed to load yearly summary');
     }
   };
+
+  const canOverrideFinalized = hasPermission('budgets', 'override_finalized');
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
@@ -463,7 +465,7 @@ const BudgetList = () => {
                                 <i className="bi bi-eye"></i>
                               </Link>
                             )}
-                            {hasPermission('update_budgets') && (!isFinalized(budget.status) || hasRole(['admin', 'superadmin'])) && (
+                            {hasPermission('update_budgets') && (!isFinalized(budget.status) || canOverrideFinalized) && (
                               <Link
                                 to={`/budgets/${budget.id}/edit`}
                                 className="btn btn-sm btn-outline-warning"
@@ -471,7 +473,7 @@ const BudgetList = () => {
                                 <i className="bi bi-pencil"></i>
                               </Link>
                             )}
-                            {hasPermission('delete_budgets') && (!isFinalized(budget.status) || hasRole(['admin', 'superadmin'])) && (
+                            {hasPermission('delete_budgets') && (!isFinalized(budget.status) || canOverrideFinalized) && (
                               <button
                                 onClick={() => handleDeleteClick(budget)}
                                 className="btn btn-sm btn-outline-danger"

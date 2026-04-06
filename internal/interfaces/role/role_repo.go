@@ -17,9 +17,4 @@ type RepoRoleInterface interface {
 	AssignPermissions(roleId string, permissionIds []string) error
 	RemovePermissions(roleId string, permissionIds []string) error
 	GetRolePermissions(roleId string) ([]string, error)
-
-	// Menu management
-	AssignMenus(roleId string, menuIds []string) error
-	RemoveMenus(roleId string, menuIds []string) error
-	GetRoleMenus(roleId string) ([]string, error)
 }

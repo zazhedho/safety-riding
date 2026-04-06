@@ -7,6 +7,7 @@ import (
 	"reflect"
 	"safety-riding/internal/dto"
 	interfacebudget "safety-riding/internal/interfaces/budget"
+	interfacepermission "safety-riding/internal/interfaces/permission"
 	"safety-riding/pkg/filter"
 	"safety-riding/pkg/logger"
 	"safety-riding/pkg/messages"
@@ -19,12 +20,14 @@ import (
 )
 
 type BudgetHandler struct {
-	Service interfacebudget.ServiceBudgetInterface
+	Service        interfacebudget.ServiceBudgetInterface
+	PermissionRepo interfacepermission.RepoPermissionInterface
 }
 
-func NewBudgetHandler(s interfacebudget.ServiceBudgetInterface) *BudgetHandler {
+func NewBudgetHandler(s interfacebudget.ServiceBudgetInterface, permissionRepo interfacepermission.RepoPermissionInterface) *BudgetHandler {
 	return &BudgetHandler{
-		Service: s,
+		Service:        s,
+		PermissionRepo: permissionRepo,
 	}
 }
 
@@ -128,7 +131,7 @@ func (h *BudgetHandler) GetBudgetById(ctx *gin.Context) {
 func (h *BudgetHandler) UpdateBudget(ctx *gin.Context) {
 	authData := utils.GetAuthData(ctx)
 	username := utils.InterfaceString(authData["username"])
-	role := utils.InterfaceString(authData["role"])
+	userId := utils.InterfaceString(authData["user_id"])
 	logId := utils.GenerateLogId(ctx)
 	logPrefix := fmt.Sprintf("[%s][BudgetHandler][UpdateBudget]", logId)
 
@@ -147,7 +150,16 @@ func (h *BudgetHandler) UpdateBudget(ctx *gin.Context) {
 	}
 	logger.WriteLog(logger.LogLevelDebug, fmt.Sprintf("%s; Request: %+v;", logPrefix, utils.JsonEncode(req)))
 
-	data, err := h.Service.UpdateBudget(budgetId, username, role, req)
+	canOverrideFinalized, err := h.canOverrideFinalized(userId, "budgets")
+	if err != nil {
+		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; Check override permission; Error: %+v", logPrefix, err))
+		res := response.Response(http.StatusInternalServerError, messages.MsgFail, logId, nil)
+		res.Error = err.Error()
+		ctx.JSON(http.StatusInternalServerError, res)
+		return
+	}
+
+	data, err := h.Service.UpdateBudget(budgetId, username, canOverrideFinalized, req)
 	if err != nil {
 		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; Service.UpdateBudget; Error: %+v", logPrefix, err))
 		res := response.Response(http.StatusInternalServerError, messages.MsgFail, logId, nil)
@@ -224,6 +236,7 @@ func (h *BudgetHandler) FetchBudget(ctx *gin.Context) {
 func (h *BudgetHandler) DeleteBudget(ctx *gin.Context) {
 	authData := utils.GetAuthData(ctx)
 	username := utils.InterfaceString(authData["username"])
+	userId := utils.InterfaceString(authData["user_id"])
 	logId := utils.GenerateLogId(ctx)
 	logPrefix := fmt.Sprintf("[%s][BudgetHandler][DeleteBudget]", logId)
 
@@ -235,7 +248,16 @@ func (h *BudgetHandler) DeleteBudget(ctx *gin.Context) {
 		return
 	}
 
-	if err := h.Service.DeleteBudget(id, username); err != nil {
+	canOverrideFinalized, err := h.canOverrideFinalized(userId, "budgets")
+	if err != nil {
+		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; Check override permission; Error: %+v", logPrefix, err))
+		res := response.Response(http.StatusInternalServerError, messages.MsgFail, logId, nil)
+		res.Error = err.Error()
+		ctx.JSON(http.StatusInternalServerError, res)
+		return
+	}
+
+	if err := h.Service.DeleteBudget(id, username, canOverrideFinalized); err != nil {
 		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; Service.DeleteBudget; Error: %+v", logPrefix, err))
 		res := response.Response(http.StatusInternalServerError, messages.MsgFail, logId, nil)
 		res.Error = err.Error()
@@ -246,6 +268,21 @@ func (h *BudgetHandler) DeleteBudget(ctx *gin.Context) {
 	res := response.Response(http.StatusOK, "Delete budget successfully", logId, nil)
 	logger.WriteLog(logger.LogLevelDebug, fmt.Sprintf("%s; Success;", logPrefix))
 	ctx.JSON(http.StatusOK, res)
+}
+
+func (h *BudgetHandler) canOverrideFinalized(userId, resource string) (bool, error) {
+	permissions, err := h.PermissionRepo.GetUserPermissions(userId)
+	if err != nil {
+		return false, err
+	}
+
+	for _, permission := range permissions {
+		if permission.Resource == resource && permission.Action == "override_finalized" {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }
 
 // GetBudgetsByEvent godoc

@@ -8,7 +8,7 @@ import { useAuth } from '../../contexts/AuthContext';
 const BudgetForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { hasRole } = useAuth();
+  const { hasPermission } = useAuth();
   const [formData, setFormData] = useState({
     event_id: '',
     category: '',
@@ -112,33 +112,25 @@ const BudgetForm = () => {
     return <>Loading...</>;
   }
 
-  const isAdmin = hasRole(['admin']);
-  const isSuperadmin = hasRole(['superadmin']);
-  const isAdminOrSuperadmin = isAdmin || isSuperadmin;
-  const shouldDisable = isFinalized && !isAdminOrSuperadmin;
+  const canOverrideFinalized = hasPermission('budgets', 'override_finalized');
+  const shouldDisable = isFinalized && !canOverrideFinalized;
 
   return (
     <>
       <h2>{id ? 'Edit Budget' : 'Add Budget'}</h2>
 
       {/* Warning for finalized budgets */}
-      {isFinalized && !isAdminOrSuperadmin && (
+      {isFinalized && !canOverrideFinalized && (
         <div className="alert alert-warning mb-4" role="alert">
           <i className="bi bi-exclamation-triangle-fill me-2"></i>
           <strong>Budget is Finalized!</strong> This budget has status "{formData.status}" and cannot be modified.
           All fields are read-only.
         </div>
       )}
-      {isFinalized && isSuperadmin && (
+      {isFinalized && canOverrideFinalized && (
         <div className="alert alert-info mb-4" role="alert">
           <i className="bi bi-info-circle-fill me-2"></i>
-          <strong>Superadmin Access:</strong> This budget has status "{formData.status}" (finalized), but you can still modify it as a superadmin.
-        </div>
-      )}
-      {isFinalized && isAdmin && !isSuperadmin && (
-        <div className="alert alert-info mb-4" role="alert">
-          <i className="bi bi-info-circle-fill me-2"></i>
-          <strong>Admin Access:</strong> This budget has status "{formData.status}" (finalized), but you can still modify it as an admin.
+          <strong>Override Access:</strong> This budget has status "{formData.status}" (finalized), but you can still modify it because you have finalized override permission.
         </div>
       )}
 

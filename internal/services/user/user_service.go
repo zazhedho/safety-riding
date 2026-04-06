@@ -327,27 +327,13 @@ func (s *ServiceUser) Update(id, role string, req dto.UserUpdate) (domainuser.Us
 		data.Email = req.Email
 	}
 
-	if role == utils.RoleAdmin && strings.TrimSpace(req.Role) != "" {
+	if strings.TrimSpace(req.Role) != "" {
 		newRoleName := strings.ToLower(req.Role)
 
-		// Prevent admin from assigning superadmin role
-		if newRoleName == utils.RoleSuperAdmin {
+		if newRoleName == utils.RoleSuperAdmin && role != utils.RoleSuperAdmin {
 			return domainuser.Users{}, errors.New("cannot assign superadmin role")
 		}
 
-		data.Role = newRoleName
-
-		roleEntity, err := s.RoleRepo.GetByName(newRoleName)
-		if err == nil && roleEntity.Id != "" {
-			data.RoleId = &roleEntity.Id
-		} else {
-			data.RoleId = nil
-		}
-	}
-
-	// Allow superadmin to change any role including to/from superadmin
-	if role == utils.RoleSuperAdmin && strings.TrimSpace(req.Role) != "" {
-		newRoleName := strings.ToLower(req.Role)
 		data.Role = newRoleName
 
 		roleEntity, err := s.RoleRepo.GetByName(newRoleName)

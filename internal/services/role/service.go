@@ -2,6 +2,8 @@ package servicerole
 
 import (
 	"errors"
+	domainmenu "safety-riding/internal/domain/menu"
+	domainpermission "safety-riding/internal/domain/permission"
 	"safety-riding/internal/domain/role"
 	"safety-riding/internal/dto"
 	"safety-riding/internal/interfaces/menu"
@@ -69,8 +71,7 @@ func (s *RoleService) GetByIDWithDetails(id string) (dto.RoleWithDetails, error)
 		return dto.RoleWithDetails{}, err
 	}
 
-	// Get menus
-	menuIds, err := s.RoleRepo.GetRoleMenus(id)
+	menuIds, err := s.deriveMenuIDsFromPermissions(permissionIds)
 	if err != nil {
 		return dto.RoleWithDetails{}, err
 	}
@@ -163,12 +164,7 @@ func (s *RoleService) AssignPermissions(roleId string, req dto.AssignPermissions
 
 	// Check permissions for modifying system roles
 	if role.IsSystem {
-		// Only superadmin and admin can modify system roles
-		if currentUserRole != utils.RoleSuperAdmin && currentUserRole != utils.RoleAdmin {
-			return errors.New("access denied: only superadmin and admin can modify system roles")
-		}
-
-		// Admin cannot modify superadmin role
+		// Only superadmin can modify the superadmin role itself.
 		if role.Name == utils.RoleSuperAdmin && currentUserRole != utils.RoleSuperAdmin {
 			return errors.New("access denied: cannot modify superadmin role")
 		}
@@ -184,42 +180,108 @@ func (s *RoleService) AssignPermissions(roleId string, req dto.AssignPermissions
 	return s.RoleRepo.AssignPermissions(roleId, req.PermissionIds)
 }
 
-func (s *RoleService) AssignMenus(roleId string, req dto.AssignMenus, currentUserRole string) error {
-	// Verify role exists
-	role, err := s.RoleRepo.GetByID(roleId)
-	if err != nil {
-		return err
-	}
-
-	// Check permissions for modifying system roles
-	if role.IsSystem {
-		// Only superadmin and admin can modify system roles
-		if currentUserRole != utils.RoleSuperAdmin && currentUserRole != utils.RoleAdmin {
-			return errors.New("access denied: only superadmin and admin can modify system roles")
-		}
-
-		// Admin cannot modify superadmin role
-		if role.Name == utils.RoleSuperAdmin && currentUserRole != utils.RoleSuperAdmin {
-			return errors.New("access denied: cannot modify superadmin role")
-		}
-	}
-
-	// Verify all menus exist
-	for _, menuId := range req.MenuIds {
-		if _, err := s.MenuRepo.GetByID(menuId); err != nil {
-			return errors.New("invalid menu ID: " + menuId)
-		}
-	}
-
-	return s.RoleRepo.AssignMenus(roleId, req.MenuIds)
-}
-
 func (s *RoleService) GetRolePermissions(roleId string) ([]string, error) {
 	return s.RoleRepo.GetRolePermissions(roleId)
 }
 
 func (s *RoleService) GetRoleMenus(roleId string) ([]string, error) {
-	return s.RoleRepo.GetRoleMenus(roleId)
+	permissionIds, err := s.RoleRepo.GetRolePermissions(roleId)
+	if err != nil {
+		return nil, err
+	}
+
+	return s.deriveMenuIDsFromPermissions(permissionIds)
 }
 
 var _ interfacerole.ServiceRoleInterface = (*RoleService)(nil)
+
+func (s *RoleService) deriveMenuIDsFromPermissions(permissionIDs []string) ([]string, error) {
+	menus, err := s.MenuRepo.GetActiveMenus()
+	if err != nil {
+		return nil, err
+	}
+
+	permissions := make([]domainpermission.Permission, 0, len(permissionIDs))
+	for _, permissionID := range permissionIDs {
+		permission, err := s.PermissionRepo.GetByID(permissionID)
+		if err != nil {
+			return nil, err
+		}
+		permissions = append(permissions, permission)
+	}
+
+	allowedResources := make(map[string]struct{}, len(permissions))
+	for _, permission := range permissions {
+		allowedResources[permission.Resource] = struct{}{}
+	}
+
+	menuMap := make(map[string]domainmenu.MenuItem, len(menus))
+	for _, menu := range menus {
+		menuMap[menu.Id] = menu
+	}
+
+	allowedMenuIDs := make(map[string]struct{})
+	for _, menu := range menus {
+		if roleCanAccessMenu(menu, allowedResources) {
+			allowedMenuIDs[menu.Id] = struct{}{}
+			includeRoleParentMenus(menu, menuMap, allowedMenuIDs)
+		}
+	}
+
+	menuIDs := make([]string, 0, len(allowedMenuIDs))
+	for _, menu := range menus {
+		if _, ok := allowedMenuIDs[menu.Id]; ok {
+			menuIDs = append(menuIDs, menu.Id)
+		}
+	}
+
+	return menuIDs, nil
+}
+
+func roleCanAccessMenu(menu domainmenu.MenuItem, allowedResources map[string]struct{}) bool {
+	for _, resource := range roleMenuResources(menu) {
+		if _, ok := allowedResources[resource]; ok {
+			return true
+		}
+	}
+
+	return false
+}
+
+func includeRoleParentMenus(
+	menu domainmenu.MenuItem,
+	menuMap map[string]domainmenu.MenuItem,
+	allowedMenuIDs map[string]struct{},
+) {
+	current := menu
+	for current.ParentId != nil && *current.ParentId != "" {
+		parent, ok := menuMap[*current.ParentId]
+		if !ok {
+			return
+		}
+
+		if _, exists := allowedMenuIDs[parent.Id]; exists {
+			return
+		}
+
+		allowedMenuIDs[parent.Id] = struct{}{}
+		current = parent
+	}
+}
+
+func roleMenuResources(menu domainmenu.MenuItem) []string {
+	switch menu.Name {
+	case "marketshare":
+		return []string{"market_shares"}
+	case "submit_case_ahass":
+		return []string{"accidents"}
+	case "polda_accidents":
+		return []string{"polda_accidents"}
+	case "education":
+		return nil
+	case "accidents":
+		return []string{"accidents", "polda_accidents"}
+	default:
+		return []string{menu.Name}
+	}
+}

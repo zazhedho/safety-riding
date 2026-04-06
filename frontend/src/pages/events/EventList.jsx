@@ -8,7 +8,7 @@ import { toast } from 'react-toastify';
 import { useAuth } from '../../contexts/AuthContext';
 
 const EventList = () => {
-  const { hasPermission, user } = useAuth();
+  const { hasPermission } = useAuth();
   const [events, setEvents] = useState([]);
   const [schools, setSchools] = useState([]);
   const [publics, setPublics] = useState([]);
@@ -178,6 +178,10 @@ const EventList = () => {
     });
   };
 
+  const canOverrideFinalized = hasPermission('events', 'override_finalized');
+  const canEditEvent = (event) => hasPermission('update_events') && (event.status !== 'completed' && event.status !== 'cancelled' || canOverrideFinalized);
+  const canDeleteEvent = (event) => hasPermission('delete_events') && (event.status !== 'completed' && event.status !== 'cancelled' || canOverrideFinalized);
+
   return (
     <>
       <div className="d-flex justify-content-between align-items-center mb-4">
@@ -337,7 +341,7 @@ const EventList = () => {
                               <i className="bi bi-eye" aria-hidden="true"></i>
                             </Link>
                           )}
-                          {hasPermission('update_events') && (event.status !== 'completed' || user?.role === 'admin' || user?.role === 'superadmin') && (
+                          {canEditEvent(event) && (
                             <Link
                               to={`/events/${event.id}/edit`}
                               className="btn btn-sm btn-outline-warning"
@@ -350,7 +354,7 @@ const EventList = () => {
                             <button
                               onClick={() => handleDeleteClick(event)}
                               className="btn btn-sm btn-outline-danger"
-                              disabled={event.status === 'completed' && user?.role !== 'admin' && user?.role !== 'superadmin'}
+                              disabled={!canDeleteEvent(event)}
                               aria-label={`Delete ${event.title}`}
                             >
                               <i className="bi bi-trash" aria-hidden="true"></i>

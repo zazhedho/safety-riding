@@ -64,18 +64,8 @@ func (h *HandlerUser) Register(ctx *gin.Context) {
 		return
 	}
 
-	// Allow role assignment only for admin/superadmin callers; public registration defaults to viewer.
-	isPrivilegedRegistrar := false
-	if _, claims, err := utils.JwtClaims(ctx); err == nil {
-		if role, ok := claims["role"].(string); ok {
-			if role == utils.RoleAdmin || role == utils.RoleSuperAdmin {
-				isPrivilegedRegistrar = true
-			}
-		}
-	}
-	if !isPrivilegedRegistrar {
-		req.Role = ""
-	}
+	// Public registration always defaults to the backend default role.
+	req.Role = ""
 	logger.WriteLog(logger.LogLevelDebug, fmt.Sprintf("%s; Request: %+v;", logPrefix, utils.JsonEncode(req)))
 
 	data, err := h.Service.RegisterUser(req)

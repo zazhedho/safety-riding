@@ -9,6 +9,7 @@ import (
 
 	"safety-riding/internal/dto"
 	interfaceevent "safety-riding/internal/interfaces/event"
+	interfacepermission "safety-riding/internal/interfaces/permission"
 	"safety-riding/pkg/filter"
 	"safety-riding/pkg/logger"
 	"safety-riding/pkg/messages"
@@ -20,12 +21,14 @@ import (
 )
 
 type EventHandler struct {
-	Service interfaceevent.ServiceEventInterface
+	Service        interfaceevent.ServiceEventInterface
+	PermissionRepo interfacepermission.RepoPermissionInterface
 }
 
-func NewEventHandler(s interfaceevent.ServiceEventInterface) *EventHandler {
+func NewEventHandler(s interfaceevent.ServiceEventInterface, permissionRepo interfacepermission.RepoPermissionInterface) *EventHandler {
 	return &EventHandler{
-		Service: s,
+		Service:        s,
+		PermissionRepo: permissionRepo,
 	}
 }
 
@@ -129,7 +132,7 @@ func (h *EventHandler) GetEventById(ctx *gin.Context) {
 func (h *EventHandler) UpdateEvent(ctx *gin.Context) {
 	authData := utils.GetAuthData(ctx)
 	username := utils.InterfaceString(authData["username"])
-	role := utils.InterfaceString(authData["role"])
+	userId := utils.InterfaceString(authData["user_id"])
 	logId := utils.GenerateLogId(ctx)
 	logPrefix := fmt.Sprintf("[%s][EventHandler][UpdateEvent]", logId)
 
@@ -148,7 +151,16 @@ func (h *EventHandler) UpdateEvent(ctx *gin.Context) {
 	}
 	logger.WriteLog(logger.LogLevelDebug, fmt.Sprintf("%s; Request: %+v;", logPrefix, utils.JsonEncode(req)))
 
-	data, err := h.Service.UpdateEvent(eventId, username, role, req)
+	canOverrideFinalized, err := h.canOverrideFinalized(userId, "events")
+	if err != nil {
+		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; Check override permission; Error: %+v", logPrefix, err))
+		res := response.Response(http.StatusInternalServerError, messages.MsgFail, logId, nil)
+		res.Error = err.Error()
+		ctx.JSON(http.StatusInternalServerError, res)
+		return
+	}
+
+	data, err := h.Service.UpdateEvent(eventId, username, canOverrideFinalized, req)
 	if err != nil {
 		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; Service.UpdateEvent; Error: %+v", logPrefix, err))
 		res := response.Response(http.StatusInternalServerError, messages.MsgFail, logId, nil)
@@ -226,6 +238,7 @@ func (h *EventHandler) FetchEvent(ctx *gin.Context) {
 func (h *EventHandler) DeleteEvent(ctx *gin.Context) {
 	authData := utils.GetAuthData(ctx)
 	username := utils.InterfaceString(authData["username"])
+	userId := utils.InterfaceString(authData["user_id"])
 	logId := utils.GenerateLogId(ctx)
 	logPrefix := fmt.Sprintf("[%s][EventHandler][DeleteEvent]", logId)
 
@@ -237,7 +250,16 @@ func (h *EventHandler) DeleteEvent(ctx *gin.Context) {
 		return
 	}
 
-	if err := h.Service.DeleteEvent(id, username); err != nil {
+	canOverrideFinalized, err := h.canOverrideFinalized(userId, "events")
+	if err != nil {
+		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; Check override permission; Error: %+v", logPrefix, err))
+		res := response.Response(http.StatusInternalServerError, messages.MsgFail, logId, nil)
+		res.Error = err.Error()
+		ctx.JSON(http.StatusInternalServerError, res)
+		return
+	}
+
+	if err := h.Service.DeleteEvent(id, username, canOverrideFinalized); err != nil {
 		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; Service.DeleteEvent; Error: %+v", logPrefix, err))
 		res := response.Response(http.StatusInternalServerError, messages.MsgFail, logId, nil)
 		res.Error = err.Error()
@@ -248,6 +270,21 @@ func (h *EventHandler) DeleteEvent(ctx *gin.Context) {
 	res := response.Response(http.StatusOK, "Delete event successfully", logId, nil)
 	logger.WriteLog(logger.LogLevelDebug, fmt.Sprintf("%s; Success;", logPrefix))
 	ctx.JSON(http.StatusOK, res)
+}
+
+func (h *EventHandler) canOverrideFinalized(userId, resource string) (bool, error) {
+	permissions, err := h.PermissionRepo.GetUserPermissions(userId)
+	if err != nil {
+		return false, err
+	}
+
+	for _, permission := range permissions {
+		if permission.Resource == resource && permission.Action == "override_finalized" {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }
 
 // GetEventsForMap godoc

@@ -101,10 +101,8 @@ const DashboardLayout = ({ children }) => {
         const menus = response.data.data || [];
 
         if (menus.length === 0) {
-          console.warn('No menus returned from API, using fallback based on role');
-          // Fallback based on user role
-          const fallbackMenus = getFallbackMenus(user?.role);
-          setMenuItems(fallbackMenus);
+          console.warn('No menus returned from API');
+          setMenuItems([]);
           menuLoadedRef.current = true;
           return;
         }
@@ -134,10 +132,7 @@ const DashboardLayout = ({ children }) => {
           data: error.response?.data,
           message: error.message
         });
-        // Fallback to role-based menu if API fails
-        const fallbackMenus = getFallbackMenus(user?.role);
-        console.log('Using fallback menus:', fallbackMenus);
-        setMenuItems(fallbackMenus);
+        setMenuItems([]);
         menuLoadedRef.current = true;
       }
     };
@@ -146,41 +141,6 @@ const DashboardLayout = ({ children }) => {
       fetchMenus();
     }
   }, [user]);
-
-  const getFallbackMenus = (role) => {
-    const baseMenus = [
-      { path: '/dashboard', label: 'Dashboard', icon: 'bi-speedometer2', name: 'dashboard', children: [] },
-      { path: '/schools', label: 'Schools', icon: 'bi-building', name: 'schools', children: [] },
-      {
-        path: null,
-        label: 'Education',
-        icon: 'bi-mortarboard',
-        name: 'education',
-        children: [
-          { path: '/education/stats', label: 'Education Stats', icon: 'bi-bar-chart', name: 'education_stats', children: [] },
-          { path: '/education/priority', label: 'Education Priority', icon: 'bi-grid-3x3-gap', name: 'education_priority', children: [] },
-        ]
-      },
-      { path: '/publics', label: 'Public Entities', icon: 'bi-people', name: 'publics', children: [] },
-      { path: '/events', label: 'Events', icon: 'bi-calendar-event', name: 'events', children: [] },
-      { path: '/accidents', label: 'Accidents', icon: 'bi-exclamation-triangle', name: 'accidents', children: [] },
-      { path: '/budgets', label: 'Budgets', icon: 'bi-cash-stack', name: 'budgets', children: [] },
-      { path: '/marketshare', label: 'Market Share', icon: 'bi-graph-up-arrow', name: 'market_shares', children: [] },
-      { path: '/submitted-forms', label: 'Submitted Forms', icon: 'bi-clipboard-data', name: 'approval_records', children: [] },
-    ];
-
-    if (role === 'admin' || role === 'superadmin') {
-      return [
-        ...baseMenus,
-        { path: '/users', label: 'Users', icon: 'bi-people-fill', name: 'users', children: [] },
-        { path: '/roles', label: 'Roles', icon: 'bi-shield-lock', name: 'roles', children: [] },
-        { path: '/menus', label: 'Menus', icon: 'bi-list', name: 'menus', children: [] },
-        { path: '/configs', label: 'Configurations', icon: 'bi-sliders', name: 'configs', children: [] },
-      ];
-    }
-
-    return baseMenus;
-  };
 
   const toggleSubmenu = (menuName) => {
     setExpandedMenus(prev => {

@@ -10,7 +10,7 @@ import { useAuth } from '../../contexts/AuthContext';
 const EventForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { hasRole } = useAuth();
+  const { hasPermission } = useAuth();
   const [entityType, setEntityType] = useState('school');
   const [formData, setFormData] = useState({
     school_id: '',
@@ -402,10 +402,8 @@ const EventForm = () => {
     return <>Loading...</>;
   }
 
-  const isAdmin = hasRole(['admin']);
-  const isSuperadmin = hasRole(['superadmin']);
-  const isAdminOrSuperadmin = isAdmin || isSuperadmin;
-  const shouldDisable = isFinalized && !isAdminOrSuperadmin;
+  const canOverrideFinalized = hasPermission('events', 'override_finalized');
+  const shouldDisable = isFinalized && !canOverrideFinalized;
 
   // Calculate achievement percentage
   const calculateAchievement = () => {
@@ -522,23 +520,17 @@ const EventForm = () => {
       <h2>{id ? 'Edit Event' : 'Add Event'}</h2>
 
       {/* Warning for finalized events */}
-      {isFinalized && !isAdminOrSuperadmin && (
+      {isFinalized && !canOverrideFinalized && (
         <div className="alert alert-warning mb-4" role="alert">
           <i className="bi bi-exclamation-triangle-fill me-2"></i>
           <strong>Event is Finalized!</strong> This event has status "{formData.status}" and cannot be modified.
           All fields are read-only.
         </div>
       )}
-      {isFinalized && isSuperadmin && (
+      {isFinalized && canOverrideFinalized && (
         <div className="alert alert-info mb-4" role="alert">
           <i className="bi bi-info-circle-fill me-2"></i>
-          <strong>Superadmin Access:</strong> This event has status "{formData.status}" (finalized), but you can still modify it as a superadmin.
-        </div>
-      )}
-      {isFinalized && isAdmin && !isSuperadmin && (
-        <div className="alert alert-info mb-4" role="alert">
-          <i className="bi bi-info-circle-fill me-2"></i>
-          <strong>Admin Access:</strong> This event has status "{formData.status}" (finalized), but you can still modify it as an admin.
+          <strong>Override Access:</strong> This event has status "{formData.status}" (finalized), but you can still modify it because you have finalized override permission.
         </div>
       )}
 

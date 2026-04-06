@@ -31,18 +31,21 @@ export const AuthProvider = ({ children }) => {
   const fetchUser = async () => {
     try {
       const response = await api.get('/user');
-      setUser(response.data.data);
+      const fetchedUser = response.data.data;
+      setUser(fetchedUser);
+      let fetchedPermissions = [];
       
       // Fetch user permissions
       try {
         const permResponse = await permissionService.getUserPermissions();
-        setPermissions(permResponse.data.data || []);
+        fetchedPermissions = permResponse.data.data || [];
+        setPermissions(fetchedPermissions);
       } catch (permError) {
         console.error('Failed to fetch permissions:', permError);
         setPermissions([]);
       }
       
-      return response.data.data;
+      return { user: fetchedUser, permissions: fetchedPermissions };
     } catch (error) {
       console.error('Failed to fetch user:', error);
       // Only logout if it's an auth error (401/403)
@@ -67,8 +70,8 @@ export const AuthProvider = ({ children }) => {
       setToken(token);
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
-      const user = await fetchUser();
-      return { success: true, user };
+      const authData = await fetchUser();
+      return { success: true, user: authData?.user, permissions: authData?.permissions || [] };
     } catch (error) {
       let errorMessage = 'Login failed';
       if (error.response && error.response.data) {
