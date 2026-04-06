@@ -240,6 +240,18 @@ const SchoolList = () => {
     }
   };
 
+  const renderEducationBadge = (isEducated) => {
+    return isEducated ? (
+      <span className="badge bg-success">
+        <i className="bi bi-check-circle me-1"></i>Educated
+      </span>
+    ) : (
+      <span className="badge bg-warning text-dark">
+        <i className="bi bi-x-circle me-1"></i>Not Educated
+      </span>
+    );
+  };
+
   return (
     <>
       <div className="d-flex justify-content-between align-items-center mb-4">
@@ -418,6 +430,7 @@ const SchoolList = () => {
                       <th style={{ cursor: 'pointer' }} onClick={() => handleSort('phone')}>
                         Phone {getSortIcon('phone')}
                       </th>
+                      <th>Status</th>
                       <th>Coordinates</th>
                       <th>Actions</th>
                     </tr>
@@ -429,6 +442,7 @@ const SchoolList = () => {
                         <td>{school.name}</td>
                         <td>{school.address}</td>
                         <td>{school.phone || '-'}</td>
+                        <td>{renderEducationBadge(school.is_educated)}</td>
                         <td
                           onClick={() => school.latitude && school.longitude && handleCoordinateClick(school)}
                           style={{ cursor: school.latitude && school.longitude ? 'pointer' : 'default' }}

@@ -55,6 +55,18 @@ const SchoolDetail = () => {
     return new Date(dateString).toLocaleString();
   };
 
+  const renderEducationBadge = (isEducated) => {
+    return isEducated ? (
+      <span className="badge bg-success">
+        <i className="bi bi-check-circle me-1"></i>Educated
+      </span>
+    ) : (
+      <span className="badge bg-warning text-dark">
+        <i className="bi bi-x-circle me-1"></i>Not Educated
+      </span>
+    );
+  };
+
   if (loading) {
     return (
       <>
@@ -242,6 +254,18 @@ const SchoolDetail = () => {
                         </a>
                       ) : '-'}
                     </td>
+                  </tr>
+                  <tr>
+                    <td className="text-muted">
+                      <strong>Education Status</strong>
+                    </td>
+                    <td>{renderEducationBadge(school.is_educated)}</td>
+                  </tr>
+                  <tr>
+                    <td className="text-muted">
+                      <strong>Last Visit</strong>
+                    </td>
+                    <td>{formatDate(school.last_visit_at)}</td>
                   </tr>
                 </tbody>
               </table>

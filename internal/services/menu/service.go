@@ -90,10 +90,12 @@ func (s *MenuService) GetUserMenus(userId string, userRole string) ([]domainmenu
 	}
 
 	menuMap := make(map[string]domainmenu.MenuItem, len(menus))
-	allowedMenuIDs := make(map[string]struct{})
-
 	for _, menu := range menus {
 		menuMap[menu.Id] = menu
+	}
+
+	allowedMenuIDs := make(map[string]struct{})
+	for _, menu := range menus {
 		if canAccessMenu(menu, allowedResources) {
 			allowedMenuIDs[menu.Id] = struct{}{}
 			includeParentMenus(menu, menuMap, allowedMenuIDs)
