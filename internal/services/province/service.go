@@ -7,16 +7,31 @@ import (
 	"net/http"
 	"safety-riding/internal/domain/province"
 	interfaceprovince "safety-riding/internal/interfaces/province"
+	"safety-riding/internal/services/locationcache"
 	"sort"
+
+	"github.com/redis/go-redis/v9"
 )
 
-type ProvinceService struct{}
+type ProvinceService struct {
+	Redis *redis.Client
+}
 
-func NewProvinceService() *ProvinceService {
-	return &ProvinceService{}
+func NewProvinceService(redisClients ...*redis.Client) *ProvinceService {
+	var redisClient *redis.Client
+	if len(redisClients) > 0 {
+		redisClient = redisClients[0]
+	}
+
+	return &ProvinceService{Redis: redisClient}
 }
 
 func (s *ProvinceService) GetProvince(year string) ([]domainprovince.Province, error) {
+	cacheKey := locationcache.Key("province", year)
+	if data, ok := locationcache.Get[domainprovince.Province](s.Redis, cacheKey); ok {
+		return data, nil
+	}
+
 	url := fmt.Sprintf("https://sipedas.pertanian.go.id/api/wilayah/list_pro?thn=%s", year)
 
 	resp, err := http.Get(url)
@@ -56,6 +71,8 @@ func (s *ProvinceService) GetProvince(year string) ([]domainprovince.Province, e
 	sort.Slice(provinces, func(i, j int) bool {
 		return provinces[i].Name < provinces[j].Name
 	})
+
+	locationcache.Set(s.Redis, cacheKey, provinces)
 
 	return provinces, nil
 }

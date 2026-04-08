@@ -198,7 +198,7 @@ func (r *Routes) PublicRoutes() {
 }
 
 func (r *Routes) ProvinceRoutes() {
-	svc := provinsiSvc.NewProvinceService()
+	svc := provinsiSvc.NewProvinceService(database.GetRedisClient())
 	h := provinceHandler.NewProvinceHandler(svc)
 
 	province := r.App.Group("/api/province")
@@ -208,7 +208,7 @@ func (r *Routes) ProvinceRoutes() {
 }
 
 func (r *Routes) CityRoutes() {
-	svc := kabupatenSvc.NewCityService()
+	svc := kabupatenSvc.NewCityService(database.GetRedisClient())
 	h := cityHandler.NewKabupatenHandler(svc)
 
 	city := r.App.Group("/api/city")
@@ -218,7 +218,7 @@ func (r *Routes) CityRoutes() {
 }
 
 func (r *Routes) DistrictRoutes() {
-	svc := kecamatanSvc.NewKecamatanService()
+	svc := kecamatanSvc.NewKecamatanService(database.GetRedisClient())
 	h := districtHandler.NewDistrictHandler(svc)
 
 	district := r.App.Group("/api/district")

@@ -7,16 +7,31 @@ import (
 	"net/http"
 	"safety-riding/internal/domain/city"
 	interfacecity "safety-riding/internal/interfaces/city"
+	"safety-riding/internal/services/locationcache"
 	"sort"
+
+	"github.com/redis/go-redis/v9"
 )
 
-type CityService struct{}
+type CityService struct {
+	Redis *redis.Client
+}
 
-func NewCityService() *CityService {
-	return &CityService{}
+func NewCityService(redisClients ...*redis.Client) *CityService {
+	var redisClient *redis.Client
+	if len(redisClients) > 0 {
+		redisClient = redisClients[0]
+	}
+
+	return &CityService{Redis: redisClient}
 }
 
 func (s *CityService) GetCity(year, lvl, pro string) ([]domaincity.City, error) {
+	cacheKey := locationcache.Key("city", year, lvl, pro)
+	if data, ok := locationcache.Get[domaincity.City](s.Redis, cacheKey); ok {
+		return data, nil
+	}
+
 	url := fmt.Sprintf("https://sipedas.pertanian.go.id/api/wilayah/list_kab?thn=%s&lvl=%s&pro=%s", year, lvl, pro)
 
 	resp, err := http.Get(url)
@@ -53,6 +68,8 @@ func (s *CityService) GetCity(year, lvl, pro string) ([]domaincity.City, error) 
 	sort.Slice(cities, func(i, j int) bool {
 		return cities[i].Name < cities[j].Name
 	})
+
+	locationcache.Set(s.Redis, cacheKey, cities)
 
 	return cities, nil
 }
