@@ -463,26 +463,64 @@ const ApprovalRecordList = () => {
           )}
 
           {pagination.totalPages > 1 && (
-            <div className="d-flex justify-content-between align-items-center mt-3">
-              <button
-                type="button"
-                className="btn btn-outline-secondary btn-sm"
-                disabled={pagination.page <= 1}
-                onClick={() => handlePageChange(pagination.page - 1)}
-              >
-                Previous
-              </button>
-              <span className="text-muted">
-                Page {pagination.page} of {pagination.totalPages}
-              </span>
-              <button
-                type="button"
-                className="btn btn-outline-secondary btn-sm"
-                disabled={pagination.page >= pagination.totalPages}
-                onClick={() => handlePageChange(pagination.page + 1)}
-              >
-                Next
-              </button>
+            <div className="d-flex justify-content-center mt-4">
+              <nav>
+                <ul className="pagination">
+                  <li className={`page-item ${pagination.page === 1 ? 'disabled' : ''}`}>
+                    <button
+                      className="page-link"
+                      onClick={() => handlePageChange(pagination.page - 1)}
+                      disabled={pagination.page === 1}
+                      aria-label="Previous page"
+                    >
+                      Previous
+                    </button>
+                  </li>
+
+                  {[...Array(pagination.totalPages)].map((_, index) => {
+                    const pageNum = index + 1;
+                    if (
+                      pageNum === 1 ||
+                      pageNum === pagination.totalPages ||
+                      (pageNum >= pagination.page - 1 && pageNum <= pagination.page + 1)
+                    ) {
+                      return (
+                        <li key={pageNum} className={`page-item ${pagination.page === pageNum ? 'active' : ''}`}>
+                          <button
+                            className="page-link"
+                            onClick={() => handlePageChange(pageNum)}
+                            aria-label={`Go to page ${pageNum}`}
+                            aria-current={pagination.page === pageNum ? 'page' : undefined}
+                          >
+                            {pageNum}
+                          </button>
+                        </li>
+                      );
+                    } else if (
+                      pageNum === pagination.page - 2 ||
+                      pageNum === pagination.page + 2
+                    ) {
+                      return (
+                        <li key={pageNum} className="page-item disabled">
+                          <span className="page-link">...</span>
+                        </li>
+                      );
+                    }
+                    return null;
+                  })}
+
+                  <li className={`page-item ${pagination.page === pagination.totalPages ? 'disabled' : ''}`}>
+                    <button
+                      className="page-link"
+                      onClick={() => handlePageChange(pagination.page + 1)}
+                      disabled={pagination.page === pagination.totalPages}
+                      aria-label="Next page"
+                    >
+                      Next
+                    </button>
+                  </li>
+                </ul>
+              </nav>
             </div>
           )}
         </div>
