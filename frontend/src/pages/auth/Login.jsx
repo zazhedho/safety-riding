@@ -346,7 +346,7 @@ const Login = () => {
                 </p>
               ) : (
                 <p className="text-secondary mb-0 small">
-                  Public registration is currently unavailable.
+                  Public registration is currently unavailable. Please contact an administrator if you need an account.
                 </p>
               )}
             </div>
