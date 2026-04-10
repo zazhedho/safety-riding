@@ -101,6 +101,8 @@ func (r *Routes) UserRoutes() {
 	repo := userRepo.NewUserRepo(r.DB)
 	rRepo := roleRepo.NewRoleRepo(r.DB)
 	pRepo := permissionRepo.NewPermissionRepo(r.DB)
+	configRepo := appConfigRepo.NewAppConfigRepo(r.DB)
+	configSvc := appConfigSvc.NewAppConfigService(configRepo)
 	uc := userSvc.NewUserService(repo, blacklistRepo, rRepo, pRepo)
 	redisClient := database.GetRedisClient()
 	loginLimiter := security.NewRedisLoginLimiter(
@@ -109,7 +111,7 @@ func (r *Routes) UserRoutes() {
 		time.Duration(utils.GetEnv("LOGIN_ATTEMPT_WINDOW_SECONDS", 60).(int))*time.Second,
 		time.Duration(utils.GetEnv("LOGIN_BLOCK_DURATION_SECONDS", 300).(int))*time.Second,
 	)
-	h := userHandler.NewUserHandler(uc, loginLimiter)
+	h := userHandler.NewUserHandler(uc, configSvc, loginLimiter)
 	mdw := middlewares.NewMiddleware(blacklistRepo, pRepo)
 
 	registerLimit := utils.GetEnv("REGISTER_RATE_LIMIT", 5).(int)
@@ -126,6 +128,7 @@ func (r *Routes) UserRoutes() {
 
 	user := r.App.Group("/api/user")
 	{
+		user.GET("/register/status", h.GetRegisterStatus)
 		user.POST("/register", registerLimiter, h.Register)
 		user.POST("/login", h.Login)
 		user.POST("/forgot-password", h.ForgotPassword)

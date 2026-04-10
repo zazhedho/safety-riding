@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { toast } from 'react-toastify';
+import publicAuthService from '../../services/publicAuthService';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
 const Register = () => {
@@ -13,6 +14,8 @@ const Register = () => {
     confirmPassword: ''
   });
   const [loading, setLoading] = useState(false);
+  const [statusLoading, setStatusLoading] = useState(true);
+  const [registerEnabled, setRegisterEnabled] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [focusedInput, setFocusedInput] = useState(null);
@@ -26,6 +29,21 @@ const Register = () => {
   });
   const { register } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const loadRegisterStatus = async () => {
+      try {
+        const response = await publicAuthService.getRegisterStatus();
+        setRegisterEnabled(Boolean(response.data?.data?.enabled));
+      } catch (error) {
+        setRegisterEnabled(false);
+      } finally {
+        setStatusLoading(false);
+      }
+    };
+
+    loadRegisterStatus();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -53,6 +71,10 @@ const Register = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!registerEnabled) {
+      toast.error('Public registration is currently disabled');
+      return;
+    }
     if (formData.password !== formData.confirmPassword) {
       toast.error('Passwords do not match');
       return;
@@ -314,9 +336,37 @@ const Register = () => {
 
           <div className="mb-4">
             <h2 className="fw-bold text-dark mb-2">Create Account</h2>
-            <p className="text-secondary">Fill in your details to get started.</p>
+            <p className="text-secondary">
+              {statusLoading
+                ? 'Checking registration availability...'
+                : registerEnabled
+                  ? 'Fill in your details to get started.'
+                  : 'Public registration is currently disabled.'}
+            </p>
           </div>
 
+          {statusLoading ? (
+            <div className="text-center py-5">
+              <span className="spinner-border text-primary" role="status" aria-hidden="true"></span>
+            </div>
+          ) : !registerEnabled ? (
+            <div className="border rounded-4 bg-white p-4 shadow-sm">
+              <div className="d-flex align-items-start gap-3">
+                <div className="bg-warning bg-opacity-10 text-warning rounded-circle d-inline-flex align-items-center justify-content-center" style={{ width: '52px', height: '52px' }}>
+                  <i className="bi bi-person-x fs-4" aria-hidden="true"></i>
+                </div>
+                <div>
+                  <h5 className="fw-bold text-dark mb-2">Registration Disabled</h5>
+                  <p className="text-secondary mb-3">
+                    Public self-registration is currently unavailable. Please contact an administrator if you need an account.
+                  </p>
+                  <Link to="/login" className="btn btn-primary">
+                    Back to Login
+                  </Link>
+                </div>
+              </div>
+            </div>
+          ) : (
           <form onSubmit={handleSubmit}>
             <div className="row g-2">
               <div className="col-md-6">
@@ -496,6 +546,7 @@ const Register = () => {
               </p>
             </div>
           </form>
+          )}
         </div>
       </div>
     </div>

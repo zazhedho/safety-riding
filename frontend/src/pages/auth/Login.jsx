@@ -1,16 +1,31 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { toast } from 'react-toastify';
+import publicAuthService from '../../services/publicAuthService';
 import 'bootstrap-icons/font/bootstrap-icons.css';
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [loading, setLoading] = useState(false);
+  const [registerEnabled, setRegisterEnabled] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [focusedInput, setFocusedInput] = useState(null);
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const loadRegisterStatus = async () => {
+      try {
+        const response = await publicAuthService.getRegisterStatus();
+        setRegisterEnabled(Boolean(response.data?.data?.enabled));
+      } catch (error) {
+        setRegisterEnabled(false);
+      }
+    };
+
+    loadRegisterStatus();
+  }, []);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -322,12 +337,18 @@ const Login = () => {
             </button>
 
             <div className="text-center">
-              <p className="text-secondary mb-0">
-                Don't have an account?{' '}
-                <Link to="/register" className="text-primary fw-semibold text-decoration-none">
-                  Create Account
-                </Link>
-              </p>
+              {registerEnabled ? (
+                <p className="text-secondary mb-0">
+                  Don't have an account?{' '}
+                  <Link to="/register" className="text-primary fw-semibold text-decoration-none">
+                    Create Account
+                  </Link>
+                </p>
+              ) : (
+                <p className="text-secondary mb-0 small">
+                  Public registration is currently unavailable.
+                </p>
+              )}
             </div>
           </form>
         </div>

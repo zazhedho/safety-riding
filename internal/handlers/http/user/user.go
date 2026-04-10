@@ -12,6 +12,7 @@ import (
 
 	"safety-riding/infrastructure/database"
 	"safety-riding/internal/dto"
+	interfaceappconfig "safety-riding/internal/interfaces/appconfig"
 	interfaceuser "safety-riding/internal/interfaces/user"
 	sessionRepo "safety-riding/internal/repositories/session"
 	sessionSvc "safety-riding/internal/services/session"
@@ -27,15 +28,19 @@ import (
 	"gorm.io/gorm"
 )
 
+const publicRegistrationConfigKey = "auth.public_registration_enabled"
+
 type HandlerUser struct {
-	Service      interfaceuser.ServiceUserInterface
-	LoginLimiter security.LoginLimiter
+	Service          interfaceuser.ServiceUserInterface
+	AppConfigService interfaceappconfig.ServiceAppConfigInterface
+	LoginLimiter     security.LoginLimiter
 }
 
-func NewUserHandler(s interfaceuser.ServiceUserInterface, limiter security.LoginLimiter) *HandlerUser {
+func NewUserHandler(s interfaceuser.ServiceUserInterface, appConfigService interfaceappconfig.ServiceAppConfigInterface, limiter security.LoginLimiter) *HandlerUser {
 	return &HandlerUser{
-		Service:      s,
-		LoginLimiter: limiter,
+		Service:          s,
+		AppConfigService: appConfigService,
+		LoginLimiter:     limiter,
 	}
 }
 
@@ -54,6 +59,21 @@ func (h *HandlerUser) Register(ctx *gin.Context) {
 	var req dto.UserRegister
 	logId := utils.GenerateLogId(ctx)
 	logPrefix := fmt.Sprintf("[%s][UserHandler][Register]", logId)
+
+	enabled, err := h.isPublicRegistrationEnabled()
+	if err != nil {
+		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; AppConfigService.IsEnabled; Error: %+v", logPrefix, err))
+		res := response.Response(http.StatusServiceUnavailable, "Public registration is currently unavailable", logId, nil)
+		res.Error = response.Errors{Code: http.StatusServiceUnavailable, Message: "public registration is currently unavailable"}
+		ctx.JSON(http.StatusServiceUnavailable, res)
+		return
+	}
+	if !enabled {
+		res := response.Response(http.StatusForbidden, "Public registration is currently disabled", logId, nil)
+		res.Error = response.Errors{Code: http.StatusForbidden, Message: "public registration is currently disabled"}
+		ctx.JSON(http.StatusForbidden, res)
+		return
+	}
 
 	if err := ctx.BindJSON(&req); err != nil {
 		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; BindJSON ERROR: %s;", logPrefix, err.Error()))
@@ -88,6 +108,27 @@ func (h *HandlerUser) Register(ctx *gin.Context) {
 	res := response.Response(http.StatusCreated, "User registered successfully", logId, data)
 	logger.WriteLog(logger.LogLevelDebug, fmt.Sprintf("%s; Response: %+v;", logPrefix, utils.JsonEncode(data)))
 	ctx.JSON(http.StatusCreated, res)
+}
+
+func (h *HandlerUser) GetRegisterStatus(ctx *gin.Context) {
+	logId := utils.GenerateLogId(ctx)
+	logPrefix := fmt.Sprintf("[%s][UserHandler][GetRegisterStatus]", logId)
+
+	enabled, err := h.isPublicRegistrationEnabled()
+	if err != nil {
+		logger.WriteLog(logger.LogLevelError, fmt.Sprintf("%s; AppConfigService.IsEnabled; Error: %+v", logPrefix, err))
+		res := response.Response(http.StatusServiceUnavailable, "Failed to load register status", logId, map[string]interface{}{
+			"enabled": false,
+		})
+		res.Error = response.Errors{Code: http.StatusServiceUnavailable, Message: "failed to load register status"}
+		ctx.JSON(http.StatusServiceUnavailable, res)
+		return
+	}
+
+	res := response.Response(http.StatusOK, "Get register status successfully", logId, map[string]interface{}{
+		"enabled": enabled,
+	})
+	ctx.JSON(http.StatusOK, res)
 }
 
 func (h *HandlerUser) AdminCreateUser(ctx *gin.Context) {
